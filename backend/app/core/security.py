@@ -1,10 +1,28 @@
 from datetime import datetime, timedelta
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, List
 from jose import jwt
 from passlib.context import CryptContext
+from fastapi import HTTPException, status, Depends
 from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# 6 Canonical Roles from Phase 1 & 3 specification
+ROLE_ADMIN = "ADMIN"
+ROLE_DISASTER_AUTHORITY = "DISASTER_AUTHORITY"
+ROLE_NGO_DONOR = "NGO_DONOR"
+ROLE_WAREHOUSE_MANAGER = "WAREHOUSE_MANAGER"
+ROLE_VOLUNTEER = "VOLUNTEER"
+ROLE_BENEFICIARY = "BENEFICIARY"
+
+ALL_ROLES = [
+    ROLE_ADMIN,
+    ROLE_DISASTER_AUTHORITY,
+    ROLE_NGO_DONOR,
+    ROLE_WAREHOUSE_MANAGER,
+    ROLE_VOLUNTEER,
+    ROLE_BENEFICIARY
+]
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -30,3 +48,8 @@ def decode_access_token(token: str) -> Optional[dict]:
     except Exception:
         return None
 
+def verify_role_permission(user_role: str, allowed_roles: List[str]) -> bool:
+    """Verifies if a user role is authorized; ADMIN role bypasses and has full global access."""
+    if user_role == ROLE_ADMIN:
+        return True
+    return user_role in allowed_roles
