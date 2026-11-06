@@ -9,3 +9,4 @@ $$\max \left( \min_{i} \frac{x_{i,c}}{D_{i,c}} \right) \quad \text{subject to } 
 ## Benchmark Metrics
 - **Gini Coefficient:** 0.18 (High Equity) compared to 0.74 under traditional First-Come First-Served allocation
 - **Deprivation Reduction:** 89.1% reduction in unmet high-urgency needs
+

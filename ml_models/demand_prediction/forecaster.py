@@ -67,3 +67,4 @@ class ResourceDemandForecaster:
                 "rmse_liters": 1842.0
             }
         }
+

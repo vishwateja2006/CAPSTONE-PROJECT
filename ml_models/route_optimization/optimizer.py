@@ -188,3 +188,4 @@ class IntelligentRouteOptimizer:
                 "hazard_avoidance_success_percent": 100.0
             }
         }
+

@@ -12,3 +12,4 @@ Model 1 forecasts 24h, 48h, and 72h relief supply requirements for displaced pop
 - **Mean Absolute Percentage Error (MAPE):** 8.42%
 - **Root Mean Squared Error (RMSE):** 1,842 Liters
 - **Accuracy:** 91.58% against historical FEMA records
+

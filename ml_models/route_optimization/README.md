@@ -9,3 +9,4 @@ When a straight-line vector $(p_1, p_2)$ intersects polygon $H$, ray-casting ide
 ## Performance
 - **Delivery Time Reduction:** 41.3% compared to un-optimized routing
 - **Hazard Avoidance Rate:** 100% of vehicles diverted away from submerged roads
+
