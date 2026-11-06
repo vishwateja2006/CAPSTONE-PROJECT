@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./disaster_platform.db")
 
+    # Supabase Integration
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "your_supabase_url")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "your_server_key")
+
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
