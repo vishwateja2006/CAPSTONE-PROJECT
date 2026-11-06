@@ -1,0 +1,204 @@
+import json
+from datetime import datetime
+from sqlalchemy.orm import Session
+from app.core.database import Base, engine, SessionLocal
+from app.core.security import get_password_hash
+from app.models.user import User, UserRole
+from app.models.disaster import Disaster, HazardZone
+from app.models.resource import ReliefCenter, InventoryItem, ReliefVehicle
+from app.models.sos import SOSRequest
+
+def init_db():
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+    
+    db: Session = SessionLocal()
+    try:
+        # Check if database already has users/data
+        if db.query(User).first():
+            return
+
+        print("Seeding initial demonstration disaster data...")
+
+        # 1. Admin & Coordinator Users
+        admin_user = User(
+            email="admin@resqai.org",
+            hashed_password=get_password_hash("Admin@1234"),
+            full_name="National Disaster Coordinator",
+            role=UserRole.ADMIN.value,
+            phone="+91-9876543210"
+        )
+        responder_user = User(
+            email="volunteer@resqai.org",
+            hashed_password=get_password_hash("Volunteer@1234"),
+            full_name="Rapid Response Team Alpha",
+            role=UserRole.RESPONDER.value,
+            phone="+91-9876543211"
+        )
+        db.add_all([admin_user, responder_user])
+        db.commit()
+
+        # 2. Active Disaster: Coastal Super-Cyclone & Urban Flood
+        disaster = Disaster(
+            name="Cyclone Vardah & Coastal Inundation",
+            disaster_type="FLOOD",
+            status="ACTIVE",
+            severity="CRITICAL",
+            epicenter_lat=13.0827,
+            epicenter_lon=80.2707,
+            radius_km=30.0,
+            description="Severe Category 4 cyclone accompanied by rapid coastal storm surge and torrential flooding of low-lying urban sectors."
+        )
+        db.add(disaster)
+        db.commit()
+        db.refresh(disaster)
+
+        # 3. Hazard Zone (Red Zone - Severely Inundated / Impassable)
+        hazard = HazardZone(
+            disaster_id=disaster.id,
+            name="Zone A - Adyar Basin Flooded Sector",
+            risk_level="RED",
+            boundary_geojson=json.dumps({
+                "type": "Polygon",
+                "coordinates": [[
+                    [80.245, 13.010],
+                    [80.265, 13.010],
+                    [80.265, 13.035],
+                    [80.245, 13.035],
+                    [80.245, 13.010]
+                ]]
+            }),
+            is_passable=False,
+            road_blockages_json=json.dumps(["Bridges 3 and 4 submerged", "NH-45 South lane blocked"])
+        )
+        db.add(hazard)
+
+        # 4. Central Relief Center / Depot
+        depot = ReliefCenter(
+            disaster_id=disaster.id,
+            name="Central Emergency Relief Base Alpha",
+            location_name="Jawaharlal Nehru Stadium Complex",
+            latitude=13.0837,
+            longitude=80.2785,
+            contact_person="Col. Rajesh Sharma",
+            phone="+91-9444012345",
+            capacity_people=2500,
+            current_occupancy=450
+        )
+        db.add(depot)
+        db.commit()
+        db.refresh(depot)
+
+        # 5. Inventory Stock at Central Depot
+        inv_items = [
+            InventoryItem(relief_center_id=depot.id, item_category="FOOD", item_name="Emergency Dry Ration Packs", quantity_available=850, unit="packets"),
+            InventoryItem(relief_center_id=depot.id, item_category="WATER", item_name="Purified Water Cans (5L)", quantity_available=1200, unit="cans"),
+            InventoryItem(relief_center_id=depot.id, item_category="MEDICAL", item_name="Trauma & First Aid Field Kits", quantity_available=150, unit="kits"),
+            InventoryItem(relief_center_id=depot.id, item_category="SHELTER", item_name="Thermal Blankets & Tents", quantity_available=300, unit="units"),
+            InventoryItem(relief_center_id=depot.id, item_category="SANITATION", item_name="Chlorine Tablets & Hygiene Kits", quantity_available=400, unit="kits")
+        ]
+        db.add_all(inv_items)
+
+        # 6. Fleet of Relief Vehicles
+        vehicles = [
+            ReliefVehicle(
+                vehicle_code="RESCUE-TRUCK-01",
+                vehicle_type="TRUCK",
+                capacity_kg=1500.0,
+                current_lat=13.0837,
+                current_lon=80.2785,
+                status="IDLE",
+                assigned_driver="Officer Vikram Singh",
+                speed_kmh=35.0
+            ),
+            ReliefVehicle(
+                vehicle_code="BOAT-RESCUE-02",
+                vehicle_type="BOAT",
+                capacity_kg=600.0,
+                current_lat=13.0720,
+                current_lon=80.2600,
+                status="IDLE",
+                assigned_driver="Capt. Manikandan",
+                speed_kmh=20.0
+            ),
+            ReliefVehicle(
+                vehicle_code="RAPID-4X4-03",
+                vehicle_type="4X4",
+                capacity_kg=800.0,
+                current_lat=13.0837,
+                current_lon=80.2785,
+                status="IDLE",
+                assigned_driver="Lt. Priya Nair",
+                speed_kmh=45.0
+            )
+        ]
+        db.add_all(vehicles)
+
+        # 7. Incoming SOS Emergency Reports
+        sos_list = [
+            SOSRequest(
+                disaster_id=disaster.id,
+                victim_name="Kavitha Sundaram",
+                contact_phone="+91-9840112233",
+                latitude=13.0650,
+                longitude=80.2550,
+                address="12 Canal Bank Road, Kotturpuram",
+                people_count=4,
+                urgency_level="CRITICAL",
+                urgency_score=92.0,
+                special_needs=json.dumps(["infant", "insulin-dependent"]),
+                category_needs=json.dumps(["FOOD", "WATER", "MEDICAL"]),
+                description="Water reached first floor, baby needs formula milk and mother needs cold storage insulin urgently. Trapped.",
+                status="PENDING"
+            ),
+            SOSRequest(
+                disaster_id=disaster.id,
+                victim_name="Ramesh Babu & Elderly Community",
+                contact_phone="+91-9840556677",
+                latitude=13.0450,
+                longitude=80.2400,
+                address="Senior Care Annex, T. Nagar",
+                people_count=12,
+                urgency_level="CRITICAL",
+                urgency_score=88.5,
+                special_needs=json.dumps(["elderly", "oxygen-cylinder", "wheelchair"]),
+                category_needs=json.dumps(["MEDICAL", "WATER", "EVACUATION"]),
+                description="12 elderly residents stranded. Backup generator failed, oxygen concentrator offline.",
+                status="PENDING"
+            ),
+            SOSRequest(
+                disaster_id=disaster.id,
+                victim_name="Anand Kumar",
+                contact_phone="+91-9840998811",
+                latitude=13.0950,
+                longitude=80.2850,
+                address="Fishermen Colony, Kasimedu",
+                people_count=6,
+                urgency_level="HIGH",
+                urgency_score=72.0,
+                special_needs=json.dumps(["pregnant"]),
+                category_needs=json.dumps(["FOOD", "WATER"]),
+                description="Roof damaged by heavy gale winds. Drinking water contaminated.",
+                status="PENDING"
+            ),
+            SOSRequest(
+                disaster_id=disaster.id,
+                victim_name="Dr. Farooq",
+                contact_phone="+91-9840334455",
+                latitude=13.0550,
+                longitude=80.2750,
+                address="Royapettah High Road",
+                people_count=8,
+                urgency_level="HIGH",
+                urgency_score=68.0,
+                special_needs=json.dumps(["injured"]),
+                category_needs=json.dumps(["MEDICAL", "FOOD"]),
+                description="Minor injuries from shattered glass. First aid supplies exhausted.",
+                status="PENDING"
+            )
+        ]
+        db.add_all(sos_list)
+        db.commit()
+        print("Initial demonstration disaster data successfully seeded!")
+    finally:
+        db.close()
