@@ -1,16 +1,30 @@
+import json
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.models.supabase_models import Disaster, Location
+from app.models.supabase_models import Disaster, Location, Alert
 from app.schemas.api_schemas import (
     DisasterCreate, DisasterUpdate, DisasterOut,
-    LocationCreate, LocationOut
+    LocationCreate, LocationOut, AlertOut
 )
+from app.services.disaster_service import DisasterManagementService
 from app.core.security import require_authority, require_admin
 from app.services.alert_service import alert_manager
 
 router = APIRouter()
+
+class DisasterWithVillagesCreate(BaseModel):
+    name: str
+    disaster_type: str  # FLOOD, CYCLONE, EARTHQUAKE, LANDSLIDE, WILDFIRE, DROUGHT
+    district: str
+    affected_villages: List[str]
+    severity: str = "CRITICAL"  # CRITICAL, HIGH, MODERATE, LOW
+    epicenter_lat: float = 13.0827
+    epicenter_lon: float = 80.2707
+    radius_km: float = 25.0
+    description: Optional[str] = None
 
 @router.get("/", response_model=List[DisasterOut])
 def list_disasters(status_filter: Optional[str] = None, db: Session = Depends(get_db)):
@@ -45,6 +59,74 @@ async def create_disaster(
     })
     return disaster
 
+@router.post("/register-with-villages", response_model=DisasterOut, status_code=status.HTTP_201_CREATED)
+async def register_disaster_with_villages(
+    payload: DisasterWithVillagesCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_authority)
+):
+    """
+    Phase 5 Scenario Endpoint:
+    Admin/Authority registers a disaster (e.g. Flood), marks affected villages,
+    generates hazard polygons, and broadcasts an emergency alert automatically.
+    """
+    # 1. Create Disaster Record
+    disaster = Disaster(
+        name=payload.name,
+        disaster_type=payload.disaster_type.upper(),
+        severity=payload.severity.upper(),
+        status="ACTIVE",
+        epicenter_lat=payload.epicenter_lat,
+        epicenter_lon=payload.epicenter_lon,
+        radius_km=payload.radius_km,
+        description=payload.description or f"Severe {payload.disaster_type} affecting {payload.district} district.",
+        declared_by=current_user.id
+    )
+    db.add(disaster)
+    db.commit()
+    db.refresh(disaster)
+
+    # 2. Generate Village Hazard Locations
+    loc_dicts = DisasterManagementService.generate_village_hazard_locations(
+        disaster_id=disaster.id,
+        district=payload.district,
+        villages=payload.affected_villages,
+        base_lat=payload.epicenter_lat,
+        base_lon=payload.epicenter_lon,
+        risk_level="RED" if payload.severity.upper() in ["CRITICAL", "HIGH"] else "ORANGE"
+    )
+    for loc_data in loc_dicts:
+        loc_obj = Location(**loc_data)
+        db.add(loc_obj)
+
+    # 3. Draft & Save Emergency Alert
+    alert_data = DisasterManagementService.draft_emergency_alert(
+        disaster_name=disaster.name,
+        disaster_type=disaster.disaster_type,
+        severity=disaster.severity,
+        district=payload.district,
+        villages=payload.affected_villages
+    )
+    alert = Alert(disaster_id=disaster.id, **alert_data, is_active=True)
+    db.add(alert)
+    db.commit()
+    db.refresh(disaster)
+
+    # 4. Broadcast Real-time Push Alert via WebSocket
+    await alert_manager.broadcast({
+        "type": "CRITICAL_DISASTER_DECLARED",
+        "data": {
+            "disaster_id": disaster.id,
+            "name": disaster.name,
+            "district": payload.district,
+            "severity": disaster.severity,
+            "affected_villages": payload.affected_villages,
+            "alert": alert_data
+        }
+    })
+
+    return disaster
+
 @router.get("/{disaster_id}", response_model=DisasterOut)
 def get_disaster_by_id(disaster_id: str, db: Session = Depends(get_db)):
     """Get single disaster event details with associated locations."""
@@ -53,58 +135,25 @@ def get_disaster_by_id(disaster_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Disaster event not found.")
     return disaster
 
-@router.patch("/{disaster_id}", response_model=DisasterOut)
-def update_disaster(
+@router.patch("/{disaster_id}/transition-status", response_model=DisasterOut)
+def transition_disaster_status(
     disaster_id: str,
-    update_in: DisasterUpdate,
+    new_status: str,
     db: Session = Depends(get_db),
     current_user = Depends(require_authority)
 ):
-    """Update disaster severity, status, or description (Authority or Admin only)."""
+    """Transition disaster lifecycle: ALERT -> ACTIVE -> RECOVERY -> RESOLVED -> CLOSED."""
     disaster = db.query(Disaster).filter(Disaster.id == disaster_id).first()
     if not disaster:
         raise HTTPException(status_code=404, detail="Disaster event not found.")
-    
-    for field, val in update_in.dict(exclude_unset=True).items():
-        setattr(disaster, field, val)
-    
+
+    if not DisasterManagementService.validate_status_transition(disaster.status, new_status):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid transition from {disaster.status} to {new_status.upper()}."
+        )
+
+    disaster.status = new_status.upper()
     db.commit()
     db.refresh(disaster)
     return disaster
-
-@router.post("/{disaster_id}/locations", response_model=LocationOut, status_code=status.HTTP_201_CREATED)
-async def add_location_to_disaster(
-    disaster_id: str,
-    location_in: LocationCreate,
-    db: Session = Depends(get_db),
-    current_user = Depends(require_authority)
-):
-    """Add affected district/ward or hazard zone polygon to a disaster."""
-    disaster = db.query(Disaster).filter(Disaster.id == disaster_id).first()
-    if not disaster:
-        raise HTTPException(status_code=404, detail="Disaster event not found.")
-
-    location = Location(
-        disaster_id=disaster_id,
-        name=location_in.name,
-        district=location_in.district,
-        state=location_in.state,
-        risk_level=location_in.risk_level.upper(),
-        boundary_geojson=location_in.boundary_geojson,
-        is_accessible=location_in.is_accessible,
-        road_blockage_notes=location_in.road_blockage_notes
-    )
-    db.add(location)
-    db.commit()
-    db.refresh(location)
-
-    await alert_manager.broadcast({
-        "type": "HAZARD_ZONE_UPDATED",
-        "data": {
-            "disaster_id": disaster_id,
-            "location_id": location.id,
-            "name": location.name,
-            "risk_level": location.risk_level
-        }
-    })
-    return location
