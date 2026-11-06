@@ -98,3 +98,4 @@ class DisasterManagementService:
             "target_area_district": district,
             "broadcast_channel": "ALL"
         }
+

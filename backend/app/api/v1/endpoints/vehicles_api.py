@@ -75,3 +75,4 @@ async def update_vehicle_location(
     })
 
     return veh
+

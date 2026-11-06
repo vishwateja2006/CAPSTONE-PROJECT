@@ -171,3 +171,4 @@ def compute_fair_allocation(
     )
 
     return allocation_result
+

@@ -97,3 +97,4 @@ def sync_offline_field_batch(
         agent_id=payload.agent_id or current_user.id,
         offline_records=payload.offline_records
     )
+

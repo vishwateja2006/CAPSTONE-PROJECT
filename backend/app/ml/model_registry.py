@@ -60,3 +60,4 @@ class ModelRegistry:
                 "status": "ONLINE"
             }
         ]
+

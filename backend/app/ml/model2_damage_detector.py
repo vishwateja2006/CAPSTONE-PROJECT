@@ -89,3 +89,4 @@ class DisasterDamageDetector:
                 "f1_score": 0.914
             }
         }
+

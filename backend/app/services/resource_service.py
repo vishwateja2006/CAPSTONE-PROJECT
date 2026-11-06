@@ -122,3 +122,4 @@ class ResourceManagementService:
                 "conditions_count": len(special_conditions)
             }
         }
+

@@ -69,3 +69,4 @@ def deactivate_alert(
     db.commit()
     db.refresh(alert)
     return alert
+

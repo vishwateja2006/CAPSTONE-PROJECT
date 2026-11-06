@@ -181,3 +181,4 @@ The platform is fully containerized with **Docker Compose**:
 
 ## 9. Conclusion
 ResQLink successfully demonstrates that combining artificial intelligence, operations research, spatial geometry, and cryptographic transparency can eliminate the deadliest inefficiencies in disaster relief. By replacing chaotic first-come first-served distribution with mathematically fair linear programming and hazard-aware routing, the platform protects vulnerable citizens, empowers humanitarian authorities, and preserves human life during extreme climate emergencies.
+

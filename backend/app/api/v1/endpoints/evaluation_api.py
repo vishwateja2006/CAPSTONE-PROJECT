@@ -51,3 +51,4 @@ def execute_discrete_event_simulation(payload: DiscreteSimulationInput) -> Dict[
 def get_shadow_mode_comparison() -> Dict[str, Any]:
     """Phase 11: Retrieve statistical comparison between traditional manual relief operations and ResQLink AI."""
     return ShadowModeValidationEngine.get_shadow_mode_comparisons()
+

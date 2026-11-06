@@ -86,3 +86,4 @@ class EmergencyMessageClassifier:
                 "recall": 0.918
             }
         }
+

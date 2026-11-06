@@ -117,3 +117,4 @@ class FairResourceAllocator:
                 "hoarding_prevention_guarantee": "100% baseline survival ensured"
             }
         }
+

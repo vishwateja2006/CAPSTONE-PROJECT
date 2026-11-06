@@ -158,3 +158,4 @@ class UnifiedDecisionEngine:
                 f"({allocation_result['gini_coefficient']}). Bypasses {len(damage_analysis['impassable_road_segments'])} flooded road obstacles."
             )
         }
+
