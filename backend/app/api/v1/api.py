@@ -11,7 +11,8 @@ from app.api.v1.endpoints import (
     routes_api,
     alerts_api,
     decision_api,
-    analytics_api
+    analytics_api,
+    evaluation_api
 )
 from app.services.alert_service import alert_manager
 
@@ -36,6 +37,9 @@ api_router.include_router(decision_api.router, prefix="/decision-engine", tags=[
 
 # Phase 10: Tracking, Notifications & Analytics
 api_router.include_router(analytics_api.router, prefix="/analytics", tags=["12. Tracking, Notifications & Analytics"])
+
+# Phase 11: Testing & Academic Evaluation
+api_router.include_router(evaluation_api.router, prefix="/evaluation", tags=["13. Testing & Academic Evaluation"])
 
 @api_router.websocket("/ws/alerts")
 async def websocket_alert_endpoint(websocket: WebSocket):
