@@ -14,9 +14,9 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({
-  reliefCenters,
-  vehicles,
-  sosRequests,
+  reliefCenters = [],
+  vehicles = [],
+  sosRequests = [],
   routePlans = [],
   selectedSosId,
   onSelectSos,
@@ -34,10 +34,15 @@ export default function InteractiveMap({
 
   // Project lat/lon into SVG viewBox 0..900 (X) and 0..600 (Y)
   const project = (lat: number, lon: number) => {
-    const x = ((lon - MIN_LON) / (MAX_LON - MIN_LON)) * 860 + 20;
+    const numLat = Number(lat) || 13.065;
+    const numLon = Number(lon) || 80.255;
+    const x = ((numLon - MIN_LON) / (MAX_LON - MIN_LON)) * 860 + 20;
     // Invert Y because latitude goes South -> North but SVG goes Top -> Down
-    const y = ((MAX_LAT - lat) / (MAX_LAT - MIN_LAT)) * 540 + 30;
-    return { x: Math.max(25, Math.min(875, x)), y: Math.max(25, Math.min(575, y)) };
+    const y = ((MAX_LAT - numLat) / (MAX_LAT - MIN_LAT)) * 540 + 30;
+    return {
+      x: Math.max(25, Math.min(875, isNaN(x) ? 50 : x)),
+      y: Math.max(25, Math.min(575, isNaN(y) ? 50 : y))
+    };
   };
 
   return (
@@ -127,8 +132,8 @@ export default function InteractiveMap({
         </text>
 
         {/* Optimized Route Paths */}
-        {routePlans.map((plan, idx) => {
-          if (!plan.waypoints || plan.waypoints.length < 2) return null;
+        {(routePlans || []).map((plan, idx) => {
+          if (!plan || !plan.waypoints || plan.waypoints.length < 2) return null;
           const pointsStr = plan.waypoints
             .map((wp) => {
               const p = project(wp.latitude, wp.longitude);
@@ -147,7 +152,7 @@ export default function InteractiveMap({
                 opacity="0.8"
                 filter="url(#glow)"
               />
-              {plan.waypoints.map((wp, wIdx) => {
+              {(plan.waypoints || []).map((wp, wIdx) => {
                 const pt = project(wp.latitude, wp.longitude);
                 return (
                   <circle
@@ -166,7 +171,7 @@ export default function InteractiveMap({
         })}
 
         {/* Relief Depots */}
-        {reliefCenters.map((depot) => {
+        {(reliefCenters || []).map((depot) => {
           const pt = project(depot.latitude, depot.longitude);
           return (
             <g
@@ -181,14 +186,14 @@ export default function InteractiveMap({
               </text>
               <rect x={pt.x - 50} y={pt.y + 18} width="100" height="18" rx="4" fill="#0f172a" opacity="0.9" />
               <text x={pt.x} y={pt.y + 30} textAnchor="middle" fill="#93c5fd" fontSize="9" fontWeight="bold" fontFamily="monospace">
-                {depot.name.slice(0, 15)}..
+                {(depot.name || "Depot").slice(0, 15)}..
               </text>
             </g>
           );
         })}
 
         {/* SOS Request Pins */}
-        {sosRequests.map((sos) => {
+        {(sosRequests || []).map((sos) => {
           const pt = project(sos.latitude, sos.longitude);
           const isCritical = sos.urgency_level === "CRITICAL";
           const isHigh = sos.urgency_level === "HIGH";
@@ -212,14 +217,14 @@ export default function InteractiveMap({
               )}
               <circle cx={pt.x} cy={pt.y} r="10" fill={pinColor} stroke="#ffffff" strokeWidth="2" />
               <text x={pt.x} y={pt.y + 3.5} textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">
-                {sos.people_count}
+                {sos.people_count || 1}
               </text>
             </g>
           );
         })}
 
         {/* Relief Vehicles */}
-        {vehicles.map((v) => {
+        {(vehicles || []).map((v) => {
           const pt = project(v.current_lat, v.current_lon);
           return (
             <g
@@ -232,7 +237,7 @@ export default function InteractiveMap({
                 🚚
               </text>
               <text x={pt.x} y={pt.y + 24} textAnchor="middle" fill="#6ee7b7" fontSize="8" fontWeight="bold" fontFamily="monospace">
-                {v.vehicle_code.slice(-6)}
+                {(v.vehicle_code || "V-01").slice(-6)}
               </text>
             </g>
           );
@@ -302,7 +307,7 @@ export default function InteractiveMap({
                 <span className="font-bold">{activeItem.data.current_occupancy} / {activeItem.data.capacity_people}</span>
               </div>
               <div className="text-slate-400 text-[11px]">
-                Coordinates: {activeItem.data.latitude.toFixed(4)}, {activeItem.data.longitude.toFixed(4)}
+                Coordinates: {Number(activeItem.data.latitude || 13.0837).toFixed(4)}, {Number(activeItem.data.longitude || 80.2785).toFixed(4)}
               </div>
             </div>
           )}

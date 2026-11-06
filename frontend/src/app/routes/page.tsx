@@ -143,7 +143,7 @@ export default function RoutesPage() {
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Chronological Route Stops</h4>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    {plan.waypoints.map((wp) => (
+                    {(plan.waypoints || []).map((wp) => (
                       <div
                         key={wp.sequence}
                         className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1.5 relative"

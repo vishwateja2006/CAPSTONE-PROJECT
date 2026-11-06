@@ -7,7 +7,12 @@ import {
   FairAllocationResponse
 } from "../types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const getApiBase = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.VITE_API_URL || "http://localhost:8000/api/v1";
+  if (envUrl.endsWith("/api/v1")) return envUrl;
+  return `${envUrl.replace(/\/+$/, "")}/api/v1`;
+};
+const API_BASE = getApiBase();
 
 // Mock Fallback Data in case the backend server is not active during frontend preview
 export const MOCK_DISASTER: Disaster = {

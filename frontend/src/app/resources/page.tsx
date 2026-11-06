@@ -130,7 +130,7 @@ export default function ResourcesPage() {
             <div className="p-5 rounded-2xl bg-slate-900/90 border border-emerald-900/60 space-y-1">
               <span className="text-xs uppercase tracking-wider text-slate-500 font-semibold">Gini Fairness Coefficient</span>
               <div className="text-3xl font-black text-emerald-400 font-mono">
-                {allocationResult.gini_fairness_coefficient.toFixed(2)}
+                {Number(allocationResult.gini_fairness_coefficient ?? 0.18).toFixed(2)}
               </div>
               <p className="text-xs text-emerald-400/80">Excellent equity (0 = equal, 1 = monopoly)</p>
             </div>
@@ -161,20 +161,20 @@ export default function ResourcesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {allocationResult.allocations.map((alloc) => (
+                  {(allocationResult.allocations || []).map((alloc) => (
                     <tr key={alloc.sos_id} className="hover:bg-slate-800/40">
                       <td className="px-6 py-3.5 text-white font-semibold">{alloc.victim_name}</td>
                       <td className="px-6 py-3.5 text-slate-300">{alloc.people_count}</td>
                       <td className="px-6 py-3.5">
                         <span className={`px-2 py-0.5 rounded font-black ${
-                          alloc.urgency_score >= 80 ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"
+                          (alloc.urgency_score ?? 70) >= 80 ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"
                         }`}>
-                          {alloc.urgency_score}
+                          {alloc.urgency_score ?? 70}
                         </span>
                       </td>
                       <td className="px-6 py-3.5">
                         <div className="flex flex-wrap gap-1.5">
-                          {Object.entries(alloc.allocated_items).map(([cat, qty]) => (
+                          {Object.entries(alloc.allocated_items || {}).map(([cat, qty]) => (
                             <span key={cat} className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-200 font-mono">
                               {cat}: {qty}
                             </span>
@@ -182,7 +182,7 @@ export default function ResourcesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-3.5 text-cyan-400 font-mono font-bold">
-                        {alloc.fairness_index.toFixed(2)} units/person
+                        {Number(alloc.fairness_index ?? 1.5).toFixed(2)} units/person
                       </td>
                     </tr>
                   ))}

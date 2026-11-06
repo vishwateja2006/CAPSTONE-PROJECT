@@ -178,6 +178,7 @@ def list_low_stock_resources(db: Session = Depends(get_db)):
 
 # ----------------- Warehouses -----------------
 @router.get("/warehouses", response_model=List[WarehouseOut])
+@router.get("/centers", response_model=List[WarehouseOut])
 def list_warehouses(disaster_id: Optional[str] = None, db: Session = Depends(get_db)):
     """List all registered disaster warehouses and forward depots."""
     query = db.query(Warehouse)

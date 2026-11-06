@@ -118,7 +118,7 @@ export default function LogisticsDashboardPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Live GPS Coordinates:</span>
-                  <span className="font-mono text-slate-300">{v.current_lat.toFixed(4)}, {v.current_lon.toFixed(4)}</span>
+                  <span className="font-mono text-slate-300">{Number(v.current_lat || 13.0837).toFixed(4)}, {Number(v.current_lon || 80.2785).toFixed(4)}</span>
                 </div>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function LogisticsDashboardPage() {
 
               {/* Waypoint Steps */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {plan.waypoints.map((wp) => (
+                {(plan.waypoints || []).map((wp) => (
                   <div key={wp.sequence} className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="w-5 h-5 rounded-full bg-blue-950 text-blue-400 border border-blue-800 flex items-center justify-center font-bold text-[10px]">

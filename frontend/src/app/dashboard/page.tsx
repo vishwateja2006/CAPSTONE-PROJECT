@@ -45,8 +45,22 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  const criticalCount = sosList.filter((s) => s.urgency_level === "CRITICAL").length;
-  const totalPeopleInDistress = sosList.reduce((acc, s) => acc + s.people_count, 0);
+  const safeParseNeeds = (val: any): string[] => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    if (typeof val === "string") {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [String(parsed)];
+      } catch {
+        return val.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  };
+
+  const criticalCount = (sosList || []).filter((s) => s.urgency_level === "CRITICAL").length;
+  const totalPeopleInDistress = (sosList || []).reduce((acc, s) => acc + (s.people_count || 0), 0);
 
   // Demand forecast calculations (Sphere humanitarian standards)
   const forecastedWaterLiters = Math.round(forecastPeople * 3.5 * forecastDays);
@@ -165,11 +179,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {sosList.map((sos) => {
+            {(sosList || []).map((sos) => {
               const isCrit = sos.urgency_level === "CRITICAL";
               const isHigh = sos.urgency_level === "HIGH";
-              const specialNeeds: string[] = JSON.parse(sos.special_needs || "[]");
-              const categoryNeeds: string[] = JSON.parse(sos.category_needs || "[]");
+              const specialNeeds: string[] = safeParseNeeds(sos.special_needs);
+              const categoryNeeds: string[] = safeParseNeeds(sos.category_needs);
 
               return (
                 <div

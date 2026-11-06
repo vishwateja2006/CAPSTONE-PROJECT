@@ -395,7 +395,7 @@ export default function AIDashboardPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                   <span className="text-xs text-slate-400 font-semibold">💧 Drinking Water Required</span>
                   <div className="text-3xl font-black text-cyan-400 font-mono">
-                    {Number(demandResult.projected_demands.WATER_LITERS).toLocaleString()} Liters
+                    {Number(demandResult?.projected_demands?.WATER_LITERS || 0).toLocaleString()} Liters
                   </div>
                   <p className="text-[11px] text-slate-500">3.5L per capita / day adjusted for weather severity & disease index</p>
                 </div>
@@ -403,7 +403,7 @@ export default function AIDashboardPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                   <span className="text-xs text-slate-400 font-semibold">🍞 Food Nutrition Rations</span>
                   <div className="text-3xl font-black text-amber-400 font-mono">
-                    {Number(demandResult.projected_demands.FOOD_RATIONS).toLocaleString()} Packs
+                    {Number(demandResult?.projected_demands?.FOOD_RATIONS || 0).toLocaleString()} Packs
                   </div>
                   <p className="text-[11px] text-slate-500">2,100 kcal standard rations per person / day</p>
                 </div>
@@ -411,7 +411,7 @@ export default function AIDashboardPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                   <span className="text-xs text-slate-400 font-semibold">🩹 Emergency Trauma Kits</span>
                   <div className="text-3xl font-black text-red-400 font-mono">
-                    {Number(demandResult.projected_demands.MEDICAL_TRAUMA_KITS).toLocaleString()} Kits
+                    {Number(demandResult?.projected_demands?.MEDICAL_TRAUMA_KITS || 0).toLocaleString()} Kits
                   </div>
                   <p className="text-[11px] text-slate-500">1 comprehensive field medical pack per 40 individuals</p>
                 </div>
@@ -419,7 +419,7 @@ export default function AIDashboardPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                   <span className="text-xs text-slate-400 font-semibold">🏕 Tarpaulins & Blankets</span>
                   <div className="text-3xl font-black text-emerald-400 font-mono">
-                    {Number(demandResult.projected_demands.TARPAULIN_BLANKETS || population).toLocaleString()} Units
+                    {Number(demandResult?.projected_demands?.TARPAULIN_BLANKETS || population || 0).toLocaleString()} Units
                   </div>
                   <p className="text-[11px] text-slate-500">Emergency shelter & thermal insulation</p>
                 </div>
@@ -428,10 +428,10 @@ export default function AIDashboardPage() {
               {/* Projections timeline */}
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Multi-Day Temporal Projections ({demandResult.model_name})
+                  Multi-Day Temporal Projections ({demandResult?.model_name || "Sphere Baseline"})
                 </span>
                 <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-xs">
-                  {demandResult.time_series_projections.map((p: any) => (
+                  {(demandResult?.time_series_projections || []).map((p: any) => (
                     <div key={p.day} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center">
                       <div className="text-slate-400 font-bold">Day +{p.day}</div>
                       <div className="text-cyan-400 font-black mt-1">{p.water_liters.toLocaleString()} L</div>
