@@ -293,3 +293,4 @@ CREATE POLICY "Audit logs only viewable by Admins" ON audit_logs
 
 CREATE POLICY "Anyone can insert audit logs" ON audit_logs
     FOR INSERT WITH CHECK (true);
+

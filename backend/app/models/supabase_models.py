@@ -229,3 +229,4 @@ class AuditLog(Base):
     details = Column(Text, nullable=True)  # JSON
     ip_address = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
