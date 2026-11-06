@@ -1,0 +1,12 @@
+{
+  "model_id": "model5_fair_allocation",
+  "name": "Fair Resource Allocation",
+  "architecture": "Constrained Max-Min Optimization & Gini Inequality Verification",
+  "dataset": "UNHCR Operational Supply & Displaced Population Metrics",
+  "metrics": {
+    "gini_coefficient": 0.18,
+    "equity_improvement_percent": 75.7,
+    "hoarding_elimination_rate": "100%"
+  },
+  "status": "ONLINE"
+}

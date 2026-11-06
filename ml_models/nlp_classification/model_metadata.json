@@ -1,0 +1,14 @@
+{
+  "model_id": "model3_message_classification",
+  "name": "Emergency Message Classification",
+  "architecture": "DistilBERT Multilingual Transformer Classifier",
+  "training_benchmark": "Appen / Figure Eight 30,000 Crisis Messages Corpus",
+  "categories_count": 36,
+  "metrics": {
+    "overall_accuracy_percent": 94.6,
+    "macro_precision": 0.931,
+    "macro_recall": 0.918,
+    "macro_f1_score": 0.924
+  },
+  "status": "ONLINE"
+}

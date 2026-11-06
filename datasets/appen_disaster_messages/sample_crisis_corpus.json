@@ -1,0 +1,30 @@
+[
+  {
+    "id": "APPEN-30101",
+    "message": "Water reached 4 feet inside the ground floor. Grandmother is diabetic and needs insulin urgently. Baby needs infant milk formula.",
+    "labeled_categories": ["medical_help", "water", "food", "child_or_infant", "elderly_care"],
+    "ground_truth_urgency": "CRITICAL",
+    "ground_truth_score": 95.0
+  },
+  {
+    "id": "APPEN-30102",
+    "message": "We are 12 residents stranded on rooftop. Water is rising fast. Generator failed, oxygen concentrator offline.",
+    "labeled_categories": ["medical_help", "water", "search_and_rescue", "infrastructure"],
+    "ground_truth_urgency": "CRITICAL",
+    "ground_truth_score": 100.0
+  },
+  {
+    "id": "APPEN-30103",
+    "message": "Roof blown away by gale winds. We urgently require tarpaulins and clean drinking water.",
+    "labeled_categories": ["shelter", "water"],
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_score": 68.0
+  },
+  {
+    "id": "APPEN-30104",
+    "message": "Is the bridge on NH-45 open for cars? When will local electricity be restored?",
+    "labeled_categories": ["infrastructure", "general_aid"],
+    "ground_truth_urgency": "LOW",
+    "ground_truth_score": 25.0
+  }
+]

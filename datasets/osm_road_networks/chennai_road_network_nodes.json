@@ -1,0 +1,25 @@
+{
+  "city": "Chennai",
+  "bounding_box": [13.000, 80.200, 13.120, 80.300],
+  "depots": [
+    {
+      "id": "DEPOT-01",
+      "name": "Central Emergency Relief Base Alpha",
+      "latitude": 13.0837,
+      "longitude": 80.2785
+    }
+  ],
+  "hazard_flood_polygons": [
+    {
+      "name": "Zone A - Flooded Adyar Estuary Basin",
+      "is_passable": false,
+      "coordinates": [
+        [80.245, 13.010],
+        [80.265, 13.010],
+        [80.265, 13.035],
+        [80.245, 13.035],
+        [80.245, 13.010]
+      ]
+    }
+  ]
+}

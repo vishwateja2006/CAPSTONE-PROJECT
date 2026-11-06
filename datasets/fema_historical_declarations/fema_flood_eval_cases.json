@@ -1,0 +1,47 @@
+[
+  {
+    "disaster_name": "Cyclone Vardah 2016",
+    "disaster_type": "FLOOD",
+    "affected_population": 1200,
+    "actual_water_liters_recorded": 19500,
+    "actual_food_rations_recorded": 7200,
+    "duration_days": 3,
+    "weather_severity_index": 1.25
+  },
+  {
+    "disaster_name": "Chennai Floods 2015",
+    "disaster_type": "FLOOD",
+    "affected_population": 3500,
+    "actual_water_liters_recorded": 59000,
+    "actual_food_rations_recorded": 21000,
+    "duration_days": 3,
+    "weather_severity_index": 1.40
+  },
+  {
+    "disaster_name": "Kerala Floods 2018",
+    "disaster_type": "FLOOD",
+    "affected_population": 2800,
+    "actual_water_liters_recorded": 45000,
+    "actual_food_rations_recorded": 16800,
+    "duration_days": 3,
+    "weather_severity_index": 1.30
+  },
+  {
+    "disaster_name": "Cyclone Gaja 2018",
+    "disaster_type": "CYCLONE",
+    "affected_population": 1500,
+    "actual_water_liters_recorded": 22000,
+    "actual_food_rations_recorded": 9000,
+    "duration_days": 3,
+    "weather_severity_index": 1.20
+  },
+  {
+    "disaster_name": "Assam Floods 2020",
+    "disaster_type": "FLOOD",
+    "affected_population": 2100,
+    "actual_water_liters_recorded": 34000,
+    "actual_food_rations_recorded": 12600,
+    "duration_days": 3,
+    "weather_severity_index": 1.35
+  }
+]

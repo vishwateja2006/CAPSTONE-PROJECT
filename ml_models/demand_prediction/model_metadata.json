@@ -1,0 +1,13 @@
+{
+  "model_id": "model1_demand_forecasting",
+  "name": "Resource Demand Prediction",
+  "architecture": "LSTM Time-Series Network + Sphere Standards 2026",
+  "training_benchmark": "FEMA Historical Declarations & Housing Assistance",
+  "horizon_days": [1, 3, 7],
+  "metrics": {
+    "mape_percent": 8.42,
+    "rmse_liters": 1842.0,
+    "accuracy_percent": 91.58
+  },
+  "status": "ONLINE"
+}

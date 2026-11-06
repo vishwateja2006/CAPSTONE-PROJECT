@@ -1,0 +1,14 @@
+{
+  "benchmark_name": "UNHCR Emergency Operations Standard Baseline",
+  "per_capita_daily_rations": {
+    "food_rations_kcal": 2100,
+    "drinking_water_liters": 3.5,
+    "hygiene_soap_bars": 0.25,
+    "thermal_blankets": 1.0
+  },
+  "scarcity_allocation_rules": {
+    "primary_objective": "Max-Min Proportional Fairness",
+    "hoarding_penalty": "FCFS_STRICTLY_DISALLOWED",
+    "target_gini_ceiling": 0.25
+  }
+}

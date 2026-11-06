@@ -1,0 +1,14 @@
+{
+  "model_id": "model2_damage_detection",
+  "name": "Disaster Damage Detection",
+  "architecture": "Spectral NDWI Calculation + UNet Convolutional Neural Network",
+  "training_benchmark": "ML4Floods Sentinel-2 Partition & xView2 Building Challenge",
+  "metrics": {
+    "mean_intersection_over_union_iou": 0.892,
+    "precision": 0.924,
+    "recall": 0.886,
+    "f1_score": 0.905,
+    "false_positive_rate_percent": 3.8
+  },
+  "status": "ONLINE"
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "tile_id": "COPERNICUS-S2B-T14-CHENNAI-CENTRAL",
+    "satellite": "Sentinel-2B Multi-Spectral Instrument (MSI)",
+    "acquisition_date": "2026-11-06T06:45:00Z",
+    "bounding_box": [13.048, 80.238, 13.072, 80.262],
+    "bands_used": ["B03_GREEN", "B08_NIR"],
+    "spectral_water_index_mean": 0.485,
+    "cloud_cover_percent": 4.2,
+    "ground_resolution_meters": 10.0,
+    "ground_truth_flood_sqkm": 2.74
+  },
+  {
+    "tile_id": "COPERNICUS-S2A-T15-KERALA-ESTUARY",
+    "satellite": "Sentinel-2A MSI",
+    "acquisition_date": "2026-08-15T10:20:00Z",
+    "bounding_box": [9.931, 76.267, 9.955, 76.291],
+    "bands_used": ["B03_GREEN", "B08_NIR"],
+    "spectral_water_index_mean": 0.520,
+    "cloud_cover_percent": 8.1,
+    "ground_resolution_meters": 10.0,
+    "ground_truth_flood_sqkm": 3.15
+  }
+]
