@@ -8,8 +8,14 @@ import sys
 import os
 import json
 
-# Add backend directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+# Bulletproof backend import path resolution
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from app.services.evaluation_engine import (
     HistoricalBacktestingEngine,

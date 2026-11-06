@@ -12,8 +12,10 @@ import sqlite3
 import hashlib
 from datetime import datetime
 
-# Database path
-DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "disaster_platform.db"))
+# Bulletproof database path resolution
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+DB_FILE = os.path.join(PROJECT_ROOT, "backend", "disaster_platform.db")
 
 def hash_pw(pw: str) -> str:
     return hashlib.sha256(pw.encode()).hexdigest()
