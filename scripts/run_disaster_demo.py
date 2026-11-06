@@ -18,10 +18,16 @@ if BACKEND_DIR not in sys.path:
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from app.ml.model_registry import ModelRegistry
-from app.services.decision_engine import UnifiedDecisionEngine
-from app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
-from app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
+try:
+    from app.ml.model_registry import ModelRegistry
+    from app.services.decision_engine import UnifiedDecisionEngine
+    from app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
+    from app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
+except ImportError:
+    from backend.app.ml.model_registry import ModelRegistry
+    from backend.app.services.decision_engine import UnifiedDecisionEngine
+    from backend.app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
+    from backend.app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
 
 def print_header(title: str):
     print("\n" + "=" * 78)

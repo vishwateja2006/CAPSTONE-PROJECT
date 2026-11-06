@@ -17,11 +17,18 @@ if BACKEND_DIR not in sys.path:
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from app.services.evaluation_engine import (
-    HistoricalBacktestingEngine,
-    DiscreteEventSimulationEngine,
-    ShadowModeValidationEngine
-)
+try:
+    from app.services.evaluation_engine import (
+        HistoricalBacktestingEngine,
+        DiscreteEventSimulationEngine,
+        ShadowModeValidationEngine
+    )
+except ImportError:
+    from backend.app.services.evaluation_engine import (
+        HistoricalBacktestingEngine,
+        DiscreteEventSimulationEngine,
+        ShadowModeValidationEngine
+    )
 
 def format_latex_table(headers, rows, caption="Evaluation Metrics", label="tab:metrics"):
     col_spec = "|" + " c |" * len(headers)
