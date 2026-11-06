@@ -74,3 +74,4 @@ class ReliefVehicleOut(ReliefVehicleBase):
 
     class Config:
         from_attributes = True
+

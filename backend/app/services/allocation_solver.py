@@ -135,3 +135,4 @@ class FairAllocationSolver:
             "unmet_demand_summary": unmet_summary,
             "gini_fairness_coefficient": gini
         }
+

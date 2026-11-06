@@ -23,3 +23,4 @@ async def websocket_alert_endpoint(websocket: WebSocket):
             await websocket.send_text(f'{{"type":"ACK","received":"{data}"}}')
     except WebSocketDisconnect:
         alert_manager.disconnect(websocket)
+

@@ -24,3 +24,4 @@ class SOSRequest(Base):
     assigned_vehicle_id = Column(String, ForeignKey("relief_vehicles.id"), nullable=True)
     requested_at = Column(DateTime, default=datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
+

@@ -1,6 +1,7 @@
 import math
 import json
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
+from app.services.geo_utils import path_intersects_polygon, find_detour_around_polygon
 
 def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculates great-circle distance between two GPS coordinates in kilometers."""
@@ -18,7 +19,7 @@ def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) ->
 
 class RouteOptimizer:
     """
-    Capacity-Constrained Dynamic Vehicle Routing Solver (CVRP) with Hazard Avoidance.
+    Capacity-Constrained Dynamic Vehicle Routing Solver (CVRP) with Spatial Hazard Polygon Avoidance.
     """
 
     @classmethod
@@ -30,15 +31,25 @@ class RouteOptimizer:
         hazard_zones: Optional[List[Dict[str, Any]]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Calculates optimized route plans for fleet of relief vehicles.
-        
-        depot: {"id": str, "name": str, "latitude": float, "longitude": float}
-        vehicles: [{"id": str, "code": str, "capacity_kg": float, "speed_kmh": float}]
-        sos_requests: [{"id": str, "victim_name": str, "latitude": float, "longitude": float, "demand_kg": float, "urgency_score": float}]
-        hazard_zones: [{"name": str, "risk_level": "RED", "is_passable": False}]
+        Calculates optimized route plans for a fleet of relief vehicles.
+        Avoids impassable hazard zone polygons by computing detour perimeter waypoints.
         """
         if not vehicles or not sos_requests:
             return []
+
+        # Parse polygon coordinates for active hazard zones
+        active_hazard_polygons: List[List[Tuple[float, float]]] = []
+        if hazard_zones:
+            for hz in hazard_zones:
+                if not hz.get("is_passable", True) and hz.get("boundary_geojson"):
+                    try:
+                        geo = json.loads(hz["boundary_geojson"])
+                        if geo.get("type") == "Polygon" and geo.get("coordinates"):
+                            # GeoJSON is [lon, lat] -> convert to (lat, lon)
+                            coords = [(c[1], c[0]) for c in geo["coordinates"][0]]
+                            active_hazard_polygons.append(coords)
+                    except Exception:
+                        pass
 
         # Sort SOS requests primarily by urgency score (highest urgency served first)
         sorted_requests = sorted(
@@ -58,6 +69,7 @@ class RouteOptimizer:
             current_load = 0.0
             total_dist_km = 0.0
             total_time_mins = 0.0
+            detour_count = 0
 
             current_lat = depot["latitude"]
             current_lon = depot["longitude"]
@@ -75,7 +87,6 @@ class RouteOptimizer:
                 }
             ]
 
-            # Assign candidate stops based on capacity & geographic proximity
             seq = 2
             for req in sorted_requests:
                 if req["id"] in assigned_sos_ids:
@@ -83,25 +94,48 @@ class RouteOptimizer:
 
                 demand = req.get("demand_kg", 15.0 * max(1, req.get("people_count", 1)))
                 if current_load + demand > v_capacity:
-                    continue  # Vehicle full
+                    continue  # Vehicle capacity limit reached
 
-                # Distance from current position to this stop
+                target_pt = (req["latitude"], req["longitude"])
+                current_pt = (current_lat, current_lon)
+
+                # Check if path intersects any hazard polygon
+                intersects_hazard = False
+                detour_pts: List[Tuple[float, float]] = []
+                for poly in active_hazard_polygons:
+                    if path_intersects_polygon(current_pt, target_pt, poly):
+                        intersects_hazard = True
+                        detour_pts = find_detour_around_polygon(current_pt, target_pt, poly)
+                        break
+
+                if intersects_hazard and detour_pts:
+                    # Insert safe perimeter detour waypoint
+                    for d_pt in detour_pts:
+                        leg_d = haversine_distance_km(current_lat, current_lon, d_pt[0], d_pt[1])
+                        leg_t = (leg_d / v_speed) * 60.0
+                        total_dist_km += leg_d
+                        total_time_mins += leg_t
+                        detour_count += 1
+
+                        waypoints.append({
+                            "sequence": seq,
+                            "location_name": "⚠ Hazard Bypass Detour",
+                            "latitude": d_pt[0],
+                            "longitude": d_pt[1],
+                            "action": "HAZARD_BYPASS",
+                            "sos_id": None,
+                            "demand_kg": 0.0,
+                            "eta_mins": round(total_time_mins, 1)
+                        })
+                        current_lat, current_lon = d_pt
+                        current_pt = d_pt
+                        seq += 1
+
+                # Leg to target victim
                 leg_dist = haversine_distance_km(current_lat, current_lon, req["latitude"], req["longitude"])
-                
-                # Check hazard zone penalty
-                penalty = 1.0
-                if hazard_zones:
-                    for hz in hazard_zones:
-                        if not hz.get("is_passable", True):
-                            # Simplified proximity check to hazard epicenter
-                            hz_dist = haversine_distance_km(req["latitude"], req["longitude"], hz.get("epicenter_lat", 0), hz.get("epicenter_lon", 0))
-                            if hz_dist < 5.0:
-                                penalty = 1.5  # Slower speed through flooded/debris zone
+                leg_time_mins = (leg_dist / v_speed) * 60.0
 
-                leg_dist_penalized = leg_dist * penalty
-                leg_time_mins = (leg_dist_penalized / v_speed) * 60.0
-
-                total_dist_km += leg_dist_penalized
+                total_dist_km += leg_dist
                 total_time_mins += leg_time_mins
                 current_load += demand
 
@@ -121,7 +155,7 @@ class RouteOptimizer:
                 assigned_sos_ids.add(req["id"])
                 seq += 1
 
-            # Return journey to depot
+            # Return leg to depot
             if len(waypoints) > 1:
                 return_dist = haversine_distance_km(current_lat, current_lon, depot["latitude"], depot["longitude"])
                 return_time_mins = (return_dist / v_speed) * 60.0
@@ -147,6 +181,7 @@ class RouteOptimizer:
                     "estimated_duration_mins": round(total_time_mins, 1),
                     "cargo_payload_kg": round(current_load, 1),
                     "stops_count": len(waypoints) - 2,
+                    "hazard_detours_inserted": detour_count,
                     "waypoints": waypoints
                 })
 

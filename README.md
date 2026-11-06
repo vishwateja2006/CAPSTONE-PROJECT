@@ -178,3 +178,4 @@ OK
 - **SuperAdmin / National Coordinator**: Incident declaration, hazard perimeter definition, fleet management.
 - **Field Volunteer / Driver**: Live route waypoint navigation, cargo delivery status confirmation.
 - **Beneficiary / Public**: Emergency SOS beacon transmission, offline-capable location reporting.
+

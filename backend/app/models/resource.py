@@ -52,3 +52,4 @@ class ReliefVehicle(Base):
     contact_phone = Column(String, nullable=True)
     speed_kmh = Column(Float, default=40.0)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

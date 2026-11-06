@@ -30,3 +30,4 @@ class AllocationTask(Base):
     fairness_score = Column(Float, default=1.0)
     status = Column(String, default="PENDING")  # PENDING, IN_TRANSIT, DELIVERED
     created_at = Column(DateTime, default=datetime.utcnow)
+

@@ -133,3 +133,4 @@ class DisasterAIEngine:
                 "medical_kits_daily": medical_kits_per_day
             }
         }
+

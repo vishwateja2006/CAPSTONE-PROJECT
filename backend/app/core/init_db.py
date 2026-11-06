@@ -202,3 +202,4 @@ def init_db():
         print("Initial demonstration disaster data successfully seeded!")
     finally:
         db.close()
+

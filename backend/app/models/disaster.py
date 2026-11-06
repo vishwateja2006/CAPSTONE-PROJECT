@@ -35,3 +35,4 @@ class HazardZone(Base):
     road_blockages_json = Column(Text, default="[]")  # List of blocked points / road segments
 
     disaster = relationship("Disaster", back_populates="hazard_zones")
+

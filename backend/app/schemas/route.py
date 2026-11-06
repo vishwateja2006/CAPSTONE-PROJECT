@@ -54,3 +54,4 @@ class FairAllocationResponse(BaseModel):
     total_sos_served: int
     unmet_demand_summary: Dict[str, int]
     gini_fairness_coefficient: float
+

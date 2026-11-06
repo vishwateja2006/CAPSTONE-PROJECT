@@ -119,3 +119,4 @@ async def update_sos_status(sos_id: str, update_in: SOSUpdate, db: Session = Dep
     })
 
     return sos
+

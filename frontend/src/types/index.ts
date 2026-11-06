@@ -114,3 +114,4 @@ export interface FairAllocationResponse {
   unmet_demand_summary: Record<string, number>;
   gini_fairness_coefficient: number;
 }
+

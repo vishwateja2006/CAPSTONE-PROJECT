@@ -80,3 +80,4 @@ def get_resource_demand_forecast(
         days_ahead=days_ahead,
         weather_severity_multiplier=severity_multiplier
     )
+

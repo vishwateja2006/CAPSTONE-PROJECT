@@ -47,3 +47,4 @@ class DisasterOut(DisasterBase):
 
     class Config:
         from_attributes = True
+

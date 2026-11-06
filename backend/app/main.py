@@ -38,3 +38,4 @@ def root():
         "api_documentation": f"{settings.API_V1_STR}/docs",
         "version": "1.0.0"
     }
+

@@ -214,3 +214,4 @@ To ensure rigorous validation, the five models utilize authoritative, publicly d
 - **NFR-03 (Security & RLS):** All database tables in Supabase shall enforce Row Level Security (RLS) so that beneficiaries cannot access other citizens' sensitive contact data.
 - **NFR-04 (Usability & Responsiveness):** The web interface shall be fully responsive across mobile (375px+), tablet, and desktop viewports with a high-contrast tactical dark interface.
 - **NFR-05 (Auditability):** Every administrative override, disaster declaration, and aid dispatch action shall create an immutable row in the `audit_logs` table.
+
