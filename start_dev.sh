@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # ResQLink Full-Stack Development Server Launcher
-# Launches both FastAPI Backend (:8000) and Next.js Frontend (:3000)
+# Launches both FastAPI Backend (:8000) and Next.js Frontend (:3001)
 # ==============================================================================
 
 set -e
@@ -41,7 +41,7 @@ BACKEND_PID=$!
 sleep 2
 
 # Start Frontend App
-echo "[*] Starting Next.js 14 Frontend on http://localhost:3000 ..."
+echo "[*] Starting Next.js 14 Frontend on http://localhost:3001 ..."
 cd "$FRONTEND_DIR"
 npm run dev &
 FRONTEND_PID=$!
@@ -49,11 +49,11 @@ FRONTEND_PID=$!
 echo ""
 echo "=============================================================================="
 echo "  ✅ ResQLink Platform Online!"
-echo "  - Frontend Web App:     http://localhost:3000"
+echo "  - Frontend Web App:     http://localhost:3001"
 echo "  - Backend REST API:     http://localhost:8000"
 echo "  - Interactive API Docs: http://localhost:8000/api/v1/docs"
-echo "  - Live GIS Map:         http://localhost:3000/map"
-echo "  - AI Decision Engine:   http://localhost:3000/dashboard/ai"
+echo "  - Live GIS Map:         http://localhost:3001/map"
+echo "  - AI Decision Engine:   http://localhost:3001/dashboard/admin"
 echo "=============================================================================="
 echo "  Press Ctrl+C to stop all services."
 echo ""

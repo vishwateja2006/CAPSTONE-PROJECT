@@ -74,7 +74,7 @@ python3 -m unittest discover -s backend/tests -p "test_phase*.py"
 ```bash
 docker-compose up --build
 ```
-- **Next.js 14 Frontend:** `http://localhost:3000`
+- **Next.js 14 Frontend:** `http://localhost:3001`
 - **FastAPI REST API & Swagger Docs:** `http://localhost:8000/api/v1/docs`
 - **PostgreSQL / PostGIS Database:** `localhost:5432`
 
