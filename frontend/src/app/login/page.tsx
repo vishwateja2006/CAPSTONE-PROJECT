@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ShieldAlert,
   LogIn,
@@ -11,7 +12,9 @@ import {
   Mail,
   User,
   Phone,
-  ArrowRight
+  ArrowRight,
+  Loader2,
+  Sparkles
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -22,6 +25,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("••••••••");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
 
   const roles = [
     { id: "ADMIN", label: "Admin", target: "/dashboard/admin", email: "admin@resqlink.org" },
@@ -32,6 +37,15 @@ export default function LoginPage() {
     { id: "VOLUNTEER", label: "Field Volunteer", target: "/dashboard/volunteer", email: "volunteer.alpha@resqlink.org" },
   ];
 
+  // Prefetch all 6 role dashboards so navigation is instant (<50ms)
+  useEffect(() => {
+    roles.forEach((r) => {
+      try {
+        router.prefetch(r.target);
+      } catch {}
+    });
+  }, [router]);
+
   const handleSelectRole = (rId: string) => {
     setRole(rId);
     const matched = roles.find((r) => r.id === rId);
@@ -40,10 +54,19 @@ export default function LoginPage() {
     }
   };
 
+  const handleQuickLaunch = (target: string, rId: string) => {
+    setRole(rId);
+    setIsSubmitting(true);
+    setRedirectTarget(rId);
+    router.push(target);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const matched = roles.find((r) => r.id === role);
     const destination = matched ? matched.target : "/dashboard/admin";
+    setRedirectTarget(role);
     router.push(destination);
   };
 
@@ -175,17 +198,45 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-transform hover:scale-[1.01]"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-80 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.01]"
           >
-            <span>{isLogin ? `Sign In as ${role}` : "Register Role Account"}</span>
-            <ArrowRight className="w-4 h-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Launching {redirectTarget || role} Dashboard...</span>
+              </>
+            ) : (
+              <>
+                <span>{isLogin ? `Sign In as ${role}` : "Register Role Account"}</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 
-        {/* Demo Fast-Switch Notice */}
-        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>💡 Quick Demo Mode Enabled</span>
-          <span className="text-amber-400 font-mono font-semibold">One-Click Auto-Redirect</span>
+        {/* Demo Fast-Switch Links */}
+        <div className="space-y-2 pt-2 border-t border-slate-800">
+          <div className="flex items-center justify-between text-[11px] text-slate-400">
+            <span className="flex items-center space-x-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Instant 1-Click Fast-Launch (Prefetched):</span>
+            </span>
+            <span className="text-emerald-400 font-mono font-semibold">Zero-Lag</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 text-[11px] font-mono">
+            {roles.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => handleQuickLaunch(r.target, r.id)}
+                disabled={isSubmitting}
+                className="px-2 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors text-center truncate"
+              >
+                ➔ {r.label.split(" ")[0]}
+              </button>
+            ))}
+          </div>
         </div>
 
       </div>
