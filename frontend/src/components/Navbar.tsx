@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getAuthSession, clearAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
 import ThemeDropdown from "./ThemeDropdown";
+import LanguageDropdown from "./LanguageDropdown";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -147,7 +148,8 @@ export default function Navbar() {
                 </span>
               </div>
 
-              {/* Appearance Sidedown Dropdown (Just left of the logout button) */}
+              {/* Regional Language & Appearance Controls (Directly beside to the left of Dark/Light mode) */}
+              <LanguageDropdown />
               <ThemeDropdown />
 
               <button
@@ -161,8 +163,9 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            /* Unauthenticated: Appearance (just left of Login) + Clean Login Button on Far Right */
+            /* Unauthenticated: Regional Language + Appearance (just left of Login) + Clean Login Button on Far Right */
             <div className="flex items-center space-x-2">
+              <LanguageDropdown />
               <ThemeDropdown />
               <Link
                 href="/login"
@@ -177,6 +180,7 @@ export default function Navbar() {
 
         {/* Mobile Action Controls */}
         <div className="flex md:hidden items-center space-x-2">
+          <LanguageDropdown />
           <ThemeDropdown />
           <button
             type="button"

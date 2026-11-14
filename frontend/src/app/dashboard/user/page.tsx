@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { submitSOS } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
+import { getStoredLanguage, subscribeToLanguage, AppLanguage } from "../../../components/LanguageDropdown";
 
 // Regional Bilingual & Trilingual Dictionary (English / தமிழ் Tamil / हिंदी Hindi)
 const translations = {
@@ -168,8 +169,8 @@ export default function UserPortalPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"SOS" | "MY_REQUESTS" | "RELIEF_CAMPS">("SOS");
 
-  // Regional Language State (English / தமிழ் / हिंदी)
-  const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "TA" | "HI">("EN");
+  // Regional Language State (English / தமிழ் / हिंदी) - Synchronized with Navbar down slider
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
   const t = translations[selectedLanguage];
 
   // GPS Auto-Detection State
@@ -227,6 +228,12 @@ export default function UserPortalPage() {
     }
     setAuth(session);
     setIsCheckingAuth(false);
+
+    // Synchronize with global navbar language slider
+    setSelectedLanguage(getStoredLanguage());
+    const unsubLang = subscribeToLanguage((newLang) => {
+      setSelectedLanguage(newLang);
+    });
 
     try {
       const saved = localStorage.getItem("resqlink_user_requests");
@@ -296,6 +303,7 @@ export default function UserPortalPage() {
     return () => {
       window.removeEventListener("resqlink_sos_status_updated", handleStatusUpdate);
       clearInterval(interval);
+      unsubLang();
     };
   }, [router]);
 
@@ -554,26 +562,13 @@ export default function UserPortalPage() {
                 </p>
               </div>
 
-              {/* Regional Bilingual Accessibility Toggle */}
-              <div className="flex items-center space-x-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800 self-start sm:self-auto shrink-0 shadow-inner">
-                <div className="flex items-center space-x-1 pl-2 pr-1 text-slate-400 text-xs font-semibold">
-                  <Languages className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="hidden sm:inline">Lang:</span>
-                </div>
-                {(["EN", "TA", "HI"] as const).map((lang) => (
-                  <button
-                    key={lang}
-                    type="button"
-                    onClick={() => setSelectedLanguage(lang)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                      selectedLanguage === lang
-                        ? "bg-blue-600 text-white shadow-md font-black"
-                        : "text-slate-400 hover:text-white hover:bg-slate-900"
-                    }`}
-                  >
-                    {lang === "EN" ? "English" : lang === "TA" ? "தமிழ் (Tamil)" : "हिंदी (Hindi)"}
-                  </button>
-                ))}
+              {/* Active Global Language Badge (Managed by Navbar dropdown) */}
+              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 self-start sm:self-auto shrink-0 shadow-inner">
+                <Languages className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-[11px] font-mono text-slate-400">Language:</span>
+                <span className="font-bold font-mono text-cyan-300">
+                  {selectedLanguage === "TA" ? "தமிழ் (Tamil)" : selectedLanguage === "HI" ? "हिंदी (Hindi)" : "English (EN)"}
+                </span>
               </div>
             </div>
 

@@ -22,18 +22,93 @@ import {
   Lock
 } from "lucide-react";
 import { getAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
+import { getStoredLanguage, subscribeToLanguage, AppLanguage } from "../components/LanguageDropdown";
+
+const homeTranslations: Record<AppLanguage, {
+  tagTitle: string;
+  tagSub: string;
+  heroHeading1: string;
+  heroHeading2: string;
+  heroDesc: string;
+  portalHeader: string;
+  portalSub: string;
+  userTitle: string;
+  userDesc: string;
+  userBtn: string;
+  adminTitle: string;
+  adminDesc: string;
+  adminBtn: string;
+}> = {
+  EN: {
+    tagTitle: "Next-Gen Response Engine",
+    tagSub: "Autonomous Disaster Coordination",
+    heroHeading1: "Intelligent Disaster Relief,",
+    heroHeading2: "Zero Confusion.",
+    heroDesc: "ResQLink unites rapid emergency response with automated fairness. Powered by 5 specialized AI models for demand forecasting, flood hazard segmentation, distress triage, vehicle routing, and equitable resource allocation.",
+    portalHeader: "Select Your Portal",
+    portalSub: "Sign in to unlock your dedicated citizen or admin operational console.",
+    userTitle: "Citizen / User Portal",
+    userDesc: "Fast, intuitive emergency hub for citizens. Submit high-priority relief requests, track incoming supplies, and discover safe shelter camps.",
+    userBtn: "Login as User",
+    adminTitle: "Admin Command Center",
+    adminDesc: "Unified command interface for disaster coordinators. Inspect real-time triage queues, execute all 5 AI models, manage warehouse supplies, and seal audit ledgers.",
+    adminBtn: "Login as Administrator"
+  },
+  TA: {
+    tagTitle: "அடுத்த தலைமுறை மீட்பு இயந்திரம்",
+    tagSub: "தன்னாட்சி பேரிடர் ஒருங்கிணைப்பு",
+    heroHeading1: "அறிவார்ந்த பேரிடர் நிவாரணம்,",
+    heroHeading2: "துல்லியமான ஒருங்கிணைப்பு.",
+    heroDesc: "ரெஸ்க்யூ-லிங்க் உடனடி அவசர மீட்பையும் கணித நீதியையும் ஒருங்கிணைக்கிறது. தேவை முன்கணிப்பு, செயற்கைக்கோள் வெள்ள பகுப்பாய்வு, அவசர தரம் பிரித்தல், வாகன வழித்தடம் மற்றும் சமபங்கு விநியோகத்திற்கான 5 AI மாதிரிகள்.",
+    portalHeader: "உங்கள் போர்ட்டலைத் தேர்வுசெய்க",
+    portalSub: "உங்கள் பிரத்யேக குடிமக்கள் அல்லது நிர்வாகக் கட்டுப்பாட்டுத் தளத்திற்குள் நுழையவும்.",
+    userTitle: "குடிமக்கள் / பயனர் உதவித் தளம்",
+    userDesc: "பாதிக்கப்பட்ட மக்களுக்கான விரைவான அவசர உதவி தளம். நிவாரணக் கோரிக்கைகளை சமர்ப்பிக்கவும், வாகனங்களை நேரடியாகக் கண்காணிக்கவும், நிவாரண முகாம்களைக் கண்டறியவும்.",
+    userBtn: "பயனாளராக உள்நுழைக",
+    adminTitle: "நிர்வாக கட்டளை மையம்",
+    adminDesc: "பேரிடர் ஒருங்கிணைப்பாளர்களுக்கான ஒருங்கிணைந்த கட்டளை தளம். 5 AI மாதிரிகளை இயக்கவும், வாகனங்களை அனுப்பவும், குறியாக்க தணிக்கைப் பதிவேட்டைப் பாதுகாக்கவும்.",
+    adminBtn: "நிர்வாகியாக உள்நுழைக"
+  },
+  HI: {
+    tagTitle: "नेक्स्ट-जेन आपदा मोचन इंजन",
+    tagSub: "स्वायत्त आपदा समन्वय",
+    heroHeading1: "बुद्धिमान आपदा राहत,",
+    heroHeading2: "बिना किसी भ्रम के।",
+    heroDesc: "ResQLink त्वरित आपातकालीन प्रतिक्रिया और स्वचालित निष्पक्षता को जोड़ता है। मांग पूर्वानुमान, उपग्रह बाढ़ विश्लेषण, संकट वर्गीकरण, वाहन रूटिंग और समान राहत आवंटन के लिए 5 AI मॉडल।",
+    portalHeader: "अपना पोर्टल चुनें",
+    portalSub: "अपने समर्पित नागरिक या प्रशासनिक कंसोल में प्रवेश करने के लिए लॉगिन करें।",
+    userTitle: "नागरिक / उपयोगकर्ता सहायता पोर्टल",
+    userDesc: "नागरिकों के लिए तेज़, सहज आपातकालीन हब। उच्च प्राथमिकता वाली राहत का अनुरोध करें, वाहनों को ट्रैक करें और सुरक्षित शिविर खोजें।",
+    userBtn: "उपयोगकर्ता के रूप में लॉगिन करें",
+    adminTitle: "प्रशासनिक कमांड सेंटर",
+    adminDesc: "आपदा समन्वयकों के लिए एकीकृत कमांड इंटरफ़ेस। रीयल-टाइम AI मॉडल चलाएं, वाहनों को डिस्पैच करें और क्रिप्टोग्राफ़िक ऑडिट सील करें।",
+    adminBtn: "प्रशासक के रूप में लॉगिन करें"
+  }
+};
 
 export default function LandingPage() {
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
+  const t = homeTranslations[selectedLanguage];
 
   useEffect(() => {
     setIsMounted(true);
     setAuth(getAuthSession());
-    const unsubscribe = subscribeToAuth((newAuth) => {
+    setSelectedLanguage(getStoredLanguage());
+
+    const unsubscribeAuth = subscribeToAuth((newAuth) => {
       setAuth(newAuth);
     });
-    return () => unsubscribe();
+
+    const unsubscribeLang = subscribeToLanguage((newLang) => {
+      setSelectedLanguage(newLang);
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeLang();
+    };
   }, []);
 
   return (
@@ -51,20 +126,20 @@ export default function LandingPage() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs font-semibold text-slate-300 shadow-inner backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Next-Gen Response Engine</span>
+              <span className="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">{t.tagTitle}</span>
               <span className="text-slate-600">|</span>
-              <span className="text-slate-400">Autonomous Disaster Coordination</span>
+              <span className="text-slate-400">{t.tagSub}</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
-              Intelligent Disaster Relief, <br />
+              {t.heroHeading1} <br />
               <span className="bg-gradient-to-r from-amber-400 via-amber-200 to-white bg-clip-text text-transparent">
-                Zero Confusion.
+                {t.heroHeading2}
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
-              ResQLink unites rapid emergency response with automated fairness. Powered by 5 specialized AI models for demand forecasting, flood hazard segmentation, distress triage, vehicle routing, and equitable resource allocation.
+              {t.heroDesc}
             </p>
           </div>
 
@@ -152,11 +227,11 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Structured Dual-Portal Architecture Showcase (UNTOUCHED) */}
+      {/* Structured Dual-Portal Architecture Showcase */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-black text-white">Select Your Portal</h2>
-          <p className="text-sm text-slate-400">Sign in to unlock your dedicated citizen or admin operational console.</p>
+          <h2 className="text-2xl font-black text-white">{t.portalHeader}</h2>
+          <p className="text-sm text-slate-400">{t.portalSub}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -175,10 +250,10 @@ export default function LandingPage() {
 
               <div>
                 <h3 className="text-2xl font-black text-white group-hover:text-blue-400 transition-colors">
-                  Citizen / User Portal
+                  {t.userTitle}
                 </h3>
                 <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                  Fast, intuitive emergency hub for citizens. Submit high-priority relief requests, track incoming supplies, and discover safe shelter camps.
+                  {t.userDesc}
                 </p>
               </div>
 
@@ -203,7 +278,7 @@ export default function LandingPage() {
                 href="/login?role=USER&redirect=/dashboard/user"
                 className="w-full flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition-all shadow-lg shadow-blue-600/20"
               >
-                <span>Login as User</span>
+                <span>{t.userBtn}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -223,10 +298,10 @@ export default function LandingPage() {
 
               <div>
                 <h3 className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">
-                  Admin Command Center
+                  {t.adminTitle}
                 </h3>
                 <p className="text-sm text-slate-300 mt-2 leading-relaxed">
-                  Unified command interface for disaster coordinators. Inspect real-time triage queues, execute all 5 AI models, manage warehouse supplies, and seal audit ledgers.
+                  {t.adminDesc}
                 </p>
               </div>
 
@@ -251,7 +326,7 @@ export default function LandingPage() {
                 href="/login?role=ADMIN&redirect=/dashboard/admin"
                 className="w-full flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-amber-500/20"
               >
-                <span>Login as Administrator</span>
+                <span>{t.adminBtn}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
