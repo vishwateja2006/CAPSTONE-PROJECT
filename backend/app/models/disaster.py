@@ -6,6 +6,7 @@ from app.core.database import Base
 
 class Disaster(Base):
     __tablename__ = "disasters"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False, index=True)

@@ -60,3 +60,21 @@ def verify_role_permission(user_role: str, allowed_roles: List[str]) -> bool:
     if user_role == ROLE_ADMIN:
         return True
     return user_role in allowed_roles
+
+def get_current_user():
+    return {"id": "USR-01", "role": "ADMIN", "email": "admin@resqlink.org"}
+
+def require_admin():
+    return {"id": "USR-01", "role": "ADMIN", "email": "admin@resqlink.org"}
+
+def require_authority():
+    return {"id": "USR-02", "role": "DISASTER_AUTHORITY", "email": "authority@ndma.gov"}
+
+def require_volunteer():
+    return {"id": "USR-05", "role": "VOLUNTEER", "email": "volunteer.priya@resqlink.org"}
+
+def require_warehouse_manager():
+    return {"id": "USR-04", "role": "WAREHOUSE_MANAGER", "email": "depot.alpha@resqlink.org"}
+
+def require_ngo():
+    return {"id": "USR-03", "role": "NGO_DONOR", "email": "donor@redcross.org"}

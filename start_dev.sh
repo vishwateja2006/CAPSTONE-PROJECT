@@ -31,18 +31,10 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM EXIT
 
-# Start Backend API (FastAPI with automatic Zero-Dependency fallback)
+# Start Backend API (ResQLink Dedicated API Engine on :8000)
 echo "[*] Initializing Backend API Server on http://localhost:8000 ..."
-cd "$BACKEND_DIR"
-if python3 -c "import uvicorn, fastapi" 2>/dev/null; then
-    echo "[+] Launching FastAPI via Uvicorn..."
-    python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
-    BACKEND_PID=$!
-else
-    echo "[+] Launching ResQLink Zero-Dependency API Server (:8000)..."
-    python3 "$PROJECT_ROOT/scripts/dev_api_server.py" &
-    BACKEND_PID=$!
-fi
+python3 "$PROJECT_ROOT/scripts/dev_api_server.py" &
+BACKEND_PID=$!
 
 # Wait briefly for backend to initialize
 sleep 2
