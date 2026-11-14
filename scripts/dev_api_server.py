@@ -99,6 +99,32 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
         if path == "/api/v1/health":
             return self._json({"status": "healthy", "database": "connected"})
 
+        # Disasters with Live Hazard Zones (Live from DB)
+        if path in ("/api/v1/disasters", "/api/v1/disaster"):
+            try:
+                conn = sqlite3.connect(DB_FILE)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute("SELECT * FROM disasters")
+                disaster_rows = [dict(r) for r in c.fetchall()]
+                for d in disaster_rows:
+                    c.execute("SELECT * FROM hazard_zones WHERE disaster_id = ?", (d["id"],))
+                    d["hazard_zones"] = [dict(hz) for hz in c.fetchall()]
+                conn.close()
+                return self._json(disaster_rows)
+            except Exception:
+                return self._json([])
+
+        # AI Models Catalog
+        if path in ("/api/v1/predictions/models", "/api/v1/models"):
+            return self._json([
+                {"id": 1, "name": "Resource Demand Prediction", "type": "TIME_SERIES_FORECASTING", "algorithm": "LSTM & Sphere Standards", "dataset": "FEMA Disaster Declarations", "status": "ONLINE"},
+                {"id": 2, "name": "Disaster Damage Detection", "type": "COMPUTER_VISION", "algorithm": "CNN / UNet & Spectral NDWI", "dataset": "ML4Floods & xView2", "status": "ONLINE"},
+                {"id": 3, "name": "Emergency Message Classification", "type": "NATURAL_LANGUAGE_PROCESSING", "algorithm": "Transformer / DistilBERT", "dataset": "Appen 30k Crisis Messages", "status": "ONLINE"},
+                {"id": 4, "name": "Intelligent Route Optimization", "type": "OPERATIONS_RESEARCH", "algorithm": "Google OR-Tools CVRP & Dijkstra Detours", "dataset": "OSM Network & Simulated Floods", "status": "ONLINE"},
+                {"id": 5, "name": "Fair Resource Allocation", "type": "OPTIMIZATION", "algorithm": "Max-Min Constrained Linear Program", "dataset": "UNHCR Emergency Operations Datasets", "status": "ONLINE"}
+            ])
+
         # SOS Requests (Live from DB)
         if path == "/api/v1/sos":
             try:
