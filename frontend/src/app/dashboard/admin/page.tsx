@@ -921,7 +921,7 @@ export default function AdminCommandCenterPage() {
                     </div>
                   </div>
 
-                  {/* Real-Time Status Progress Bar & Fast Opener */}
+                  {/* Real-Time Status Progress Bar */}
                   <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
@@ -952,20 +952,6 @@ export default function AdminCommandCenterPage() {
                           4. Delivered
                         </span>
                       </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-end md:self-auto">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedSOS(sos);
-                        }}
-                        className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 shadow-md shadow-amber-500/20 transition-all hover:scale-105"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Inspect & Track Report →</span>
-                      </button>
                     </div>
                   </div>
                 </div>
