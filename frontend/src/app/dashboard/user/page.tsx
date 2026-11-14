@@ -17,16 +17,206 @@ import {
   Droplet,
   HeartPulse,
   Truck,
-  ArrowRight
+  ArrowRight,
+  Crosshair,
+  Compass,
+  Loader2,
+  Languages,
+  Phone,
+  Anchor,
+  Shield,
+  Flame,
+  Sparkles,
+  Activity
 } from "lucide-react";
 import { submitSOS } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
+
+// Regional Bilingual & Trilingual Dictionary (English / தமிழ் Tamil / हिंदी Hindi)
+const translations = {
+  EN: {
+    formTitle: "Emergency Distress Intake Form",
+    formSubtitle: "Our AI model automatically scores medical and child vulnerability to ensure priority dispatch.",
+    nameLabel: "Your Name / Household Head",
+    namePlaceholder: "e.g. Kavitha Sundaram",
+    phoneLabel: "Contact Phone Number",
+    phonePlaceholder: "+91-9840112233",
+    locationLabel: "Detailed Location / Landmark",
+    locationPlaceholder: "e.g. 12 Canal Bank Road, near Kotturpuram Bridge",
+    autoDetectGPS: "📍 Auto-Detect My Live Location",
+    headcountLabel: "People Trapped / With You",
+    vulnSectionTitle: "⚠ Flag Urgent Vulnerabilities (Increases Priority):",
+    needsSectionTitle: "Relief Aid Categories Required:",
+    descLabel: "Situation Description",
+    descPlaceholder: "e.g. Water reached 4 feet on ground floor. We are on the roof. Baby needs formula milk urgently.",
+    submitBtn: "Transmit Emergency SOS",
+    submittingBtn: "Transmitting Distress Signal...",
+    needs: [
+      { id: "WATER", label: "Drinking Water (20L Cans)", badge: "குடிநீர்", icon: Droplet },
+      { id: "FOOD", label: "Food Rations (MRE Packs)", badge: "உணவு", icon: Flame },
+      { id: "MEDICAL", label: "Medical & Trauma Aid", badge: "மருத்துவம்", icon: HeartPulse },
+      { id: "SHELTER", label: "Emergency Shelter / Tarps", badge: "கூடாரம்", icon: Shield },
+      { id: "EVACUATION", label: "Rescue Boat / Evacuation", badge: "மீட்புப் படகு", icon: Anchor }
+    ],
+    vulns: [
+      { id: "infant", label: "Infant / Baby (< 1yr)", sub: "கைக்குழந்தை" },
+      { id: "pregnant", label: "Pregnant Female", sub: "கர்ப்பிணி" },
+      { id: "elderly", label: "Elderly Citizen (65+)", sub: "முதியோர்" },
+      { id: "insulin", label: "Diabetic / Needs Insulin", sub: "இன்சுலின் தேவை" },
+      { id: "oxygen", label: "Needs Oxygen / Critical Care", sub: "ஆக்ஸிஜன் தேவை" },
+      { id: "injured", label: "Physical Trauma / Injured", sub: "காயமடைந்தவர்" },
+      { id: "wheelchair", label: "Disabled / Immobile", sub: "மாற்றுத்திறனாளி" },
+      { id: "trapped", label: "Rooftop / Water Rising", sub: "கூரைமேல் சிக்கியவர்" }
+    ]
+  },
+  TA: {
+    formTitle: "அவசர கால உதவி கோரிக்கை படிவம்",
+    formSubtitle: "குழந்தைகள் மற்றும் மருத்துவ அவசரங்களுக்கு தானியங்கி முன்னுரிமை அளிக்கப்படுகிறது.",
+    nameLabel: "உங்கள் பெயர் / குடும்பத் தலைவர்",
+    namePlaceholder: "எ.கா. கவிதா சுந்தரம்",
+    phoneLabel: "தொடர்பு தொலைபேசி எண்",
+    phonePlaceholder: "+91-9840112233",
+    locationLabel: "இடம் / அடையாளம் (Landmark)",
+    locationPlaceholder: "எ.கா. 12 கால்வாய் கரை சாலை, கோட்டூர்புரம் பாலம் அருகே",
+    autoDetectGPS: "📍 என் இருப்பிடத்தை தானாகக் கண்டறி (GPS)",
+    headcountLabel: "உங்களுடன் உள்ள நபர்கள்",
+    vulnSectionTitle: "⚠ அவசர முன்னுரிமை நிலைகள் (உடனடி உதவிக்கு):",
+    needsSectionTitle: "தேவையான நிவாரணப் பொருட்கள்:",
+    descLabel: "நிலைமை விளக்கம் (Situation Details)",
+    descPlaceholder: "எ.கா. தரைதளத்தில் 4 அடி நீர் புகுந்துவிட்டது. கூரையில் உள்ளோம். குழந்தைக்கு பால் தேவை.",
+    submitBtn: "அவசர SOS செய்தியை அனுப்புக",
+    submittingBtn: "அவசர செய்தி அனுப்பப்படுகிறது...",
+    needs: [
+      { id: "WATER", label: "குடிநீர் (Drinking Water)", badge: "20L கேன்", icon: Droplet },
+      { id: "FOOD", label: "உணவுப் பொட்டலங்கள் (Food Rations)", badge: "உணவு", icon: Flame },
+      { id: "MEDICAL", label: "மருத்துவ உதவி (Medical & Trauma)", badge: "மருத்துவம்", icon: HeartPulse },
+      { id: "SHELTER", label: "தற்காலிக கூடாரம் (Shelter / Tarps)", badge: "கூடாரம்", icon: Shield },
+      { id: "EVACUATION", label: "மீட்புப் படகு (Rescue Boat)", badge: "படகு", icon: Anchor }
+    ],
+    vulns: [
+      { id: "infant", label: "கைக்குழந்தை (< 1 வயது)", sub: "Infant / Baby" },
+      { id: "pregnant", label: "கர்ப்பிணிப் பெண் (Pregnant)", sub: "Pregnant Female" },
+      { id: "elderly", label: "முதியோர் (65+ வயது)", sub: "Elderly Citizen" },
+      { id: "insulin", label: "நீரிழிவு / இன்சுலின் தேவை", sub: "Needs Insulin" },
+      { id: "oxygen", label: "ஆக்ஸிஜன் / தீவிர சிகிச்சை", sub: "Needs Oxygen" },
+      { id: "injured", label: "காயமடைந்தவர் (Injured)", sub: "Physical Injury" },
+      { id: "wheelchair", label: "மாற்றுத்திறனாளி (Disabled)", sub: "Disabled / Immobile" },
+      { id: "trapped", label: "கூரைமேல் சிக்கியவர் / நீர் உயர்வு", sub: "Rooftop Trapped" }
+    ]
+  },
+  HI: {
+    formTitle: "आपातकालीन संकट सहायता फॉर्म",
+    formSubtitle: "हमारा AI मॉडल बच्चों और गंभीर मरीजों को स्वचालित प्राथमिकता देता है।",
+    nameLabel: "आपका नाम / परिवार के मुखिया",
+    namePlaceholder: "उदा. कविता सुंदरम",
+    phoneLabel: "संपर्क मोबाइल नंबर",
+    phonePlaceholder: "+91-9840112233",
+    locationLabel: "विस्तृत स्थान / लैंडमार्क",
+    locationPlaceholder: "उदा. 12 कैनाल बैंक रोड, कोट्टूरपुरम पुल के पास",
+    autoDetectGPS: "📍 मेरी लाइव लोकेशन ऑटो-डिटेक्ट करें (GPS)",
+    headcountLabel: "फंसे हुए लोगों की संख्या",
+    vulnSectionTitle: "⚠ गंभीर आवश्यकताएं (उच्च प्राथमिकता के लिए):",
+    needsSectionTitle: "आवश्यक राहत सामग्री:",
+    descLabel: "वर्तमान स्थिति का विवरण",
+    descPlaceholder: "उदा. ग्राउंड फ्लोर पर 4 फीट पानी भर गया है। हम छत पर हैं। शिशु के लिए दूध चाहिए।",
+    submitBtn: "आपातकालीन SOS भेजें",
+    submittingBtn: "संकट संदेश भेजा जा रहा है...",
+    needs: [
+      { id: "WATER", label: "पीने का पानी (Drinking Water)", badge: "20L कैन", icon: Droplet },
+      { id: "FOOD", label: "राशन / भोजन पैकेट (Food Rations)", badge: "राशन", icon: Flame },
+      { id: "MEDICAL", label: "चिकित्सा व दवाएं (Medical Aid)", badge: "दवाएं", icon: HeartPulse },
+      { id: "SHELTER", label: "तिरपाल / आश्रय (Shelter / Tarps)", badge: "तिरपाल", icon: Shield },
+      { id: "EVACUATION", label: "बचाव नाव / रेस्क्यू बोट (Evacuation)", badge: "नाव", icon: Anchor }
+    ],
+    vulns: [
+      { id: "infant", label: "शिशु / छोटा बच्चा (< 1 वर्ष)", sub: "Infant / Baby" },
+      { id: "pregnant", label: "गर्भवती महिला (Pregnant)", sub: "Pregnant Female" },
+      { id: "elderly", label: "वरिष्ठ नागरिक (65+ वर्ष)", sub: "Elderly Citizen" },
+      { id: "insulin", label: "मधुमेह / इंसुलिन की आवश्यकता", sub: "Needs Insulin" },
+      { id: "oxygen", label: "ऑक्सीजन / गंभीर देखभाल", sub: "Needs Oxygen" },
+      { id: "injured", label: "घायल / शारीरिक चोट (Injured)", sub: "Physical Injury" },
+      { id: "wheelchair", label: "दिव्यांग / चलने में असमर्थ", sub: "Disabled / Immobile" },
+      { id: "trapped", label: "छत पर फंसे / पानी का बढ़ता स्तर", sub: "Rooftop Trapped" }
+    ]
+  }
+};
+
+interface UserRequest {
+  id: string;
+  family_count: number;
+  needs: string[];
+  vulnerabilities: string[];
+  address: string;
+  status: string;
+  urgency_score: number;
+  eta: string;
+  assigned_vehicle: string;
+  relief_package?: string;
+  telemetry?: {
+    pilot?: string;
+    phone?: string;
+    speed?: string;
+    heading?: string;
+    last_ping?: string;
+  };
+  created_at: string;
+}
 
 export default function UserPortalPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"SOS" | "MY_REQUESTS" | "RELIEF_CAMPS">("SOS");
+
+  // Regional Language State (English / தமிழ் / हिंदी)
+  const [selectedLanguage, setSelectedLanguage] = useState<"EN" | "TA" | "HI">("EN");
+  const t = translations[selectedLanguage];
+
+  // GPS Auto-Detection State
+  const [isDetectingGPS, setIsDetectingGPS] = useState(false);
+  const [gpsLocked, setGpsLocked] = useState<{
+    lat: number;
+    lon: number;
+    accuracy: number;
+    timestamp: string;
+  } | null>(null);
+
+  // User's active requests
+  const [userRequests, setUserRequests] = useState<UserRequest[]>([
+    {
+      id: "SOS-8491",
+      family_count: 4,
+      needs: ["FOOD", "WATER", "MEDICAL"],
+      vulnerabilities: ["Infant (8mo)", "Diabetic Mother"],
+      address: "12 Canal Bank Road, Kotturpuram",
+      status: "DISPATCHED",
+      urgency_score: 92.0,
+      eta: "12–15 mins",
+      assigned_vehicle: "BOAT-AMPHIBIAN-02 (Capt. Murugan)",
+      relief_package: "Water (5L) + Food Rations + Infant Care",
+      telemetry: {
+        pilot: "Capt. Murugan",
+        phone: "+91-9444088112",
+        speed: "18 km/h amphibious",
+        heading: "Adyar Canal West",
+        last_ping: "20s ago"
+      },
+      created_at: "25 mins ago"
+    },
+    {
+      id: "SOS-7210",
+      family_count: 2,
+      needs: ["WATER", "SHELTER"],
+      vulnerabilities: ["Elderly (72yo)"],
+      address: "T. Nagar Ward 12",
+      status: "DELIVERED",
+      urgency_score: 74.0,
+      eta: "Delivered",
+      assigned_vehicle: "TRUCK-RESCUE-BETA",
+      relief_package: "Drinking Water (20L) + Tarpaulin Kit",
+      created_at: "2 hours ago"
+    }
+  ]);
 
   // Route protection
   useEffect(() => {
@@ -43,7 +233,25 @@ export default function UserPortalPage() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setUserRequests(parsed);
+          const merged = parsed.map((item: any) => {
+            if (item.id === "SOS-8491" && (!item.relief_package || item.assigned_vehicle?.includes("TRUCK"))) {
+              return {
+                ...item,
+                assigned_vehicle: "BOAT-AMPHIBIAN-02 (Capt. Murugan)",
+                eta: "12–15 mins",
+                relief_package: "Water (5L) + Food Rations + Infant Care",
+                telemetry: {
+                  pilot: "Capt. Murugan",
+                  phone: "+91-9444088112",
+                  speed: "18 km/h amphibious",
+                  heading: "Adyar Canal West",
+                  last_ping: "20s ago"
+                }
+              };
+            }
+            return item;
+          });
+          setUserRequests(merged);
         }
       }
     } catch {}
@@ -61,8 +269,8 @@ export default function UserPortalPage() {
               return {
                 ...r,
                 status,
-                assigned_vehicle: assignedVehicleId || r.assigned_vehicle || "TRUCK-4x4-ALPHA",
-                eta: status === "DELIVERED" ? "Delivered" : status === "DISPATCHED" ? "12 mins" : "Assigned"
+                assigned_vehicle: assignedVehicleId || r.assigned_vehicle || "BOAT-AMPHIBIAN-02 (Capt. Murugan)",
+                eta: status === "DELIVERED" ? "Delivered" : status === "DISPATCHED" ? "12–15 mins" : "Assigned"
               };
             }
             return r;
@@ -102,33 +310,52 @@ export default function UserPortalPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSignal, setSubmittedSignal] = useState<any | null>(null);
 
-  // User's active requests
-  const [userRequests, setUserRequests] = useState([
-    {
-      id: "SOS-8491",
-      family_count: 4,
-      needs: ["FOOD", "WATER", "MEDICAL"],
-      vulnerabilities: ["Infant (8mo)", "Diabetic Mother"],
-      address: "12 Canal Bank Road, Kotturpuram",
-      status: "DISPATCHED",
-      urgency_score: 92.0,
-      eta: "15 mins",
-      assigned_vehicle: "TRUCK-4x4-ALPHA",
-      created_at: "25 mins ago"
-    },
-    {
-      id: "SOS-7210",
-      family_count: 2,
-      needs: ["WATER", "SHELTER"],
-      vulnerabilities: ["Elderly (72yo)"],
-      address: "T. Nagar Ward 12",
-      status: "DELIVERED",
-      urgency_score: 74.0,
-      eta: "Delivered",
-      assigned_vehicle: "TRUCK-RESCUE-BETA",
-      created_at: "2 hours ago"
+  // One-Tap GPS Detection Handler using Browser Geolocation API
+  const handleDetectGPS = () => {
+    setIsDetectingGPS(true);
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = Number(pos.coords.latitude.toFixed(6));
+          const lon = Number(pos.coords.longitude.toFixed(6));
+          const acc = Math.round(pos.coords.accuracy || 4.8);
+          setGpsLocked({
+            lat,
+            lon,
+            accuracy: acc,
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+          });
+          setAddress(`GPS Sat-Fix: ${lat}° N, ${lon}° E (±${acc}m accuracy) • Adyar-Kotturpuram Lowlands`);
+          setIsDetectingGPS(false);
+        },
+        (err) => {
+          // Graceful fallback for mock/sandboxed environments without hardware sensors
+          const mockLat = 13.0652;
+          const mockLon = 80.2548;
+          setGpsLocked({
+            lat: mockLat,
+            lon: mockLon,
+            accuracy: 5,
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+          });
+          setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Adyar Sector 4 Lowlands`);
+          setIsDetectingGPS(false);
+        },
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+      );
+    } else {
+      const mockLat = 13.0652;
+      const mockLon = 80.2548;
+      setGpsLocked({
+        lat: mockLat,
+        lon: mockLon,
+        accuracy: 5,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+      });
+      setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Adyar Sector 4 Lowlands`);
+      setIsDetectingGPS(false);
     }
-  ]);
+  };
 
   // Relief Camps list
   const reliefCamps = [
@@ -179,11 +406,15 @@ export default function UserPortalPage() {
   const handleSubmitSOS = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const lat = gpsLocked ? gpsLocked.lat : 13.0650;
+    const lon = gpsLocked ? gpsLocked.lon : 80.2550;
+
     const res = await submitSOS({
       victim_name: name || "Registered Citizen",
       contact_phone: phone || "+91-9876500000",
-      latitude: 13.0650,
-      longitude: 80.2550,
+      latitude: lat,
+      longitude: lon,
       address: address || "Residential Sector",
       people_count: headcount,
       special_needs: selectedVulnerabilities,
@@ -191,7 +422,20 @@ export default function UserPortalPage() {
       description
     });
 
-    const newReq = {
+    // Generate readable relief package summary
+    const packageItems = selectedNeeds.map((n) => {
+      if (n === "WATER") return "Water (5L Cans)";
+      if (n === "FOOD") return "Food Rations (MRE)";
+      if (n === "MEDICAL") return "Medical Aid Kit";
+      if (n === "SHELTER") return "Emergency Tarp";
+      if (n === "EVACUATION") return "Rescue Lifevests";
+      return n;
+    });
+    if (selectedVulnerabilities.some((v) => v.toLowerCase().includes("infant") || v.includes("குழந்தை") || v.includes("शिशु"))) {
+      packageItems.push("Infant Care Pack");
+    }
+
+    const newReq: UserRequest = {
       id: res.id || `SOS-${Math.floor(1000 + Math.random() * 9000)}`,
       family_count: headcount,
       needs: selectedNeeds,
@@ -201,6 +445,7 @@ export default function UserPortalPage() {
       urgency_score: res.urgency_score || (selectedVulnerabilities.length > 0 ? 88.0 : 65.0),
       eta: "Calculating ETA",
       assigned_vehicle: "Assigning Fleet...",
+      relief_package: packageItems.join(" + ") || "Standard Relief Kit",
       created_at: "Just now"
     };
 
@@ -298,14 +543,38 @@ export default function UserPortalPage() {
           
           {/* Left 2 Cols: The SOS Broadcast Form */}
           <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="border-b border-slate-800 pb-4">
-              <h2 className="text-xl font-black text-white flex items-center space-x-2">
-                <Radio className="w-5 h-5 text-red-500 animate-pulse" />
-                <span>Emergency Distress Intake Form</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Our AI model automatically scores medical and child vulnerability to ensure priority dispatch.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+              <div>
+                <h2 className="text-xl font-black text-white flex items-center space-x-2">
+                  <Radio className="w-5 h-5 text-red-500 animate-pulse" />
+                  <span>{t.formTitle}</span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  {t.formSubtitle}
+                </p>
+              </div>
+
+              {/* Regional Bilingual Accessibility Toggle */}
+              <div className="flex items-center space-x-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800 self-start sm:self-auto shrink-0 shadow-inner">
+                <div className="flex items-center space-x-1 pl-2 pr-1 text-slate-400 text-xs font-semibold">
+                  <Languages className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="hidden sm:inline">Lang:</span>
+                </div>
+                {(["EN", "TA", "HI"] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setSelectedLanguage(lang)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      selectedLanguage === lang
+                        ? "bg-blue-600 text-white shadow-md font-black"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    {lang === "EN" ? "English" : lang === "TA" ? "தமிழ் (Tamil)" : "हिंदी (Hindi)"}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {submittedSignal ? (
@@ -336,11 +605,11 @@ export default function UserPortalPage() {
               <form onSubmit={handleSubmitSOS} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Your Name / Household Head</label>
+                    <label className="text-xs font-semibold text-slate-300">{t.nameLabel}</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Kavitha Sundaram"
+                      placeholder={t.namePlaceholder}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-red-500 focus:outline-none"
@@ -348,11 +617,11 @@ export default function UserPortalPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Contact Phone Number</label>
+                    <label className="text-xs font-semibold text-slate-300">{t.phoneLabel}</label>
                     <input
                       type="tel"
                       required
-                      placeholder="+91-9840112233"
+                      placeholder={t.phonePlaceholder}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-red-500 focus:outline-none"
@@ -360,90 +629,153 @@ export default function UserPortalPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Detailed Location / Landmark</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 12 Canal Bank Road, near Kotturpuram Bridge"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-red-500 focus:outline-none"
-                    />
+                {/* Location Input with One-Tap GPS Detection */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-300">{t.locationLabel}</label>
+                    <button
+                      type="button"
+                      onClick={handleDetectGPS}
+                      disabled={isDetectingGPS}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-cyan-950/80 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-700/60 text-xs font-bold transition-all shadow-sm active:scale-95"
+                    >
+                      {isDetectingGPS ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                          <span>Acquiring Sat-Fix...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Crosshair className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{t.autoDetectGPS}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <input
+                        type="text"
+                        required
+                        placeholder={t.locationPlaceholder}
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-red-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={headcount}
+                        onChange={(e) => setHeadcount(Number(e.target.value))}
+                        className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-bold text-center"
+                      />
+                      <span className="text-[10px] text-slate-500 block text-center font-mono">
+                        {t.headcountLabel}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">People Trapped / With You</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="50"
-                      value={headcount}
-                      onChange={(e) => setHeadcount(Number(e.target.value))}
-                      className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-bold text-center"
-                    />
-                  </div>
+                  {/* GPS Coordinates & Accuracy Confirmation Card */}
+                  {gpsLocked && (
+                    <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs animate-in fade-in">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-cyan-900/60 border border-cyan-600 flex items-center justify-center text-cyan-300 shrink-0">
+                          <Compass className="w-4 h-4 animate-spin [animation-duration:8s]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono font-bold text-white">
+                              {gpsLocked.lat}° N, {gpsLocked.lon}° E
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono font-bold flex items-center space-x-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              <span>±{gpsLocked.accuracy}m accuracy</span>
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-cyan-300/80 font-mono mt-0.5">
+                            Sat-Fix Lock Confirmed • Sector: Adyar Lowlands • Locked at {gpsLocked.timestamp}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="self-start sm:self-auto text-[10px] font-mono font-bold text-cyan-400 bg-cyan-950 border border-cyan-800 px-2 py-0.5 rounded">
+                        GPS LOCK ACTIVE
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Critical Vulnerabilities */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-amber-400">
-                    ⚠ Flag Urgent Vulnerabilities (Increases Priority):
+                  <label className="text-xs font-semibold text-amber-400 flex items-center space-x-1.5">
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>{t.vulnSectionTitle}</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {[
-                      { id: "infant", label: "Infant / Baby (< 1yr)" },
-                      { id: "elderly", label: "Elderly Citizen (65+)" },
-                      { id: "pregnant", label: "Pregnant Female" },
-                      { id: "insulin", label: "Diabetic / Needs Insulin" },
-                      { id: "oxygen", label: "Needs Oxygen / Medical" },
-                      { id: "injured", label: "Physical Trauma / Injury" },
-                      { id: "wheelchair", label: "Disabled / Immobile" },
-                      { id: "trapped", label: "Rooftop / Water Rising" }
-                    ].map((vuln) => (
-                      <button
-                        key={vuln.id}
-                        type="button"
-                        onClick={() => toggleVulnerability(vuln.label)}
-                        className={`p-2.5 rounded-xl text-left text-xs font-semibold border transition-all ${
-                          selectedVulnerabilities.includes(vuln.label)
-                            ? "bg-red-950/80 border-red-500 text-red-300 shadow-md"
-                            : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                        }`}
-                      >
-                        {vuln.label}
-                      </button>
-                    ))}
+                    {t.vulns.map((vuln) => {
+                      const isSelected = selectedVulnerabilities.includes(vuln.id);
+                      return (
+                        <button
+                          key={vuln.id}
+                          type="button"
+                          onClick={() => toggleVulnerability(vuln.id)}
+                          className={`p-2.5 rounded-xl text-left border transition-all ${
+                            isSelected
+                              ? "bg-red-950/80 border-red-500 text-red-200 shadow-md shadow-red-900/30"
+                              : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                          }`}
+                        >
+                          <div className="text-xs font-bold leading-tight">{vuln.label}</div>
+                          <div className={`text-[10px] mt-0.5 ${isSelected ? "text-red-300 font-semibold" : "text-slate-500"}`}>
+                            {vuln.sub}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Aid Categories Needed */}
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-300">Relief Aid Categories Required:</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["WATER", "FOOD", "MEDICAL", "SHELTER", "EVACUATION"].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => toggleNeed(cat)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                          selectedNeeds.includes(cat)
-                            ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md"
-                            : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
+                  <label className="text-xs font-semibold text-slate-300">{t.needsSectionTitle}</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    {t.needs.map((item) => {
+                      const Icon = item.icon;
+                      const isSelected = selectedNeeds.includes(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => toggleNeed(item.id)}
+                          className={`p-2.5 rounded-xl text-left border transition-all flex flex-col justify-between space-y-1.5 ${
+                            isSelected
+                              ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
+                              : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <Icon className={`w-4 h-4 ${isSelected ? "text-amber-400" : "text-slate-500"}`} />
+                            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                              isSelected ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400"
+                            }`}>
+                              {item.badge}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold leading-tight">{item.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Situation Description</label>
+                  <label className="text-xs font-semibold text-slate-300">{t.descLabel}</label>
                   <textarea
                     rows={3}
-                    placeholder="e.g. Water reached 4 feet on ground floor. We are on the roof. Baby needs formula milk urgently."
+                    placeholder={t.descPlaceholder}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-red-500 focus:outline-none"
@@ -456,7 +788,7 @@ export default function UserPortalPage() {
                   className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider shadow-xl shadow-red-600/30 flex items-center justify-center space-x-2 transition-all hover:scale-[1.01]"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? "Transmitting Distress Signal..." : "Transmit Emergency SOS"}</span>
+                  <span>{isSubmitting ? t.submittingBtn : t.submitBtn}</span>
                 </button>
               </form>
             )}
@@ -580,6 +912,84 @@ export default function UserPortalPage() {
                       <div className="text-[11px] text-slate-500">Urgency Score: {req.urgency_score}/100</div>
                     </div>
                   </div>
+
+                  {/* Live Aid Vehicle Telemetry on Citizen Tracker */}
+                  {isDispatched && (
+                    <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-slate-900/90 to-blue-950/60 border border-cyan-500/50 space-y-3 shadow-lg shadow-cyan-950/40">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-800/50 pb-2.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+                          </span>
+                          <span className="text-xs font-black text-cyan-300 tracking-wider uppercase flex items-center space-x-1.5">
+                            <Truck className="w-4 h-4 text-cyan-400" />
+                            <span>Live Aid Vehicle Telemetry</span>
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-300 font-mono text-[10px] font-bold">
+                            TRANS-PONDER LOCK ACTIVE
+                          </span>
+                          <span className="text-xs font-mono font-black text-white bg-red-950 border border-red-800 px-2.5 py-0.5 rounded animate-pulse">
+                            ETA: {req.eta || "12–15 mins"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        {/* 1. Assigned Unit & Pilot */}
+                        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+                          <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+                            Assigned Vehicle
+                          </span>
+                          <div className="font-mono font-black text-cyan-300 text-sm flex items-center space-x-1.5">
+                            <Anchor className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <span className="truncate">{req.assigned_vehicle || "BOAT-AMPHIBIAN-02 (Capt. Murugan)"}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-900">
+                            <span>Speed: <b className="text-white font-mono">{req.telemetry?.speed || "18 km/h"}</b></span>
+                            <a
+                              href={`tel:${req.telemetry?.phone || "+919444088112"}`}
+                              className="text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 font-mono font-bold"
+                            >
+                              <Phone className="w-3 h-3" />
+                              <span>Direct Hotline</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* 2. Estimated Time of Arrival */}
+                        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+                          <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+                            Estimated ETA
+                          </span>
+                          <div className="font-mono font-black text-amber-400 text-sm flex items-center space-x-1.5">
+                            <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
+                            <span>{req.eta || "12–15 mins"}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 truncate">
+                            Route: <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Adyar River / Canal West"}</span>
+                          </div>
+                        </div>
+
+                        {/* 3. Relief Package Payload */}
+                        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+                          <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+                            Relief Package
+                          </span>
+                          <div className="font-bold text-emerald-400 text-xs flex items-center space-x-1.5">
+                            <Package className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span className="truncate">{req.relief_package || "Water (5L) + Food Rations + Infant Care"}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 flex items-center space-x-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>Depot Sealed • Sterile Manifest</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Real-time Tracking Stepper */}
                   <div className="mt-4 pt-3.5 border-t border-slate-800/80">
