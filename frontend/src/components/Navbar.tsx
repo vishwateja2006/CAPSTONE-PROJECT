@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getAuthSession, clearAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
 import ThemeDropdown from "./ThemeDropdown";
+import ActiveIncidentBanner from "./ActiveIncidentBanner";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -247,6 +248,9 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Emergency Operational Ribbon: Active Incident & DEFCON Status */}
+      <ActiveIncidentBanner />
     </header>
   );
 }
