@@ -253,6 +253,98 @@ export async function submitSOS(payload: any): Promise<SOSRequest> {
   return createdSOS;
 }
 
+export async function updateSOSStatus(
+  sosId: string,
+  newStatus: "PENDING" | "ASSIGNED" | "DISPATCHED" | "DELIVERED" | "RESOLVED",
+  assignedVehicleId?: string
+): Promise<SOSRequest> {
+  let updatedRecord: SOSRequest | null = null;
+  try {
+    const res = await fetch(`${API_BASE}/sos/${sosId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: newStatus,
+        assigned_vehicle_id: assignedVehicleId
+      })
+    });
+    if (res.ok) {
+      updatedRecord = await res.json();
+    }
+  } catch {}
+
+  // Fallback to POST if PATCH fails or server differs
+  if (!updatedRecord) {
+    try {
+      const res = await fetch(`${API_BASE}/sos/${sosId}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: newStatus,
+          assigned_vehicle_id: assignedVehicleId
+        })
+      });
+      if (res.ok) {
+        updatedRecord = await res.json();
+      }
+    } catch {}
+  }
+
+  if (!updatedRecord) {
+    updatedRecord = {
+      id: sosId,
+      status: newStatus,
+      assigned_vehicle_id: assignedVehicleId || "TRUCK-4x4-ALPHA",
+      resolved_at: newStatus === "DELIVERED" ? new Date().toISOString() : undefined
+    } as any;
+  }
+
+  // Cross-portal real-time synchronization
+  try {
+    if (typeof window !== "undefined") {
+      // 1. Update citizen userRequests in localStorage
+      const userReqsStr = localStorage.getItem("resqlink_user_requests");
+      if (userReqsStr) {
+        const userReqs = JSON.parse(userReqsStr);
+        const mapped = userReqs.map((r: any) => {
+          if (r.id === sosId || r.id === `SOS-${sosId.replace("sos-", "")}` || r.id?.toLowerCase() === sosId?.toLowerCase()) {
+            return {
+              ...r,
+              status: newStatus,
+              assigned_vehicle: assignedVehicleId || r.assigned_vehicle || "TRUCK-4x4-ALPHA",
+              eta: newStatus === "DELIVERED" ? "Delivered" : newStatus === "DISPATCHED" ? "12 mins" : "Assigned"
+            };
+          }
+          return r;
+        });
+        localStorage.setItem("resqlink_user_requests", JSON.stringify(mapped));
+      }
+
+      // 2. Update recent citizen reports in localStorage
+      const recentReportsStr = localStorage.getItem("resqlink_new_citizen_reports");
+      if (recentReportsStr) {
+        const recent = JSON.parse(recentReportsStr);
+        const mappedRecent = recent.map((r: any) => {
+          if (r.id === sosId) {
+            return { ...r, status: newStatus, assigned_vehicle_id: assignedVehicleId || r.assigned_vehicle_id };
+          }
+          return r;
+        });
+        localStorage.setItem("resqlink_new_citizen_reports", JSON.stringify(mappedRecent));
+      }
+
+      // 3. Dispatch global real-time event for all open components/tabs
+      window.dispatchEvent(
+        new CustomEvent("resqlink_sos_status_updated", {
+          detail: { sosId, status: newStatus, assignedVehicleId }
+        })
+      );
+    }
+  } catch {}
+
+  return updatedRecord!;
+}
+
 export async function runFairAllocation(reliefCenterId: string): Promise<FairAllocationResponse> {
   try {
     const res = await fetch(`${API_BASE}/routes/allocate`, {

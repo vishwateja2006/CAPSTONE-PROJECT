@@ -92,6 +92,7 @@ def get_sos_request(sos_id: str, db: Session = Depends(get_db)):
     return sos
 
 @router.patch("/{sos_id}", response_model=SOSOut)
+@router.post("/{sos_id}/status", response_model=SOSOut)
 async def update_sos_status(sos_id: str, update_in: SOSUpdate, db: Session = Depends(get_db)):
     sos = db.query(SOSRequest).filter(SOSRequest.id == sos_id).first()
     if not sos:

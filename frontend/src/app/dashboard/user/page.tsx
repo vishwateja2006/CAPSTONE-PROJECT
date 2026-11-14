@@ -47,6 +47,48 @@ export default function UserPortalPage() {
         }
       }
     } catch {}
+
+    const handleStatusUpdate = (e: any) => {
+      const { sosId, status, assignedVehicleId } = e.detail || {};
+      if (sosId && status) {
+        setUserRequests((prev) =>
+          prev.map((r) => {
+            const matches =
+              r.id === sosId ||
+              r.id?.toLowerCase() === sosId?.toLowerCase() ||
+              r.id === `SOS-${sosId.replace("sos-", "")}`;
+            if (matches) {
+              return {
+                ...r,
+                status,
+                assigned_vehicle: assignedVehicleId || r.assigned_vehicle || "TRUCK-4x4-ALPHA",
+                eta: status === "DELIVERED" ? "Delivered" : status === "DISPATCHED" ? "12 mins" : "Assigned"
+              };
+            }
+            return r;
+          })
+        );
+      }
+    };
+
+    window.addEventListener("resqlink_sos_status_updated", handleStatusUpdate);
+
+    const interval = setInterval(() => {
+      try {
+        const saved = localStorage.getItem("resqlink_user_requests");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setUserRequests(parsed);
+          }
+        }
+      } catch {}
+    }, 4000);
+
+    return () => {
+      window.removeEventListener("resqlink_sos_status_updated", handleStatusUpdate);
+      clearInterval(interval);
+    };
   }, [router]);
 
   // Citizen SOS Form State
@@ -536,6 +578,54 @@ export default function UserPortalPage() {
                       <span className="text-slate-500 font-semibold">Assigned Fleet Mission:</span>
                       <div className="font-mono text-cyan-400 font-bold mt-0.5">{req.assigned_vehicle}</div>
                       <div className="text-[11px] text-slate-500">Urgency Score: {req.urgency_score}/100</div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Tracking Stepper */}
+                  <div className="mt-4 pt-3.5 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between text-[11px] font-mono mb-2">
+                      <span className="text-slate-400 font-semibold uppercase">Live Delivery Lifecycle:</span>
+                      <span className="text-cyan-400 font-bold">
+                        {req.status === "DELIVERED"
+                          ? "✓ Delivered & Confirmed"
+                          : req.status === "DISPATCHED"
+                          ? "🚚 Fleet In Transit (ETA ~12 mins)"
+                          : req.status === "ASSIGNED"
+                          ? "⚓ Vehicle Staged at Depot"
+                          : "📡 Intake Scored & In Queue"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[10px]">
+                      <div className={`p-2 rounded-xl text-center border ${
+                        (req.status === "PENDING" || req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
+                          ? "bg-emerald-950 text-emerald-400 border-emerald-800"
+                          : "bg-slate-900 text-slate-500 border-slate-800"
+                      }`}>
+                        1. Intake Logged ✓
+                      </div>
+                      <div className={`p-2 rounded-xl text-center border ${
+                        (req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
+                          ? "bg-blue-950 text-blue-400 border-blue-800 font-bold"
+                          : "bg-slate-900 text-slate-500 border-slate-800"
+                      }`}>
+                        2. Fleet Assigned
+                      </div>
+                      <div className={`p-2 rounded-xl text-center border ${
+                        (req.status === "DISPATCHED" || req.status === "DELIVERED")
+                          ? req.status === "DISPATCHED"
+                            ? "bg-cyan-950 text-cyan-400 border-cyan-800 animate-pulse font-bold"
+                            : "bg-cyan-950 text-cyan-400 border-cyan-800"
+                          : "bg-slate-900 text-slate-500 border-slate-800"
+                      }`}>
+                        3. Dispatched (En Route)
+                      </div>
+                      <div className={`p-2 rounded-xl text-center border ${
+                        req.status === "DELIVERED"
+                          ? "bg-emerald-950 text-emerald-400 border-emerald-800 font-bold"
+                          : "bg-slate-900 text-slate-500 border-slate-800"
+                      }`}>
+                        4. Aid Delivered
+                      </div>
                     </div>
                   </div>
                 </div>

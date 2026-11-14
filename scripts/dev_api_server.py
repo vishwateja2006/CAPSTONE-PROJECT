@@ -25,8 +25,39 @@ DB_FILE = os.path.join(PROJECT_ROOT, "backend", "disaster_platform.db")
 class ResQLinkAPIHandler(BaseHTTPRequestHandler):
     def _send_cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
         self.send_header("Access-Control-Allow-Headers", "*")
+
+    def _handle_sos_update(self, sos_id, data):
+        new_status = data.get("status", "ASSIGNED").upper()
+        assigned_vehicle = data.get("assigned_vehicle_id")
+        resolved_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if new_status in ("DELIVERED", "RESOLVED") else None
+        
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            if assigned_vehicle:
+                c.execute(
+                    "UPDATE sos_requests SET status = ?, assigned_vehicle_id = ?, resolved_at = ? WHERE id = ?",
+                    (new_status, assigned_vehicle, resolved_at, sos_id)
+                )
+            else:
+                c.execute(
+                    "UPDATE sos_requests SET status = ?, resolved_at = ? WHERE id = ?",
+                    (new_status, resolved_at, sos_id)
+                )
+            conn.commit()
+            
+            c.execute("SELECT * FROM sos_requests WHERE id = ?", (sos_id,))
+            row = c.fetchone()
+            conn.close()
+            
+            if row:
+                return self._json(dict(row))
+            return self._json({"error": "SOS request not found", "id": sos_id}, status=404)
+        except Exception as e:
+            return self._json({"error": "Failed to update SOS status", "details": str(e)}, status=500)
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -156,7 +187,31 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 ]
             })
 
+        # 5. Direct Status Updates for Distress Reports
+        if path.startswith("/api/v1/sos/") and path.endswith("/status"):
+            sos_id = path.split("/")[-2]
+            return self._handle_sos_update(sos_id, data)
+        if path == "/api/v1/sos/status":
+            sos_id = data.get("id") or data.get("sos_id")
+            return self._handle_sos_update(sos_id, data)
+
         self._json({"error": "Not Found", "path": path}, status=404)
+
+    def do_PATCH(self):
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/")
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+        try:
+            data = json.loads(body)
+        except Exception:
+            data = {}
+
+        if path.startswith("/api/v1/sos/"):
+            sos_id = path.split("/")[-1]
+            return self._handle_sos_update(sos_id, data)
+
+        self._json({"error": "Method not allowed for path"}, status=405)
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -363,7 +418,31 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 "sha256_digest": digest
             })
 
+        # 5. Direct Status Updates for Distress Reports
+        if path.startswith("/api/v1/sos/") and path.endswith("/status"):
+            sos_id = path.split("/")[-2]
+            return self._handle_sos_update(sos_id, data)
+        if path == "/api/v1/sos/status":
+            sos_id = data.get("id") or data.get("sos_id")
+            return self._handle_sos_update(sos_id, data)
+
         self._json({"error": "Not Found", "path": path}, status=404)
+
+    def do_PATCH(self):
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/")
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
+        try:
+            data = json.loads(body)
+        except Exception:
+            data = {}
+
+        if path.startswith("/api/v1/sos/"):
+            sos_id = path.split("/")[-1]
+            return self._handle_sos_update(sos_id, data)
+
+        self._json({"error": "Method not allowed for path"}, status=405)
 
     def log_message(self, format, *args):
         sys.stderr.write(f"[{datetime.now().strftime('%H:%M:%S')}] {args[0]} {args[1]} -> {args[2]}\n")

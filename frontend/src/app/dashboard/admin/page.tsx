@@ -39,7 +39,12 @@ import {
   Check,
   X,
   Phone,
-  AlertCircle
+  AlertCircle,
+  RotateCcw,
+  HeartPulse,
+  Droplet,
+  Send,
+  ExternalLink
 } from "lucide-react";
 import {
   fetchSOSRequests,
@@ -51,7 +56,8 @@ import {
   runRouteOptimization,
   runFairAllocation,
   synthesizeUnifiedActionPlan,
-  approveAndDispatchActionPlan
+  approveAndDispatchActionPlan,
+  updateSOSStatus
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
 
@@ -113,6 +119,75 @@ export default function AdminCommandCenterPage() {
       localStorage.setItem("resqlink_admin_acknowledged_sos", JSON.stringify(combined));
     } catch {}
     setUnreadReports((prev) => prev.filter((u) => u.id !== sosId));
+  };
+
+  // Report Inspection Modal & Real-Time Lifecycle Tracker State
+  const [selectedSOS, setSelectedSOS] = useState<any | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [assignedVehicleSelection, setAssignedVehicleSelection] = useState("TRUCK-4x4-ALPHA");
+  const [statusFeedback, setStatusFeedback] = useState<string | null>(null);
+
+  const availableVehicles = [
+    { code: "TRUCK-4x4-ALPHA", name: "Heavy Relief Truck Alpha", capacity: "1,500 kg", depot: "Chennai Central Base Alpha", type: "TRUCK" },
+    { code: "BOAT-RESCUE-02", name: "Inflatable Estuary Rescue Boat", capacity: "600 kg", depot: "Adyar Flood Waterway Station", type: "BOAT" },
+    { code: "RAPID-4X4-03", name: "High-Clearance Rapid 4x4", capacity: "800 kg", depot: "Guindy Staging Depot", type: "4X4" }
+  ];
+
+  const getStageIndex = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "PENDING": return 1;
+      case "ASSIGNED": return 2;
+      case "DISPATCHED": return 3;
+      case "DELIVERED":
+      case "RESOLVED": return 4;
+      default: return 1;
+    }
+  };
+
+  const parseList = (val: any): string[] => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (typeof val === "string") {
+      try {
+        const p = JSON.parse(val);
+        if (Array.isArray(p)) return p;
+      } catch {}
+      return [val];
+    }
+    return [];
+  };
+
+  const handleUpdateStatus = async (
+    sosId: string,
+    newStatus: "PENDING" | "ASSIGNED" | "DISPATCHED" | "DELIVERED",
+    vehicleCode?: string
+  ) => {
+    setIsUpdatingStatus(true);
+    const vehicle = vehicleCode || assignedVehicleSelection || "TRUCK-4x4-ALPHA";
+
+    // Update in backend database & broadcast
+    await updateSOSStatus(sosId, newStatus, vehicle);
+
+    // Update in local state
+    setSosList((prev) =>
+      prev.map((item) =>
+        item.id === sosId
+          ? { ...item, status: newStatus, assigned_vehicle_id: vehicle }
+          : item
+      )
+    );
+
+    if (selectedSOS && selectedSOS.id === sosId) {
+      setSelectedSOS((prev: any) => ({
+        ...prev,
+        status: newStatus,
+        assigned_vehicle_id: vehicle
+      }));
+    }
+
+    setStatusFeedback(`Report status updated to: ${newStatus} (${vehicle})`);
+    setTimeout(() => setStatusFeedback(null), 3500);
+    setIsUpdatingStatus(false);
   };
 
   // Active AI Model Subtab
@@ -758,10 +833,13 @@ export default function AdminCommandCenterPage() {
               const isCrit = sos.urgency_level === "CRITICAL";
               const isHigh = sos.urgency_level === "HIGH";
               const isUnread = unreadReports.some((u) => u.id === sos.id);
+              const stageIdx = getStageIndex(sos.status);
+
               return (
                 <div
                   key={sos.id}
-                  className={`p-4 rounded-2xl border transition-all ${
+                  onClick={() => setSelectedSOS(sos)}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer hover:border-amber-500/70 hover:shadow-xl ${
                     isUnread
                       ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
                       : isCrit
@@ -774,7 +852,7 @@ export default function AdminCommandCenterPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-white text-sm">{sos.victim_name}</span>
+                        <span className="font-bold text-white text-base">{sos.victim_name}</span>
                         {isUnread && (
                           <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center space-x-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
@@ -803,11 +881,16 @@ export default function AdminCommandCenterPage() {
                       }`}>
                         AI SCORE: {sos.urgency_score}/100 ({sos.urgency_level})
                       </span>
-                      <div className="text-[10px] text-slate-500 font-mono">Status: {sos.status}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Live Status: <strong className="text-white uppercase">{sos.status || "PENDING"}</strong>
+                      </div>
                       {isUnread && (
                         <button
                           type="button"
-                          onClick={() => handleAcknowledgeSingle(sos.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAcknowledgeSingle(sos.id);
+                          }}
                           className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold block ml-auto"
                         >
                           Mark Reviewed
@@ -815,9 +898,333 @@ export default function AdminCommandCenterPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Real-Time Status Progress Bar & Fast Opener */}
+                  <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+                        Real-Time Tracker:
+                      </span>
+                      <div className="flex items-center space-x-1.5 font-mono text-[11px]">
+                        <span className={`px-2 py-0.5 rounded-full ${
+                          stageIdx >= 1 ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-slate-900 text-slate-500"
+                        }`}>
+                          1. Intake ✓
+                        </span>
+                        <span className="text-slate-600">→</span>
+                        <span className={`px-2 py-0.5 rounded-full ${
+                          stageIdx >= 2 ? "bg-blue-950 text-blue-400 border border-blue-800" : "bg-slate-900 text-slate-500"
+                        }`}>
+                          2. Assigned
+                        </span>
+                        <span className="text-slate-600">→</span>
+                        <span className={`px-2 py-0.5 rounded-full ${
+                          stageIdx >= 3 ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse" : "bg-slate-900 text-slate-500"
+                        }`}>
+                          3. Dispatched
+                        </span>
+                        <span className="text-slate-600">→</span>
+                        <span className={`px-2 py-0.5 rounded-full ${
+                          stageIdx >= 4 ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold" : "bg-slate-900 text-slate-500"
+                        }`}>
+                          4. Delivered
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end md:self-auto">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSOS(sos);
+                        }}
+                        className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 shadow-md shadow-amber-500/20 transition-all hover:scale-105"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Inspect & Track Report →</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          REPORT DETAILS & REAL-TIME LIFECYCLE TRACKER MODAL
+          ========================================================================= */}
+      {selectedSOS && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl bg-slate-950 border border-slate-700 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-left my-8">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold">
+                    DISTRESS CALL #{selectedSOS.id}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-mono font-black ${
+                    selectedSOS.status === "DELIVERED"
+                      ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                      : selectedSOS.status === "DISPATCHED"
+                      ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
+                      : selectedSOS.status === "ASSIGNED"
+                      ? "bg-blue-950 text-blue-400 border border-blue-800"
+                      : "bg-amber-950 text-amber-400 border border-amber-800"
+                  }`}>
+                    ● LIVE STATUS: {selectedSOS.status || "PENDING"}
+                  </span>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-black ${
+                    selectedSOS.urgency_level === "CRITICAL"
+                      ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                      : "bg-amber-500 text-slate-950"
+                  }`}>
+                    AI URGENCY: {selectedSOS.urgency_score}/100 ({selectedSOS.urgency_level})
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white pt-1">
+                  {selectedSOS.victim_name}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {selectedSOS.address || "Sector Coordinates"} • {selectedSOS.people_count} {selectedSOS.people_count === 1 ? "Person" : "People Trapped"}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedSOS(null)}
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+                title="Close Report Inspector"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* REAL-TIME LIFECYCLE TRACKER (STEPPER) */}
+            <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-4 shadow-inner">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                  <span>Real-Time Relief Mission Lifecycle Tracker</span>
+                </span>
+                <span className="text-[11px] font-mono text-cyan-400">
+                  Current Stage: {getStageIndex(selectedSOS.status)} of 4
+                </span>
+              </div>
+
+              {/* 4-Step Stepper Line */}
+              <div className="grid grid-cols-4 gap-2 pt-2">
+                {[
+                  { step: 1, id: "PENDING", title: "1. Intake Logged", subtitle: "AI Triaged" },
+                  { step: 2, id: "ASSIGNED", title: "2. Unit Assigned", subtitle: "Fleet Allocated" },
+                  { step: 3, id: "DISPATCHED", title: "3. Dispatched", subtitle: "Convoy En Route" },
+                  { step: 4, id: "DELIVERED", title: "4. Aid Delivered", subtitle: "Mission Complete" }
+                ].map((st) => {
+                  const currentStep = getStageIndex(selectedSOS.status);
+                  const isDone = currentStep > st.step;
+                  const isCurrent = currentStep === st.step;
+                  return (
+                    <div key={st.step} className="flex flex-col items-center text-center space-y-1.5 relative">
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+                          isDone
+                            ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
+                            : isCurrent
+                            ? "bg-cyan-500 text-slate-950 font-black ring-4 ring-cyan-500/30 scale-110 shadow-lg shadow-cyan-500/30"
+                            : "bg-slate-800 text-slate-400 border border-slate-700"
+                        }`}
+                      >
+                        {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : st.step}
+                      </div>
+                      <div className="font-bold text-xs text-white leading-tight">{st.title}</div>
+                      <div className="text-[10px] text-slate-400 font-mono hidden sm:block">{st.subtitle}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Feedback toast banner if updated */}
+              {statusFeedback && (
+                <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 text-xs font-semibold text-center animate-in fade-in">
+                  ✓ {statusFeedback}
+                </div>
+              )}
+
+              {/* Coordinator Fast Status Advancers */}
+              <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                  <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">Assigned Fleet:</span>
+                  <select
+                    value={assignedVehicleSelection}
+                    onChange={(e) => setAssignedVehicleSelection(e.target.value)}
+                    className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-amber-500"
+                  >
+                    {availableVehicles.map((v) => (
+                      <option key={v.code} value={v.code}>
+                        {v.code} - {v.name} ({v.capacity})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                  {selectedSOS.status === "PENDING" && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleUpdateStatus(selectedSOS.id, "ASSIGNED", assignedVehicleSelection)}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md flex items-center space-x-1.5"
+                    >
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Assign Fleet Unit</span>
+                    </button>
+                  )}
+
+                  {selectedSOS.status === "ASSIGNED" && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleUpdateStatus(selectedSOS.id, "DISPATCHED")}
+                      className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black transition-all shadow-md flex items-center space-x-1.5"
+                    >
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>Dispatch Fleet (En Route)</span>
+                    </button>
+                  )}
+
+                  {selectedSOS.status === "DISPATCHED" && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleUpdateStatus(selectedSOS.id, "DELIVERED")}
+                      className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all shadow-md flex items-center space-x-1.5"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Confirm Delivery Complete</span>
+                    </button>
+                  )}
+
+                  {selectedSOS.status === "DELIVERED" && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleUpdateStatus(selectedSOS.id, "DISPATCHED")}
+                      className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 flex items-center space-x-1"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Re-Open Call</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Metadata Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+              
+              {/* Card 1: Citizen Distress Narrative */}
+              <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+                <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                  <Radio className="w-4 h-4 text-red-400" />
+                  <span>Distress Call Intake Message</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-slate-200 text-xs italic leading-relaxed">
+                  "{selectedSOS.description || "Citizen flagged urgent emergency rescue requirement."}"
+                </div>
+                <div className="space-y-1.5 pt-1 text-slate-300">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Contact Phone:</span>
+                    <a
+                      href={`tel:${selectedSOS.contact_phone}`}
+                      className="text-amber-400 font-mono font-bold hover:underline flex items-center space-x-1"
+                    >
+                      <Phone className="w-3 h-3 inline mr-1" />
+                      <span>{selectedSOS.contact_phone || "Not provided"}</span>
+                    </a>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Location Landmark:</span>
+                    <span className="text-white font-medium text-right">{selectedSOS.address || "Sector Coordinates"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Reported Timestamp:</span>
+                    <span className="text-slate-400 font-mono">{selectedSOS.requested_at || "Just now"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Vulnerabilities & Relief Needs */}
+              <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+                <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+                  <HeartPulse className="w-4 h-4 text-amber-400" />
+                  <span>Assessed Vulnerabilities & Relief Needs</span>
+                </div>
+                
+                <div>
+                  <span className="text-slate-400 text-[11px] font-semibold">Special Vulnerabilities Flagged:</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {parseList(selectedSOS.special_needs).length === 0 ? (
+                      <span className="text-slate-500 font-mono text-[11px]">None flagged by household</span>
+                    ) : (
+                      parseList(selectedSOS.special_needs).map((v: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-0.5 rounded-full bg-red-950/80 border border-red-800 text-red-300 text-xs font-bold flex items-center space-x-1"
+                        >
+                          <span>⚠ {v}</span>
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-1">
+                  <span className="text-slate-400 text-[11px] font-semibold">Priority Supply Needs:</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {parseList(selectedSOS.category_needs).map((cat: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-800 text-blue-300 text-xs font-mono font-bold"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800 flex justify-between text-slate-300">
+                  <span className="text-slate-400">Assigned Delivery Vehicle:</span>
+                  <span className="font-mono text-cyan-400 font-bold">
+                    {selectedSOS.assigned_vehicle_id || "Unassigned"}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <Link
+                href="/map"
+                className="flex items-center space-x-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-bold font-mono"
+              >
+                <MapPin className="w-4 h-4" />
+                <span>Inspect Geo-Location on Hazard Map →</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setSelectedSOS(null)}
+                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
+              >
+                Close Report Details
+              </button>
+            </div>
+
           </div>
         </div>
       )}
