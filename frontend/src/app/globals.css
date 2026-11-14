@@ -398,3 +398,56 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 .radar-pulse {
   animation: radar-pulse 2s infinite;
 }
+
+/* ==============================================================================
+   OFFICIAL INCIDENT ACTION PLAN (IAP) - PRINT STYLESHEET
+   ============================================================================== */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide navigation, buttons, background backdrops and general UI elements */
+  nav,
+  header,
+  footer,
+  aside,
+  button,
+  .print-hide,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Make sure the official IAP manifest is visible and fills page */
+  #official-iap-manifest {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12mm 15mm !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #official-iap-manifest * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .page-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+}

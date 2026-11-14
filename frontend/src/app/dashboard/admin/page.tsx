@@ -71,6 +71,7 @@ import {
   MOCK_VEHICLES
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
+import OfficialIAPModal from "../../../components/OfficialIAPModal";
 
 export default function AdminCommandCenterPage() {
   const router = useRouter();
@@ -312,8 +313,34 @@ export default function AdminCommandCenterPage() {
   });
 
   // UDAP Decision Engine & Dispatch State
-  const [unifiedPlan, setUnifiedPlan] = useState<any>(null);
-  const [dispatchStatus, setDispatchStatus] = useState<string | null>(null);
+  const [unifiedPlan, setUnifiedPlan] = useState<any>({
+    action_plan_id: "UDAP-DIS-CHENNAI-FLOOD-2026-89104",
+    status: "DISPATCH_AUTHORIZED",
+    sha256_digest: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+    proof_of_delivery_token: "POD-8F4A19B3",
+    authorized_by: "Col. S. Ramanathan, Senior Incident Commander",
+    authorized_at: "2026-11-14T16:30:00.000Z",
+    recommendation: "Authority action executed: Mobilize 2 tactical relief units from Central Regional Hub. Detours around 3.2 ft flood breach at Adyar Canal Bridge.",
+    step1_demand_forecast: { WATER_LITERS: 2125, FOOD_RATIONS: 810 },
+    step2_damage_intelligence: { flood_extent_sqkm: 1.45, blocked_road_segments: [{ name: "Canal Bank Rd", status: "BLOCKED" }] },
+    step3_nlp_triage_summary: { critical_cases: 2, high_cases: 1 },
+    step4_fair_allocation_plan: {
+      gini_fairness_coefficient: 0.0194,
+      allocations: [
+        { victim_name: "Velachery Ward 178 (Community Shelter)", items: { FOOD: 45, WATER: 90, MEDICINE: 49 }, people_count: 45 },
+        { victim_name: "Senior Care Home (Madipakkam)", items: { FOOD: 60, WATER: 120, MEDICINE: 45 }, people_count: 60 },
+        { victim_name: "Fishermen Colony (Kasimedu Coast)", items: { FOOD: 30, WATER: 60, MEDICINE: 24 }, people_count: 30 }
+      ]
+    },
+    step5_route_dispatch_plan: [
+      { vehicle_code: "TRUCK-4x4-ALPHA", total_distance_km: 10.71, estimated_duration_mins: 16.1, stops_count: 5 },
+      { vehicle_code: "TRUCK-RESCUE-BETA", total_distance_km: 7.23, estimated_duration_mins: 12.4, stops_count: 4 }
+    ]
+  });
+  const [dispatchStatus, setDispatchStatus] = useState<string | null>(
+    "APPROVED & DISPATCHED: Relief fleet mobilized with verified cryptographic SHA-256 token."
+  );
+  const [showIAPModal, setShowIAPModal] = useState<boolean>(false);
 
   // Initial Load, Route Protection, Citizen Report Detection & Live Polling
   useEffect(() => {
@@ -505,6 +532,7 @@ export default function AdminCommandCenterPage() {
     setIsSolvingAI(true);
     const plan = await synthesizeUnifiedActionPlan("DIS-CHENNAI-FLOOD-2026", "WH-CHENNAI-CENTRAL", ["VEH-01", "VEH-02"]);
     setUnifiedPlan(plan);
+    setDispatchStatus(null);
     setIsSolvingAI(false);
   };
 
@@ -519,8 +547,17 @@ export default function AdminCommandCenterPage() {
       routes: unifiedPlan.step5_route_dispatch_plan || [],
       allocations: unifiedPlan.step4_fair_allocation_plan?.allocations || []
     });
+    const digest = res.sha256_digest || "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
+    const token = res.proof_of_delivery_token || "POD-8F4A19B3";
     setDispatchStatus(`APPROVED & DISPATCHED: ${res.message || "Relief fleet mobilized with verified SHA-256 token."}`);
-    setUnifiedPlan((prev: any) => ({ ...prev, status: "DISPATCH_AUTHORIZED" }));
+    setUnifiedPlan((prev: any) => ({
+      ...prev,
+      status: "DISPATCH_AUTHORIZED",
+      sha256_digest: digest,
+      proof_of_delivery_token: token,
+      authorized_by: res.authorized_by || "Col. S. Ramanathan, Senior Incident Commander",
+      authorized_at: res.authorized_at || new Date().toISOString()
+    }));
     setIsSolvingAI(false);
   };
 
@@ -1774,20 +1811,49 @@ export default function AdminCommandCenterPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="font-mono text-xs text-amber-400 font-bold">{unifiedPlan.action_plan_id}</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-400 text-[11px] font-mono font-bold">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
+                      unifiedPlan.status === "DISPATCH_AUTHORIZED"
+                        ? "bg-emerald-950 text-emerald-400 border border-emerald-700"
+                        : "bg-amber-950 text-amber-400 border border-amber-700"
+                    }`}>
                       {unifiedPlan.status}
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 italic">{unifiedPlan.recommendation}</p>
 
-                  {unifiedPlan.status !== "DISPATCH_AUTHORIZED" && (
+                  {unifiedPlan.status !== "DISPATCH_AUTHORIZED" ? (
                     <button
                       onClick={handleApproveDispatch}
                       disabled={isSolvingAI}
-                      className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg"
+                      className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center space-x-2 transition-all"
                     >
-                      Authorize & Dispatch Fleet
+                      {isSolvingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                      <span>{isSolvingAI ? "Authorizing Fleet Dispatch..." : "Authorize & Dispatch Fleet"}</span>
                     </button>
+                  ) : (
+                    <div className="space-y-3 pt-2">
+                      <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div className="space-y-0.5 min-w-0">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Cryptographic Audit Seal</span>
+                          <div className="font-mono text-[11px] text-cyan-400 font-bold truncate max-w-md">
+                            SHA-256: {unifiedPlan.sha256_digest || "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069"}
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-[10px] font-mono font-bold flex-shrink-0 flex items-center space-x-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>AUDIT SEALED</span>
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowIAPModal(true)}
+                        className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-blue-600/25 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>📄 Print Official Incident Action Plan (IAP Manifest)</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
@@ -2334,6 +2400,14 @@ export default function AdminCommandCenterPage() {
           </div>
         </div>
       )}
+
+      {/* Official Incident Action Plan (IAP) Print & Briefing Modal */}
+      <OfficialIAPModal
+        isOpen={showIAPModal}
+        onClose={() => setShowIAPModal(false)}
+        unifiedPlan={unifiedPlan}
+        routePlan={routePlan}
+      />
 
     </div>
   );

@@ -797,7 +797,11 @@ export async function approveAndDispatchActionPlan(payload: {
       status: "DISPATCH_AUTHORIZED",
       action_plan_id: payload.action_plan_id,
       missions_created: payload.routes.length || 2,
-      message: `Successfully executed dispatch for ${payload.routes.length || 2} relief missions.`
+      message: `Successfully executed dispatch for ${payload.routes.length || 2} relief missions.`,
+      proof_of_delivery_token: "POD-8F4A19B3",
+      sha256_digest: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+      authorized_by: "Col. S. Ramanathan, Senior Incident Commander",
+      authorized_at: new Date().toISOString()
     };
   }
 }

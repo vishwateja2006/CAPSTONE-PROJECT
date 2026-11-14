@@ -394,12 +394,12 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             })
 
         # 6. Step 6: UDAP Synthesis
-        if path in ("/api/v1/decision/synthesize", "/api/v1/udap/synthesize"):
+        if path in ("/api/v1/decision/synthesize", "/api/v1/udap/synthesize", "/api/v1/decision-engine/synthesize-action-plan"):
             plan_id = f"UDAP-CHENNAI-{int(datetime.now().timestamp())}"
             return self._json({
                 "action_plan_id": plan_id,
                 "status": "PENDING_AUTHORITY_APPROVAL",
-                "recommendation": "Authorize dispatch of 2 vehicles from Central Depot Alpha. Supplies allocated with Gini equity 0.0194. Bypasses 1 flooded bridge link.",
+                "recommendation": "Authority action recommended: Authorize dispatch of 2 vehicles from Central Depot Alpha. Supplies allocated with Gini equity 0.0194. Bypasses 1 flooded bridge link.",
                 "step5_route_dispatch_plan": [
                     {"vehicle_code": "TRUCK-4x4-ALPHA", "distance_km": 10.71, "duration_mins": 16.1},
                     {"vehicle_code": "TRUCK-RESCUE-BETA", "distance_km": 7.23, "duration_mins": 12.4}
@@ -413,10 +413,10 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             })
 
         # 7. Step 7: UDAP Dispatch & Cryptographic Audit Seal
-        if path in ("/api/v1/decision/dispatch", "/api/v1/udap/dispatch"):
+        if path in ("/api/v1/decision/dispatch", "/api/v1/udap/dispatch", "/api/v1/decision-engine/approve-and-dispatch"):
             token = f"POD-{hashlib.sha256(str(datetime.now().timestamp()).encode()).hexdigest()[:12].upper()}"
-            digest = hashlib.sha256(token.encode()).hexdigest()
-            plan_id = data.get("action_plan_id", "UDAP-DISPATCH-01")
+            digest = hashlib.sha256(f"{token}:{datetime.now().isoformat()}".encode()).hexdigest()
+            plan_id = data.get("action_plan_id", "UDAP-DIS-CHENNAI-FLOOD-2026-89104")
 
             # Write into audit_logs table
             try:
@@ -433,10 +433,14 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 pass
 
             return self._json({
-                "status": "SUCCESS",
+                "status": "DISPATCH_AUTHORIZED",
                 "message": "Dispatch authorized and sealed into cryptographic ledger.",
                 "proof_of_delivery_token": token,
-                "sha256_digest": digest
+                "sha256_digest": digest,
+                "action_plan_id": plan_id,
+                "missions_created": 2,
+                "authorized_by": "Col. S. Ramanathan, Senior Incident Commander",
+                "authorized_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
             })
 
         # 5. Direct Status Updates for Distress Reports
