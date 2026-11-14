@@ -678,16 +678,6 @@ export default function AdminCommandCenterPage() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowIAPModal(true)}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white border border-blue-500 text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 transition-all transform hover:scale-105 active:scale-95"
-            title="Export / Print Official Incident Action Plan (PDF)"
-          >
-            <Printer className="w-4 h-4 text-white" />
-            <span>Print PDF Action Plan</span>
-          </button>
-
           <Link
             href="/map"
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
@@ -849,7 +839,7 @@ export default function AdminCommandCenterPage() {
           }`}
         >
           <Cpu className="w-4 h-4" />
-          <span className="truncate">2. AI Models & UDAP (Print PDF)</span>
+          <span className="truncate">2. AI Models & UDAP</span>
         </button>
 
         <button
@@ -1289,38 +1279,26 @@ export default function AdminCommandCenterPage() {
       {activeTab === "AI_MODELS" && (
         <div className="space-y-6 animate-in fade-in">
           
-          {/* Sub-tab switcher for models & Print PDF Action */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-bold">
-            <div className="flex flex-wrap gap-2">
-              {[
-                { id: 1, label: "Model 1: Demand Forecast (LSTM)" },
-                { id: 2, label: "Model 2: Satellite NDWI Vision" },
-                { id: 3, label: "Model 3: Distress NLP Triage" },
-                { id: 4, label: "Model 4: OR-Tools CVRP Routing" },
-                { id: 5, label: "Model 5: Max-Min Fair Allocation" },
-                { id: 6, label: "⚡ Step 6 & 7: UDAP & Dispatch (Print PDF)" }
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => setActiveModel(m.id)}
-                  className={`py-2 px-3 rounded-xl transition-all ${
-                    activeModel === m.id ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowIAPModal(true)}
-              className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center space-x-1.5 transition-all transform hover:scale-105 active:scale-95"
-              title="Print or Save Official Incident Action Plan as PDF"
-            >
-              <Printer className="w-4 h-4 text-white" />
-              <span>📄 Print PDF Action Plan</span>
-            </button>
+          {/* Sub-tab switcher for models */}
+          <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-bold">
+            {[
+              { id: 1, label: "Model 1: Demand Forecast (LSTM)" },
+              { id: 2, label: "Model 2: Satellite NDWI Vision" },
+              { id: 3, label: "Model 3: Distress NLP Triage" },
+              { id: 4, label: "Model 4: OR-Tools CVRP Routing" },
+              { id: 5, label: "Model 5: Max-Min Fair Allocation" },
+              { id: 6, label: "⚡ Step 6 & 7: UDAP & Fleet Dispatch" }
+            ].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setActiveModel(m.id)}
+                className={`py-2 px-3 rounded-xl transition-all ${
+                  activeModel === m.id ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
           {/* ========================================================================= */}
