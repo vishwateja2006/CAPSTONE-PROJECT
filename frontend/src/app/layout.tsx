@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "../components/Navbar";
 
 export const metadata: Metadata = {
-  title: "ResQAI - Disaster Relief & Intelligent Route Optimization Platform",
+  title: "ResQLink - Disaster Relief & Intelligent Route Optimization Platform",
   description: "AI-Powered Emergency Response, Equitable Resource Allocation, and Dynamic Route Optimization Platform",
 };
 
@@ -20,7 +20,7 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-          <p>© 2026 ResQAI Capstone Project - Autonomous Disaster Management, Max-Min Allocation & Geospatial VRP Engine.</p>
+          <p>© 2026 ResQLink Capstone Project - Autonomous Disaster Management, Max-Min Allocation & Geospatial VRP Engine.</p>
         </footer>
       </body>
     </html>
