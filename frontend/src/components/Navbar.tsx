@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { getAuthSession, clearAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
 import ThemeDropdown from "./ThemeDropdown";
-import ActiveIncidentBanner from "./ActiveIncidentBanner";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -75,7 +74,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur-md border-b border-slate-800">
       {/* Full width container: anchors items to their respective ends (Left & Right) */}
       <div className="w-full px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
-        
+
         {/* LEFT END: Clean Brand Logo */}
         <Link href="/" onClick={handleLogoClick} className="flex items-center space-x-3 group">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 via-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
@@ -99,26 +98,24 @@ export default function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                        isActive
-                          ? item.href === "/dashboard/admin"
-                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-500/10"
-                            : item.href === "/dashboard/user"
+                      className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${isActive
+                        ? item.href === "/dashboard/admin"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-500/10"
+                          : item.href === "/dashboard/user"
                             ? "bg-blue-500/20 text-blue-300 border border-blue-500/60 shadow-sm shadow-blue-500/10"
                             : "bg-slate-800 text-white border border-slate-700"
-                          : "text-slate-300 hover:text-white hover:bg-slate-900 border border-transparent"
-                      }`}
+                        : "text-slate-300 hover:text-white hover:bg-slate-900 border border-transparent"
+                        }`}
                     >
                       <Icon
-                        className={`w-4 h-4 ${
-                          isActive
-                            ? item.href === "/dashboard/admin"
-                              ? "text-amber-400"
-                              : item.href === "/dashboard/user"
+                        className={`w-4 h-4 ${isActive
+                          ? item.href === "/dashboard/admin"
+                            ? "text-amber-400"
+                            : item.href === "/dashboard/user"
                               ? "text-blue-400"
                               : "text-white"
-                            : "text-slate-400"
-                        }`}
+                          : "text-slate-400"
+                          }`}
                       />
                       <span>{item.label}</span>
                     </Link>
@@ -136,16 +133,14 @@ export default function Navbar() {
             /* Authenticated: Role Badge + Appearance (just left of Logout) + Logout */
             <div className="flex items-center space-x-2">
               <div
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs border ${
-                  auth.role === "ADMIN"
-                    ? "bg-amber-950/60 border-amber-500/50 text-amber-300"
-                    : "bg-blue-950/60 border-blue-500/50 text-blue-300"
-                }`}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs border ${auth.role === "ADMIN"
+                  ? "bg-amber-950/60 border-amber-500/50 text-amber-300"
+                  : "bg-blue-950/60 border-blue-500/50 text-blue-300"
+                  }`}
               >
                 <div
-                  className={`w-2 h-2 rounded-full animate-ping ${
-                    auth.role === "ADMIN" ? "bg-amber-400" : "bg-blue-400"
-                  }`}
+                  className={`w-2 h-2 rounded-full animate-ping ${auth.role === "ADMIN" ? "bg-amber-400" : "bg-blue-400"
+                    }`}
                 />
                 <User className="w-3.5 h-3.5" />
                 <span className="font-bold tracking-tight">
@@ -208,9 +203,8 @@ export default function Navbar() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center space-x-2 px-3 py-2.5 rounded-xl text-xs font-bold ${
-                      isActive ? "bg-slate-800 text-white" : "text-slate-300 hover:bg-slate-900"
-                    }`}
+                    className={`flex items-center space-x-2 px-3 py-2.5 rounded-xl text-xs font-bold ${isActive ? "bg-slate-800 text-white" : "text-slate-300 hover:bg-slate-900"
+                      }`}
                   >
                     <Icon className="w-4 h-4 text-amber-400" />
                     <span>{item.label}</span>
@@ -248,9 +242,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-
-      {/* Emergency Operational Ribbon: Active Incident & DEFCON Status */}
-      <ActiveIncidentBanner />
     </header>
   );
 }
