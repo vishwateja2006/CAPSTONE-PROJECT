@@ -44,7 +44,15 @@ import {
   HeartPulse,
   Droplet,
   Send,
-  ExternalLink
+  ExternalLink,
+  Boxes,
+  Search,
+  Building2,
+  Filter,
+  Shield,
+  Anchor,
+  LifeBuoy,
+  Crosshair
 } from "lucide-react";
 import {
   fetchSOSRequests,
@@ -57,7 +65,9 @@ import {
   runFairAllocation,
   synthesizeUnifiedActionPlan,
   approveAndDispatchActionPlan,
-  updateSOSStatus
+  updateSOSStatus,
+  MOCK_RELIEF_CENTERS,
+  MOCK_VEHICLES
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
 
@@ -127,11 +137,25 @@ export default function AdminCommandCenterPage() {
   const [assignedVehicleSelection, setAssignedVehicleSelection] = useState("TRUCK-4x4-ALPHA");
   const [statusFeedback, setStatusFeedback] = useState<string | null>(null);
 
-  const availableVehicles = [
-    { code: "TRUCK-4x4-ALPHA", name: "Heavy Relief Truck Alpha", capacity: "1,500 kg", depot: "Chennai Central Base Alpha", type: "TRUCK" },
-    { code: "BOAT-RESCUE-02", name: "Inflatable Estuary Rescue Boat", capacity: "600 kg", depot: "Adyar Flood Waterway Station", type: "BOAT" },
-    { code: "RAPID-4X4-03", name: "High-Clearance Rapid 4x4", capacity: "800 kg", depot: "Guindy Staging Depot", type: "4X4" }
-  ];
+  // Warehouse & Inventory State
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("ALL");
+  const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState<string>("ALL");
+  const [inventorySearchTerm, setInventorySearchTerm] = useState<string>("");
+
+  // Fleet Filter State
+  const [fleetTypeFilter, setFleetTypeFilter] = useState<string>("ALL");
+  const [fleetStatusFilter, setFleetStatusFilter] = useState<string>("ALL");
+
+  const effectiveCenters = (centers && centers.length > 0) ? centers : MOCK_RELIEF_CENTERS;
+  const effectiveVehicles = (vehicles && vehicles.length > 0) ? vehicles : MOCK_VEHICLES;
+
+  const availableVehicles = effectiveVehicles.map((v) => ({
+    code: v.vehicle_code,
+    name: `${v.vehicle_code} (${v.vehicle_type})`,
+    capacity: `${v.capacity_kg} kg`,
+    depot: v.assigned_driver || (v as any).home_depot || "Regional Depot",
+    type: v.vehicle_type
+  }));
 
   const getStageIndex = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -1792,38 +1816,359 @@ export default function AdminCommandCenterPage() {
       {/* TAB 3: WAREHOUSES & RESOURCE STOCK */}
       {activeTab === "INVENTORY" && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in">
-          <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-            <h2 className="text-xl font-black text-white flex items-center space-x-2">
-              <Package className="w-5 h-5 text-amber-400" />
-              <span>Relief Warehouse Inventory & Stock Controls</span>
-            </h2>
-            <span className="text-xs font-mono text-slate-400">2 WAREHOUSES ONLINE</span>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <h2 className="text-xl font-black text-white flex items-center space-x-2">
+                <Package className="w-5 h-5 text-amber-400" />
+                <span>Regional Relief Warehouses & Respected Inventory</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Multi-depot inventory tracking across all emergency humanitarian categories (Water, Food, Medical, Shelter, Hygiene).
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                {effectiveCenters.length} STRATEGIC WAREHOUSES
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                ALL STOCK TYPES AVAILABLE
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-semibold">Drinking Water</span>
-              <div className="text-2xl font-black text-cyan-400 font-mono">1,200 Cans</div>
-              <div className="text-[11px] text-slate-500">Depot Alpha (5L Cans)</div>
+          {/* Quick Aggregate Stock Statistics across all warehouses */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1">
+              <div className="flex items-center space-x-2 text-cyan-400 text-xs font-semibold">
+                <Droplet className="w-4 h-4" />
+                <span>Drinking Water</span>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">
+                {effectiveCenters.reduce((sum, c) => sum + (c.inventory_items || []).filter((i: any) => i.item_category === "WATER").reduce((s: number, i: any) => s + (i.quantity_available || 0), 0), 0).toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500">Cans, Bottles & Jerry Cans</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-semibold">Food Rations</span>
-              <div className="text-2xl font-black text-amber-400 font-mono">850 Packs</div>
-              <div className="text-[11px] text-slate-500">Ready-to-eat packs</div>
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1">
+              <div className="flex items-center space-x-2 text-amber-400 text-xs font-semibold">
+                <Flame className="w-4 h-4" />
+                <span>Emergency Food</span>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-amber-400 font-mono">
+                {effectiveCenters.reduce((sum, c) => sum + (c.inventory_items || []).filter((i: any) => i.item_category === "FOOD").reduce((s: number, i: any) => s + (i.quantity_available || 0), 0), 0).toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500">Rations, Biscuits & Infant Milk</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-semibold">Trauma Medical Kits</span>
-              <div className="text-2xl font-black text-red-400 font-mono">150 Kits</div>
-              <div className="text-[11px] text-slate-500">First-aid surgical units</div>
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1">
+              <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold">
+                <HeartPulse className="w-4 h-4" />
+                <span>Medical Supplies</span>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-rose-400 font-mono">
+                {effectiveCenters.reduce((sum, c) => sum + (c.inventory_items || []).filter((i: any) => i.item_category === "MEDICAL").reduce((s: number, i: any) => s + (i.quantity_available || 0), 0), 0).toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500">Trauma Kits, Insulin & O2</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-xs text-slate-400 font-semibold">Thermal Tents</span>
-              <div className="text-2xl font-black text-emerald-400 font-mono">300 Units</div>
-              <div className="text-[11px] text-slate-500">All-weather shelter kits</div>
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1">
+              <div className="flex items-center space-x-2 text-emerald-400 text-xs font-semibold">
+                <Shield className="w-4 h-4" />
+                <span>Shelter Equipment</span>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
+                {effectiveCenters.reduce((sum, c) => sum + (c.inventory_items || []).filter((i: any) => i.item_category === "SHELTER").reduce((s: number, i: any) => s + (i.quantity_available || 0), 0), 0).toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500">Tents, Tarpaulins & Blankets</div>
             </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1 col-span-2 sm:col-span-1">
+              <div className="flex items-center space-x-2 text-purple-400 text-xs font-semibold">
+                <Sparkles className="w-4 h-4" />
+                <span>Hygiene & Power</span>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-purple-400 font-mono">
+                {effectiveCenters.reduce((sum, c) => sum + (c.inventory_items || []).filter((i: any) => i.item_category === "HYGIENE" || i.item_category === "SANITATION").reduce((s: number, i: any) => s + (i.quantity_available || 0), 0), 0).toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500">Sanitation, Masks & Solar Kits</div>
+            </div>
+          </div>
+
+          {/* Warehouse Selector Tabs */}
+          <div className="space-y-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Select Respected Warehouse</span>
+              </span>
+              <span className="text-[11px] text-slate-500">
+                Click a depot to inspect its isolated inventory
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedWarehouseId("ALL")}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                  selectedWarehouseId === "ALL"
+                    ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                    : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
+                }`}
+              >
+                <Boxes className="w-3.5 h-3.5" />
+                <span>All Warehouses Combined</span>
+              </button>
+
+              {effectiveCenters.map((rc) => {
+                const isSelected = selectedWarehouseId === rc.id;
+                const itemsCount = (rc.inventory_items || []).length;
+                return (
+                  <button
+                    key={rc.id}
+                    onClick={() => setSelectedWarehouseId(rc.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-2 ${
+                      isSelected
+                        ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                        : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5 opacity-80" />
+                    <span>{rc.name.replace("Chennai ", "").replace("Humanitarian Relief ", "")}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                      isSelected ? "bg-slate-950/30 text-slate-950 font-bold" : "bg-slate-800 text-slate-400"
+                    }`}>
+                      {itemsCount} SKUs
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Warehouse Detail Card (If specific warehouse is selected) */}
+          {selectedWarehouseId !== "ALL" && (() => {
+            const currentCenter = effectiveCenters.find((c) => c.id === selectedWarehouseId);
+            if (!currentCenter) return null;
+            const occupancyPct = Math.round(((currentCenter.current_occupancy || 0) / (currentCenter.capacity_people || 1000)) * 100);
+            return (
+              <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 bg-gradient-to-r from-amber-500/5 via-transparent to-transparent space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-slate-950">
+                        {currentCenter.id}
+                      </span>
+                      <h3 className="text-base font-bold text-white">{currentCenter.name}</h3>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center space-x-1">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400 inline" />
+                      <span>{currentCenter.location_name}</span>
+                      <span className="font-mono text-slate-500">({currentCenter.latitude?.toFixed(4)}, {currentCenter.longitude?.toFixed(4)})</span>
+                    </p>
+                  </div>
+                  <div className="text-right text-xs">
+                    <div className="text-slate-400">Logistics Commander: <span className="text-white font-medium">{currentCenter.contact_person || "Operations Team"}</span></div>
+                    <div className="text-amber-400 font-mono mt-0.5 flex items-center justify-end space-x-1">
+                      <Phone className="w-3 h-3" />
+                      <span>{currentCenter.phone || "+91-9444012345"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-900 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-500">Shelter Capacity:</span>
+                    <div className="text-slate-200 font-mono font-bold">{currentCenter.capacity_people?.toLocaleString()} persons</div>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Current Occupancy:</span>
+                    <div className="text-amber-400 font-mono font-bold">{currentCenter.current_occupancy} displaced ({occupancyPct}%)</div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5 mt-1 overflow-hidden">
+                      <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: `${Math.min(100, occupancyPct)}%` }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Respected Warehouse Stock:</span>
+                    <div className="text-cyan-400 font-mono font-bold">{(currentCenter.inventory_items || []).length} SKUs across all 5 Humanitarian Categories</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Category Filters and Search Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filter:</span>
+              </span>
+              {[
+                { key: "ALL", label: "All Types" },
+                { key: "WATER", label: "Water", icon: Droplet, color: "text-cyan-400" },
+                { key: "FOOD", label: "Food", icon: Flame, color: "text-amber-400" },
+                { key: "MEDICAL", label: "Medical", icon: HeartPulse, color: "text-rose-400" },
+                { key: "SHELTER", label: "Shelter", icon: Shield, color: "text-emerald-400" },
+                { key: "HYGIENE", label: "Hygiene", icon: Sparkles, color: "text-purple-400" }
+              ].map((cat) => {
+                const isSelected = inventoryCategoryFilter === cat.key;
+                const IconComponent = cat.icon;
+                return (
+                  <button
+                    key={cat.key}
+                    onClick={() => setInventoryCategoryFilter(cat.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                      isSelected
+                        ? "bg-slate-200 text-slate-950 font-black shadow"
+                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {IconComponent && <IconComponent className={`w-3 h-3 ${cat.color || ""}`} />}
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="relative min-w-[220px]">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={inventorySearchTerm}
+                onChange={(e) => setInventorySearchTerm(e.target.value)}
+                placeholder="Search stock by name..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* Respected Warehouse Inventory Items Grid */}
+          <div className="space-y-3">
+            {(() => {
+              let stockList: any[] = [];
+              if (selectedWarehouseId === "ALL") {
+                effectiveCenters.forEach((c) => {
+                  (c.inventory_items || []).forEach((item: any) => {
+                    stockList.push({
+                      ...item,
+                      centerId: c.id,
+                      centerName: c.name,
+                      centerLocation: c.location_name
+                    });
+                  });
+                });
+              } else {
+                const c = effectiveCenters.find((rc) => rc.id === selectedWarehouseId);
+                if (c) {
+                  (c.inventory_items || []).forEach((item: any) => {
+                    stockList.push({
+                      ...item,
+                      centerId: c.id,
+                      centerName: c.name,
+                      centerLocation: c.location_name
+                    });
+                  });
+                }
+              }
+
+              if (inventoryCategoryFilter !== "ALL") {
+                stockList = stockList.filter((item) => {
+                  if (inventoryCategoryFilter === "HYGIENE") {
+                    return item.item_category === "HYGIENE" || item.item_category === "SANITATION";
+                  }
+                  return item.item_category === inventoryCategoryFilter;
+                });
+              }
+
+              if (inventorySearchTerm.trim()) {
+                const term = inventorySearchTerm.toLowerCase();
+                stockList = stockList.filter((item) =>
+                  item.item_name.toLowerCase().includes(term) ||
+                  item.item_category.toLowerCase().includes(term) ||
+                  (item.centerName && item.centerName.toLowerCase().includes(term))
+                );
+              }
+
+              if (stockList.length === 0) {
+                return (
+                  <div className="p-8 text-center text-slate-500 text-xs bg-slate-950 rounded-2xl border border-slate-800">
+                    No inventory records match the selected warehouse and category filter.
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {stockList.map((item, idx) => {
+                    const catColors: any = {
+                      WATER: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                      FOOD: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                      MEDICAL: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                      SHELTER: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                      HYGIENE: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                      SANITATION: "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                    };
+                    const badgeClass = catColors[item.item_category] || "bg-slate-800 text-slate-300";
+                    const isLowStock = item.quantity_available <= 100;
+
+                    return (
+                      <div
+                        key={`${item.id || idx}-${item.centerId}`}
+                        className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between space-y-3"
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${badgeClass}`}>
+                              {item.item_category}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              {item.id || `SKU-${idx + 1}`}
+                            </span>
+                          </div>
+
+                          <h4 className="text-sm font-bold text-white leading-snug">
+                            {item.item_name}
+                          </h4>
+
+                          {selectedWarehouseId === "ALL" && (
+                            <p className="text-[11px] text-slate-400 flex items-center space-x-1">
+                              <Building2 className="w-3 h-3 text-amber-400 inline shrink-0" />
+                              <span className="truncate">{item.centerName}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-900 flex items-end justify-between">
+                          <div>
+                            <span className="text-[10px] uppercase font-semibold text-slate-500">Available Stock</span>
+                            <div className="text-xl font-black font-mono text-white flex items-baseline space-x-1">
+                              <span className={isLowStock ? "text-amber-400" : "text-emerald-400"}>
+                                {item.quantity_available?.toLocaleString()}
+                              </span>
+                              <span className="text-xs font-normal text-slate-400">{item.unit || "units"}</span>
+                            </div>
+                            {item.quantity_reserved > 0 && (
+                              <div className="text-[10px] font-mono text-slate-500">
+                                Reserved: {item.quantity_reserved} {item.unit}
+                              </div>
+                            )}
+                          </div>
+
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            isLowStock
+                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                              : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                          }`}>
+                            {isLowStock ? "RESERVE LOW" : "OPTIMAL"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -1831,32 +2176,141 @@ export default function AdminCommandCenterPage() {
       {/* TAB 4: FLEET & LOGISTICS */}
       {activeTab === "FLEET" && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in">
-          <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-            <h2 className="text-xl font-black text-white flex items-center space-x-2">
-              <Truck className="w-5 h-5 text-emerald-400" />
-              <span>Fleet Telemetry & Mission Tracking</span>
-            </h2>
-            <span className="text-xs font-mono text-emerald-400 font-bold">{vehicles.length || 3} VEHICLES ACTIVE</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <h2 className="text-xl font-black text-white flex items-center space-x-2">
+                <Truck className="w-5 h-5 text-emerald-400" />
+                <span>Multi-Modal Disaster Relief Fleet & Telemetry</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Real-time tracking of heavy 4x4 trucks, rescue boats, ICU ambulances, and autonomous aerial delivery drones.
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                {effectiveVehicles.length} FLEET UNITS DEPLOYED
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {vehicles.map((v) => (
-              <div key={v.id} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-white text-base">{v.vehicle_code}</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                    v.status === "IDLE" ? "bg-slate-800 text-slate-300" : "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                  }`}>
-                    {v.status}
-                  </span>
-                </div>
-                <div className="space-y-1 text-xs text-slate-400">
-                  <div className="flex justify-between"><span>Chassis:</span> <span className="text-white font-semibold">{v.vehicle_type}</span></div>
-                  <div className="flex justify-between"><span>Capacity:</span> <span className="text-cyan-400 font-mono font-bold">{v.capacity_kg} kg</span></div>
-                  <div className="flex justify-between"><span>Driver:</span> <span className="text-slate-200">{v.assigned_driver || "Assigned Driver"}</span></div>
-                </div>
-              </div>
-            ))}
+          {/* Quick Vehicle Type and Status Filter Pills */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Chassis:</span>
+              </span>
+              {[
+                { key: "ALL", label: "All Fleet", icon: Truck },
+                { key: "TRUCK", label: "Trucks", icon: Truck },
+                { key: "BOAT", label: "Rescue Boats", icon: Anchor },
+                { key: "4X4", label: "4x4 & ICU Ambulances", icon: Shield },
+                { key: "DRONE", label: "Aerial Drones", icon: Radio }
+              ].map((f) => {
+                const isSelected = fleetTypeFilter === f.key;
+                const IconComp = f.icon;
+                return (
+                  <button
+                    key={f.key}
+                    onClick={() => setFleetTypeFilter(f.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                      isSelected
+                        ? "bg-emerald-500 text-slate-950 font-black shadow"
+                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <IconComp className="w-3.5 h-3.5" />
+                    <span>{f.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-slate-500">Status:</span>
+              {["ALL", "IDLE", "EN_ROUTE"].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setFleetStatusFilter(st)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                    fleetStatusFilter === st
+                      ? "bg-slate-200 text-slate-950"
+                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fleet Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {effectiveVehicles
+              .filter((v) => {
+                if (fleetTypeFilter !== "ALL" && v.vehicle_type !== fleetTypeFilter) return false;
+                if (fleetStatusFilter !== "ALL" && v.status !== fleetStatusFilter) return false;
+                return true;
+              })
+              .map((v) => {
+                const isDrone = v.vehicle_type === "DRONE";
+                const isBoat = v.vehicle_type === "BOAT";
+                const isAmbulance = v.vehicle_code.includes("AMBULANCE");
+                return (
+                  <div key={v.id} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <span className="font-bold text-white text-base block font-mono">{v.vehicle_code}</span>
+                          <span className="text-[10px] text-slate-500 uppercase tracking-wide">
+                            {isDrone ? "Autonomous Aerial Drone" : isBoat ? "Maritime Rescue Craft" : isAmbulance ? "Mobile ICU Ambulance" : `${v.vehicle_type} Relief Transport`}
+                          </span>
+                        </div>
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${
+                          v.status === "IDLE"
+                            ? "bg-slate-800 text-slate-300"
+                            : "bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse"
+                        }`}>
+                          {v.status}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-slate-400 mt-3 pt-3 border-t border-slate-900">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Chassis Type:</span>
+                          <span className="text-white font-semibold flex items-center space-x-1">
+                            {isBoat ? <Anchor className="w-3 h-3 text-cyan-400 inline" /> : isDrone ? <Radio className="w-3 h-3 text-amber-400 inline" /> : <Truck className="w-3 h-3 text-emerald-400 inline" />}
+                            <span>{v.vehicle_type}</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Max Payload:</span>
+                          <span className="text-cyan-400 font-mono font-bold">{v.capacity_kg} kg</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Cruise Speed:</span>
+                          <span className="text-slate-200 font-mono font-medium">{v.speed_kmh || 35} km/h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Driver / Operator:</span>
+                          <span className="text-slate-200 truncate max-w-[140px] text-right font-medium">{v.assigned_driver || "Assigned Driver"}</span>
+                        </div>
+                        {(v as any).home_depot && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Home Depot:</span>
+                            <span className="text-amber-400 truncate max-w-[140px] text-right text-[11px]">{(v as any).home_depot}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-900/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                      <span>GPS: {v.current_lat?.toFixed(3)}, {v.current_lon?.toFixed(3)}</span>
+                      <span className="text-emerald-400 font-bold">READY</span>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       )}

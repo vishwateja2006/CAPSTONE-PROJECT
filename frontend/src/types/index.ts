@@ -22,11 +22,14 @@ export interface Disaster {
 
 export interface InventoryItem {
   id: string;
-  item_category: "FOOD" | "WATER" | "MEDICAL" | "SHELTER" | "SANITATION";
+  item_category: "FOOD" | "WATER" | "MEDICAL" | "SHELTER" | "SANITATION" | "HYGIENE" | string;
   item_name: string;
   quantity_available: number;
   quantity_reserved: number;
   unit: string;
+  relief_center_id?: string;
+  warehouse_name?: string;
+  location_name?: string;
 }
 
 export interface ReliefCenter {
@@ -46,13 +49,14 @@ export interface ReliefCenter {
 export interface ReliefVehicle {
   id: string;
   vehicle_code: string;
-  vehicle_type: "TRUCK" | "BOAT" | "4X4" | "DRONE" | "HELICOPTER";
+  vehicle_type: "TRUCK" | "BOAT" | "4X4" | "DRONE" | "HELICOPTER" | string;
   capacity_kg: number;
   current_lat: number;
   current_lon: number;
-  status: "IDLE" | "EN_ROUTE" | "RETURNING" | "MAINTENANCE";
+  status: "IDLE" | "EN_ROUTE" | "RETURNING" | "MAINTENANCE" | "DISPATCHED" | string;
   assigned_driver?: string;
   speed_kmh: number;
+  home_depot?: string;
 }
 
 export interface SOSRequest {

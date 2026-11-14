@@ -268,47 +268,119 @@ def main():
     VALUES ('DIS-CHENNAI-FLOOD-2026', 'Cyclone Michaung Relict Inundation', 'FLOOD', 'CRITICAL', 'ACTIVE', 13.0600, 80.2500, 30.0, 'Category 4 Surge Surge breach with severe low-lying inundation.', 'USR-02')
     """)
 
-    # 3. Relief Centers & Warehouses
+    # 3. Relief Centers & Warehouses (5 Regional Strategic Depots)
     relief_centers = [
-        ("RC-01", "DIS-CHENNAI-FLOOD-2026", "Chennai Central Humanitarian Relief Hub", "Jawaharlal Nehru Stadium Complex", 13.0827, 80.2707, "Col. Rajesh Sharma", "+91-9444012345", 2500, 450),
-        ("RC-02", "DIS-CHENNAI-FLOOD-2026", "South Chennai Emergency Depot Beta", "Velachery Flood Relief Center", 13.0450, 80.2400, "Vikram Singh", "+91-9444054321", 1200, 320)
+        ("RC-01", "DIS-CHENNAI-FLOOD-2026", "Chennai Central Humanitarian Relief Base Alpha", "Jawaharlal Nehru Stadium Complex", 13.0827, 80.2707, "Col. Rajesh Sharma (Logistics Cmdr)", "+91-9444012345", 3000, 450),
+        ("RC-02", "DIS-CHENNAI-FLOOD-2026", "South Chennai Emergency Staging Depot Beta", "Guindy SIDCO Logistics Hub", 13.0067, 80.2026, "Capt. Sundar Raman (Ops Head)", "+91-9444054321", 2000, 320),
+        ("RC-03", "DIS-CHENNAI-FLOOD-2026", "North Coastal Maritime Relief Depot Gamma", "Kasimedu Fishing Harbour Forward Base", 13.1250, 80.2970, "Officer K. Annamalai (Maritime Cmdr)", "+91-9444078901", 1500, 210),
+        ("RC-04", "DIS-CHENNAI-FLOOD-2026", "Western Inundation Relief Depot Delta", "Tambaram Airfield Perimeter Park", 12.9249, 80.1278, "Wing Cmdr. Arpitha Sen (Air Logistics)", "+91-9444099887", 3500, 580),
+        ("RC-05", "DIS-CHENNAI-FLOOD-2026", "Velachery Flood Response Hub Epsilon", "Velachery Lowland Basin Command Center", 12.9815, 80.2180, "Insp. David Pushparaj (Flood Command)", "+91-9444033221", 1800, 390)
     ]
     cursor.executemany("INSERT INTO relief_centers (id, disaster_id, name, location_name, latitude, longitude, contact_person, phone, capacity_people, current_occupancy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", relief_centers)
 
-    cursor.execute("INSERT INTO warehouses (id, name, latitude, longitude, manager_id) VALUES ('WH-CHENNAI-CENTRAL', 'Chennai Central Humanitarian Hub', 13.0827, 80.2707, 'USR-04')")
-    cursor.execute("INSERT INTO warehouses (id, name, latitude, longitude, manager_id) VALUES ('WH-CHENNAI-SOUTH', 'South Chennai Emergency Depot Beta', 13.0450, 80.2400, 'USR-04')")
+    warehouses = [
+        ("WH-CHENNAI-CENTRAL", "Chennai Central Humanitarian Relief Base Alpha", 13.0827, 80.2707, "USR-04", 6000.0),
+        ("WH-CHENNAI-SOUTH", "South Chennai Emergency Staging Depot Beta", 13.0067, 80.2026, "USR-04", 4500.0),
+        ("WH-CHENNAI-NORTH", "North Coastal Maritime Relief Depot Gamma", 13.1250, 80.2970, "USR-05", 3500.0),
+        ("WH-CHENNAI-WEST", "Western Inundation Relief Depot Delta", 12.9249, 80.1278, "USR-04", 7500.0),
+        ("WH-CHENNAI-VELACHERY", "Velachery Flood Response Hub Epsilon", 12.9815, 80.2180, "USR-05", 4000.0)
+    ]
+    cursor.executemany("INSERT INTO warehouses (id, name, latitude, longitude, manager_id, max_storage_sqm) VALUES (?, ?, ?, ?, ?, ?)", warehouses)
 
-    # 4. Inventory Stocks
+    # 4. Respected Warehouse Inventory (Comprehensive Stock across all categories: WATER, FOOD, MEDICAL, SHELTER, HYGIENE)
     inventory = [
-        ("INV-01", "RC-01", "WATER", "Purified Drinking Water Cans (5L)", 1400, 0, "cans"),
-        ("INV-02", "RC-01", "FOOD", "Emergency Ration Packs (2100 kcal)", 950, 0, "packs"),
-        ("INV-03", "RC-01", "MEDICAL", "Comprehensive Trauma & First Aid Kits", 150, 0, "kits"),
-        ("INV-04", "RC-01", "SHELTER", "Thermal Tarpaulin Blankets & Tents", 500, 0, "units"),
-        ("INV-05", "RC-02", "WATER", "Purified Water (5L)", 800, 0, "cans"),
-        ("INV-06", "RC-02", "FOOD", "Food Rations", 600, 0, "packs")
+        # Depot Alpha (Central)
+        ("INV-01", "RC-01", "WATER", "Purified Drinking Water Cans (5L)", 1400, 50, "cans"),
+        ("INV-02", "RC-01", "WATER", "Emergency 20L Jerry Cans", 600, 20, "cans"),
+        ("INV-03", "RC-01", "FOOD", "MRE High-Calorie Ration Packs (2,100 kcal)", 1250, 45, "packs"),
+        ("INV-04", "RC-01", "FOOD", "Infant Baby Formula & Milk Powder", 420, 15, "tins"),
+        ("INV-05", "RC-01", "MEDICAL", "Comprehensive Trauma & Hemostatic Kits", 180, 10, "kits"),
+        ("INV-06", "RC-01", "MEDICAL", "Cold-Chain Insulin & Glucose Vials", 260, 25, "vials"),
+        ("INV-07", "RC-01", "SHELTER", "Thermal Tarpaulin Blankets & Ground Sheets", 550, 30, "units"),
+        ("INV-08", "RC-01", "SHELTER", "Rapid Inflatable Family Shelter Tents", 140, 10, "units"),
+        ("INV-09", "RC-01", "HYGIENE", "Sanitation & Disinfection Care Kits", 480, 20, "kits"),
+        ("INV-10", "RC-01", "HYGIENE", "Solar LED Flashlights & Emergency Powerbanks", 320, 15, "units"),
+
+        # Depot Beta (Guindy South)
+        ("INV-11", "RC-02", "WATER", "Packaged Mineral Drinking Water (1L Bottles)", 3200, 120, "bottles"),
+        ("INV-12", "RC-02", "WATER", "Aquatabs Chlorine Water Purification Tablets", 1800, 50, "strips"),
+        ("INV-13", "RC-02", "FOOD", "High-Calorie Nutritious Energy Biscuits", 1950, 80, "cartons"),
+        ("INV-14", "RC-02", "FOOD", "Ready-to-Eat Rice & Dal Meal Pouches", 1150, 40, "packs"),
+        ("INV-15", "RC-02", "MEDICAL", "Burn & Fracture Splint Emergency Packs", 210, 15, "kits"),
+        ("INV-16", "RC-02", "MEDICAL", "Portable Medical Oxygen Cylinders", 45, 5, "cylinders"),
+        ("INV-17", "RC-02", "SHELTER", "Heavy Duty PVC Waterproof Ground Tarps", 680, 30, "sheets"),
+        ("INV-18", "RC-02", "SHELTER", "Water-Resistant Sleeping Mats & Bed Rolls", 420, 20, "units"),
+        ("INV-19", "RC-02", "HYGIENE", "Antiseptic Hand Rubs & Medical Disinfectant (5L)", 360, 25, "cans"),
+        ("INV-20", "RC-02", "HYGIENE", "N95 Protective Biohazard Masks", 2800, 100, "units"),
+
+        # Depot Gamma (Kasimedu Maritime North)
+        ("INV-21", "RC-03", "WATER", "Seawater Desalination Sachets & Water Cans (5L)", 950, 40, "cans"),
+        ("INV-22", "RC-03", "WATER", "Electrolyte Oral Rehydration Salts (ORS)", 2200, 100, "sachets"),
+        ("INV-23", "RC-03", "FOOD", "Maritime High-Energy Compact Ration Bars", 1350, 60, "packs"),
+        ("INV-24", "RC-03", "FOOD", "Vacuum-Sealed Long-Life Grain & Rice Sacks (10kg)", 380, 20, "sacks"),
+        ("INV-25", "RC-03", "MEDICAL", "Marine Shock & Hypothermia Trauma Kits", 175, 12, "kits"),
+        ("INV-26", "RC-03", "MEDICAL", "Broad-Spectrum Emergency Antibiotics", 850, 35, "packs"),
+        ("INV-27", "RC-03", "SHELTER", "Stormproof High-Wind Geodesic Tents", 90, 8, "units"),
+        ("INV-28", "RC-03", "SHELTER", "Emergency Aluminized Foil Space Blankets", 1300, 50, "sheets"),
+        ("INV-29", "RC-03", "HYGIENE", "Waterproof Bio-Sanitation Pouch Sets", 520, 25, "sets"),
+        ("INV-30", "RC-03", "HYGIENE", "Waterproof Floating Distress Beacons", 160, 10, "units"),
+
+        # Depot Delta (Tambaram West)
+        ("INV-31", "RC-04", "WATER", "Bulk Water Tanker Refill Canisters (25L)", 800, 30, "canisters"),
+        ("INV-32", "RC-04", "WATER", "Rapid Microbial Gravity Filtration Straws", 450, 20, "kits"),
+        ("INV-33", "RC-04", "FOOD", "Fortified Cereal & Dehydrated Nutrition Meals", 1700, 70, "packs"),
+        ("INV-34", "RC-04", "FOOD", "Infant Weaning Porridge & Toddler Food", 580, 25, "packs"),
+        ("INV-35", "RC-04", "MEDICAL", "Mobile Surgical Field Trauma Deployment Packs", 95, 6, "units"),
+        ("INV-36", "RC-04", "MEDICAL", "Pediatric Emergency Medicine Care Kits", 150, 10, "kits"),
+        ("INV-37", "RC-04", "SHELTER", "Modular Quick-Deploy Community Shelter Tarps", 460, 25, "units"),
+        ("INV-38", "RC-04", "SHELTER", "All-Season Thermal Sleeping Bags", 410, 18, "units"),
+        ("INV-39", "RC-04", "HYGIENE", "Industrial Chlorine Disinfection Spray Tanks", 130, 8, "tanks"),
+        ("INV-40", "RC-04", "HYGIENE", "Antibacterial Hand Soap & Sanitizer Bars", 1900, 80, "bars"),
+
+        # Depot Epsilon (Velachery Flood Hub)
+        ("INV-41", "RC-05", "WATER", "Purified Water Cans (5L)", 1150, 45, "cans"),
+        ("INV-42", "RC-05", "WATER", "Individual Water Purification Filter Bottles", 520, 20, "bottles"),
+        ("INV-43", "RC-05", "FOOD", "Instant Hot-Water Ready Meals (Khichdi/Poha)", 1300, 55, "packs"),
+        ("INV-44", "RC-05", "FOOD", "Compressed Calorie Disaster Relief Bars", 2250, 90, "bars"),
+        ("INV-45", "RC-05", "MEDICAL", "Anti-Venom & Waterborne Pathogen Kits", 140, 12, "kits"),
+        ("INV-46", "RC-05", "MEDICAL", "Sterile Gauze Bandages, Sutures & Antiseptics", 650, 30, "packs"),
+        ("INV-47", "RC-05", "SHELTER", "Reinforced Polyethylene Flood-Resistant Tarps", 580, 25, "sheets"),
+        ("INV-48", "RC-05", "SHELTER", "Lightweight Compact EVA Foam Sleeping Mats", 630, 30, "mats"),
+        ("INV-49", "RC-05", "HYGIENE", "Sanitary Napkins & Dignity Hygiene Kits", 980, 40, "kits"),
+        ("INV-50", "RC-05", "HYGIENE", "Waterproof Solar Torches & Dynamo Lanterns", 340, 15, "units")
     ]
     cursor.executemany("INSERT INTO inventory_items (id, relief_center_id, item_category, item_name, quantity_available, quantity_reserved, unit) VALUES (?, ?, ?, ?, ?, ?, ?)", inventory)
 
+    # Cross-populate resources table with corresponding warehouse IDs
+    wh_map = {
+        "RC-01": "WH-CHENNAI-CENTRAL",
+        "RC-02": "WH-CHENNAI-SOUTH",
+        "RC-03": "WH-CHENNAI-NORTH",
+        "RC-04": "WH-CHENNAI-WEST",
+        "RC-05": "WH-CHENNAI-VELACHERY"
+    }
     resources = [
-        ("RES-01", "WH-CHENNAI-CENTRAL", "WATER", "Purified Drinking Water Cans (5L)", 1400, 0, "cans"),
-        ("RES-02", "WH-CHENNAI-CENTRAL", "FOOD", "Emergency Ration Packs (2100 kcal)", 950, 0, "packs"),
-        ("RES-03", "WH-CHENNAI-CENTRAL", "MEDICINE", "Comprehensive Trauma & First Aid Kits", 150, 0, "kits"),
-        ("RES-04", "WH-CHENNAI-CENTRAL", "BLANKETS", "Thermal Tarpaulin Blankets", 500, 0, "units")
+        (f"RES-{inv[0][4:]}", wh_map[inv[1]], inv[2], inv[3], inv[4], inv[5], inv[6])
+        for inv in inventory
     ]
     cursor.executemany("INSERT INTO resources (id, warehouse_id, item_category, item_name, quantity_available, quantity_reserved, unit) VALUES (?, ?, ?, ?, ?, ?, ?)", resources)
 
-    # 5. Relief Vehicles
+    # 5. Relief Vehicles (Expanded Emergency Fleet: Trucks, Boats, 4x4s, Ambulances, Drones)
     fleet = [
-        ("VEH-01", "TRUCK-4x4-ALPHA", "TRUCK", 1500.0, 13.0827, 80.2707, "IDLE", "Officer Vikram Singh", 40.0),
-        ("VEH-02", "TRUCK-RESCUE-BETA", "TRUCK", 1200.0, 13.0827, 80.2707, "IDLE", "Lt. Priya Nair", 35.0),
-        ("VEH-03", "BOAT-RESCUE-01", "BOAT", 600.0, 13.0600, 80.2500, "EN_ROUTE", "Capt. Manikandan", 20.0)
+        ("VEH-01", "TRUCK-4x4-ALPHA", "TRUCK", 2000.0, 13.0827, 80.2707, "IDLE", "Officer Vikram Singh", 42.0),
+        ("VEH-02", "TRUCK-RESCUE-BETA", "TRUCK", 1500.0, 13.0067, 80.2026, "IDLE", "Lt. Priya Nair", 38.0),
+        ("VEH-03", "BOAT-RESCUE-01", "BOAT", 750.0, 13.0600, 80.2500, "EN_ROUTE", "Capt. Manikandan", 22.0),
+        ("VEH-04", "BOAT-AMPHIBIAN-02", "BOAT", 900.0, 12.9815, 80.2180, "IDLE", "Officer S. Murugan", 26.0),
+        ("VEH-05", "SCOUT-4X4-DELTA", "4X4", 850.0, 12.9249, 80.1278, "IDLE", "Lt. Arun Prasad", 50.0),
+        ("VEH-06", "AMBULANCE-ICU-01", "4X4", 600.0, 13.0827, 80.2707, "IDLE", "Dr. Revathi & Driver Selvam", 48.0),
+        ("VEH-07", "DRONE-PAYLOAD-HEAVY", "DRONE", 45.0, 12.9249, 80.1278, "IDLE", "Remote Pilot Karthik", 65.0),
+        ("VEH-08", "DRONE-RECON-SURVEIL", "DRONE", 15.0, 13.1250, 80.2970, "EN_ROUTE", "Flight Lead Divya", 75.0)
     ]
     cursor.executemany("INSERT INTO relief_vehicles (id, vehicle_code, vehicle_type, capacity_kg, current_lat, current_lon, status, assigned_driver, speed_kmh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", fleet)
 
     vehicles_supa = [
-        ("VEH-01", "TRUCK-4x4-ALPHA", "TRUCK", 1500.0, 40.0, 13.0827, 80.2707, "IDLE", "Officer Vikram Singh"),
-        ("VEH-02", "TRUCK-RESCUE-BETA", "TRUCK", 1200.0, 35.0, 13.0827, 80.2707, "IDLE", "Lt. Priya Nair"),
-        ("VEH-03", "BOAT-RESCUE-01", "BOAT", 600.0, 20.0, 13.0600, 80.2500, "EN_ROUTE", "Capt. Manikandan")
+        (v[0], v[1], v[2], v[3], v[8], v[4], v[5], v[6], v[7])
+        for v in fleet
     ]
     cursor.executemany("INSERT INTO vehicles (id, vehicle_code, vehicle_type, capacity_kg, average_speed_kmh, current_lat, current_lon, status, assigned_driver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", vehicles_supa)
 

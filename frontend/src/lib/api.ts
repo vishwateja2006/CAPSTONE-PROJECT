@@ -47,57 +47,218 @@ export const MOCK_DISASTER: Disaster = {
 
 export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   {
-    id: "depot-alpha",
-    name: "Central Emergency Relief Base Alpha",
+    id: "RC-01",
+    name: "Chennai Central Humanitarian Relief Base Alpha",
     location_name: "Jawaharlal Nehru Stadium Complex",
-    latitude: 13.0837,
-    longitude: 80.2785,
-    contact_person: "Col. Rajesh Sharma",
+    latitude: 13.0827,
+    longitude: 80.2707,
+    contact_person: "Col. Rajesh Sharma (Logistics Cmdr)",
     phone: "+91-9444012345",
-    capacity_people: 2500,
+    capacity_people: 3000,
     current_occupancy: 450,
     inventory_items: [
-      { id: "1", item_category: "FOOD", item_name: "Emergency Ration Packs", quantity_available: 850, quantity_reserved: 0, unit: "packets" },
-      { id: "2", item_category: "WATER", item_name: "Purified Water Cans (5L)", quantity_available: 1200, quantity_reserved: 0, unit: "cans" },
-      { id: "3", item_category: "MEDICAL", item_name: "First Aid & Trauma Kits", quantity_available: 150, quantity_reserved: 0, unit: "kits" },
-      { id: "4", item_category: "SHELTER", item_name: "Thermal Blankets & Tents", quantity_available: 300, quantity_reserved: 0, unit: "units" }
+      { id: "INV-01", relief_center_id: "RC-01", item_category: "WATER", item_name: "Purified Drinking Water Cans (5L)", quantity_available: 1400, quantity_reserved: 50, unit: "cans" },
+      { id: "INV-02", relief_center_id: "RC-01", item_category: "WATER", item_name: "Emergency 20L Jerry Cans", quantity_available: 600, quantity_reserved: 20, unit: "cans" },
+      { id: "INV-03", relief_center_id: "RC-01", item_category: "FOOD", item_name: "MRE High-Calorie Ration Packs (2,100 kcal)", quantity_available: 1250, quantity_reserved: 45, unit: "packs" },
+      { id: "INV-04", relief_center_id: "RC-01", item_category: "FOOD", item_name: "Infant Baby Formula & Milk Powder", quantity_available: 420, quantity_reserved: 15, unit: "tins" },
+      { id: "INV-05", relief_center_id: "RC-01", item_category: "MEDICAL", item_name: "Comprehensive Trauma & Hemostatic Kits", quantity_available: 180, quantity_reserved: 10, unit: "kits" },
+      { id: "INV-06", relief_center_id: "RC-01", item_category: "MEDICAL", item_name: "Cold-Chain Insulin & Glucose Vials", quantity_available: 260, quantity_reserved: 25, unit: "vials" },
+      { id: "INV-07", relief_center_id: "RC-01", item_category: "SHELTER", item_name: "Thermal Tarpaulin Blankets & Ground Sheets", quantity_available: 550, quantity_reserved: 30, unit: "units" },
+      { id: "INV-08", relief_center_id: "RC-01", item_category: "SHELTER", item_name: "Rapid Inflatable Family Shelter Tents", quantity_available: 140, quantity_reserved: 10, unit: "units" },
+      { id: "INV-09", relief_center_id: "RC-01", item_category: "HYGIENE", item_name: "Sanitation & Disinfection Care Kits", quantity_available: 480, quantity_reserved: 20, unit: "kits" },
+      { id: "INV-10", relief_center_id: "RC-01", item_category: "HYGIENE", item_name: "Solar LED Flashlights & Emergency Powerbanks", quantity_available: 320, quantity_reserved: 15, unit: "units" }
+    ]
+  },
+  {
+    id: "RC-02",
+    name: "South Chennai Emergency Staging Depot Beta",
+    location_name: "Guindy SIDCO Logistics Hub",
+    latitude: 13.0067,
+    longitude: 80.2026,
+    contact_person: "Capt. Sundar Raman (Ops Head)",
+    phone: "+91-9444054321",
+    capacity_people: 2000,
+    current_occupancy: 320,
+    inventory_items: [
+      { id: "INV-11", relief_center_id: "RC-02", item_category: "WATER", item_name: "Packaged Mineral Drinking Water (1L Bottles)", quantity_available: 3200, quantity_reserved: 120, unit: "bottles" },
+      { id: "INV-12", relief_center_id: "RC-02", item_category: "WATER", item_name: "Aquatabs Chlorine Water Purification Tablets", quantity_available: 1800, quantity_reserved: 50, unit: "strips" },
+      { id: "INV-13", relief_center_id: "RC-02", item_category: "FOOD", item_name: "High-Calorie Nutritious Energy Biscuits", quantity_available: 1950, quantity_reserved: 80, unit: "cartons" },
+      { id: "INV-14", relief_center_id: "RC-02", item_category: "FOOD", item_name: "Ready-to-Eat Rice & Dal Meal Pouches", quantity_available: 1150, quantity_reserved: 40, unit: "packs" },
+      { id: "INV-15", relief_center_id: "RC-02", item_category: "MEDICAL", item_name: "Burn & Fracture Splint Emergency Packs", quantity_available: 210, quantity_reserved: 15, unit: "kits" },
+      { id: "INV-16", relief_center_id: "RC-02", item_category: "MEDICAL", item_name: "Portable Medical Oxygen Cylinders", quantity_available: 45, quantity_reserved: 5, unit: "cylinders" },
+      { id: "INV-17", relief_center_id: "RC-02", item_category: "SHELTER", item_name: "Heavy Duty PVC Waterproof Ground Tarps", quantity_available: 680, quantity_reserved: 30, unit: "sheets" },
+      { id: "INV-18", relief_center_id: "RC-02", item_category: "SHELTER", item_name: "Water-Resistant Sleeping Mats & Bed Rolls", quantity_available: 420, quantity_reserved: 20, unit: "units" },
+      { id: "INV-19", relief_center_id: "RC-02", item_category: "HYGIENE", item_name: "Antiseptic Hand Rubs & Medical Disinfectant (5L)", quantity_available: 360, quantity_reserved: 25, unit: "cans" },
+      { id: "INV-20", relief_center_id: "RC-02", item_category: "HYGIENE", item_name: "N95 Protective Biohazard Masks", quantity_available: 2800, quantity_reserved: 100, unit: "units" }
+    ]
+  },
+  {
+    id: "RC-03",
+    name: "North Coastal Maritime Relief Depot Gamma",
+    location_name: "Kasimedu Fishing Harbour Forward Base",
+    latitude: 13.1250,
+    longitude: 80.2970,
+    contact_person: "Officer K. Annamalai (Maritime Cmdr)",
+    phone: "+91-9444078901",
+    capacity_people: 1500,
+    current_occupancy: 210,
+    inventory_items: [
+      { id: "INV-21", relief_center_id: "RC-03", item_category: "WATER", item_name: "Seawater Desalination Sachets & Water Cans (5L)", quantity_available: 950, quantity_reserved: 40, unit: "cans" },
+      { id: "INV-22", relief_center_id: "RC-03", item_category: "WATER", item_name: "Electrolyte Oral Rehydration Salts (ORS)", quantity_available: 2200, quantity_reserved: 100, unit: "sachets" },
+      { id: "INV-23", relief_center_id: "RC-03", item_category: "FOOD", item_name: "Maritime High-Energy Compact Ration Bars", quantity_available: 1350, quantity_reserved: 60, unit: "packs" },
+      { id: "INV-24", relief_center_id: "RC-03", item_category: "FOOD", item_name: "Vacuum-Sealed Long-Life Grain & Rice Sacks (10kg)", quantity_available: 380, quantity_reserved: 20, unit: "sacks" },
+      { id: "INV-25", relief_center_id: "RC-03", item_category: "MEDICAL", item_name: "Marine Shock & Hypothermia Trauma Kits", quantity_available: 175, quantity_reserved: 12, unit: "kits" },
+      { id: "INV-26", relief_center_id: "RC-03", item_category: "MEDICAL", item_name: "Broad-Spectrum Emergency Antibiotics", quantity_available: 850, quantity_reserved: 35, unit: "packs" },
+      { id: "INV-27", relief_center_id: "RC-03", item_category: "SHELTER", item_name: "Stormproof High-Wind Geodesic Tents", quantity_available: 90, quantity_reserved: 8, unit: "units" },
+      { id: "INV-28", relief_center_id: "RC-03", item_category: "SHELTER", item_name: "Emergency Aluminized Foil Space Blankets", quantity_available: 1300, quantity_reserved: 50, unit: "sheets" },
+      { id: "INV-29", relief_center_id: "RC-03", item_category: "HYGIENE", item_name: "Waterproof Bio-Sanitation Pouch Sets", quantity_available: 520, quantity_reserved: 25, unit: "sets" },
+      { id: "INV-30", relief_center_id: "RC-03", item_category: "HYGIENE", item_name: "Waterproof Floating Distress Beacons", quantity_available: 160, quantity_reserved: 10, unit: "units" }
+    ]
+  },
+  {
+    id: "RC-04",
+    name: "Western Inundation Relief Depot Delta",
+    location_name: "Tambaram Airfield Perimeter Park",
+    latitude: 12.9249,
+    longitude: 80.1278,
+    contact_person: "Wing Cmdr. Arpitha Sen (Air Logistics)",
+    phone: "+91-9444099887",
+    capacity_people: 3500,
+    current_occupancy: 580,
+    inventory_items: [
+      { id: "INV-31", relief_center_id: "RC-04", item_category: "WATER", item_name: "Bulk Water Tanker Refill Canisters (25L)", quantity_available: 800, quantity_reserved: 30, unit: "canisters" },
+      { id: "INV-32", relief_center_id: "RC-04", item_category: "WATER", item_name: "Rapid Microbial Gravity Filtration Straws", quantity_available: 450, quantity_reserved: 20, unit: "kits" },
+      { id: "INV-33", relief_center_id: "RC-04", item_category: "FOOD", item_name: "Fortified Cereal & Dehydrated Nutrition Meals", quantity_available: 1700, quantity_reserved: 70, unit: "packs" },
+      { id: "INV-34", relief_center_id: "RC-04", item_category: "FOOD", item_name: "Infant Weaning Porridge & Toddler Food", quantity_available: 580, quantity_reserved: 25, unit: "packs" },
+      { id: "INV-35", relief_center_id: "RC-04", item_category: "MEDICAL", item_name: "Mobile Surgical Field Trauma Deployment Packs", quantity_available: 95, quantity_reserved: 6, unit: "units" },
+      { id: "INV-36", relief_center_id: "RC-04", item_category: "MEDICAL", item_name: "Pediatric Emergency Medicine Care Kits", quantity_available: 150, quantity_reserved: 10, unit: "kits" },
+      { id: "INV-37", relief_center_id: "RC-04", item_category: "SHELTER", item_name: "Modular Quick-Deploy Community Shelter Tarps", quantity_available: 460, quantity_reserved: 25, unit: "units" },
+      { id: "INV-38", relief_center_id: "RC-04", item_category: "SHELTER", item_name: "All-Season Thermal Sleeping Bags", quantity_available: 410, quantity_reserved: 18, unit: "units" },
+      { id: "INV-39", relief_center_id: "RC-04", item_category: "HYGIENE", item_name: "Industrial Chlorine Disinfection Spray Tanks", quantity_available: 130, quantity_reserved: 8, unit: "tanks" },
+      { id: "INV-40", relief_center_id: "RC-04", item_category: "HYGIENE", item_name: "Antibacterial Hand Soap & Sanitizer Bars", quantity_available: 1900, quantity_reserved: 80, unit: "bars" }
+    ]
+  },
+  {
+    id: "RC-05",
+    name: "Velachery Flood Response Hub Epsilon",
+    location_name: "Velachery Lowland Basin Command Center",
+    latitude: 12.9815,
+    longitude: 80.2180,
+    contact_person: "Insp. David Pushparaj (Flood Command)",
+    phone: "+91-9444033221",
+    capacity_people: 1800,
+    current_occupancy: 390,
+    inventory_items: [
+      { id: "INV-41", relief_center_id: "RC-05", item_category: "WATER", item_name: "Purified Water Cans (5L)", quantity_available: 1150, quantity_reserved: 45, unit: "cans" },
+      { id: "INV-42", relief_center_id: "RC-05", item_category: "WATER", item_name: "Individual Water Purification Filter Bottles", quantity_available: 520, quantity_reserved: 20, unit: "bottles" },
+      { id: "INV-43", relief_center_id: "RC-05", item_category: "FOOD", item_name: "Instant Hot-Water Ready Meals (Khichdi/Poha)", quantity_available: 1300, quantity_reserved: 55, unit: "packs" },
+      { id: "INV-44", relief_center_id: "RC-05", item_category: "FOOD", item_name: "Compressed Calorie Disaster Relief Bars", quantity_available: 2250, quantity_reserved: 90, unit: "bars" },
+      { id: "INV-45", relief_center_id: "RC-05", item_category: "MEDICAL", item_name: "Anti-Venom & Waterborne Pathogen Kits", quantity_available: 140, quantity_reserved: 12, unit: "kits" },
+      { id: "INV-46", relief_center_id: "RC-05", item_category: "MEDICAL", item_name: "Sterile Gauze Bandages, Sutures & Antiseptics", quantity_available: 650, quantity_reserved: 30, unit: "packs" },
+      { id: "INV-47", relief_center_id: "RC-05", item_category: "SHELTER", item_name: "Reinforced Polyethylene Flood-Resistant Tarps", quantity_available: 580, quantity_reserved: 25, unit: "sheets" },
+      { id: "INV-48", relief_center_id: "RC-05", item_category: "SHELTER", item_name: "Lightweight Compact EVA Foam Sleeping Mats", quantity_available: 630, quantity_reserved: 30, unit: "mats" },
+      { id: "INV-49", relief_center_id: "RC-05", item_category: "HYGIENE", item_name: "Sanitary Napkins & Dignity Hygiene Kits", quantity_available: 980, quantity_reserved: 40, unit: "kits" },
+      { id: "INV-50", relief_center_id: "RC-05", item_category: "HYGIENE", item_name: "Waterproof Solar Torches & Dynamo Lanterns", quantity_available: 340, quantity_reserved: 15, unit: "units" }
     ]
   }
 ];
 
 export const MOCK_VEHICLES: ReliefVehicle[] = [
   {
-    id: "v-01",
-    vehicle_code: "RESCUE-TRUCK-01",
+    id: "VEH-01",
+    vehicle_code: "TRUCK-4x4-ALPHA",
     vehicle_type: "TRUCK",
-    capacity_kg: 1500,
-    current_lat: 13.0837,
-    current_lon: 80.2785,
+    capacity_kg: 2000,
+    current_lat: 13.0827,
+    current_lon: 80.2707,
     status: "IDLE",
     assigned_driver: "Officer Vikram Singh",
-    speed_kmh: 35
+    speed_kmh: 42,
+    home_depot: "Central Base Alpha"
   },
   {
-    id: "v-02",
-    vehicle_code: "BOAT-RESCUE-02",
-    vehicle_type: "BOAT",
-    capacity_kg: 600,
-    current_lat: 13.0720,
-    current_lon: 80.2600,
-    status: "EN_ROUTE",
-    assigned_driver: "Capt. Manikandan",
-    speed_kmh: 20
-  },
-  {
-    id: "v-03",
-    vehicle_code: "RAPID-4X4-03",
-    vehicle_type: "4X4",
-    capacity_kg: 800,
-    current_lat: 13.0837,
-    current_lon: 80.2785,
+    id: "VEH-02",
+    vehicle_code: "TRUCK-RESCUE-BETA",
+    vehicle_type: "TRUCK",
+    capacity_kg: 1500,
+    current_lat: 13.0067,
+    current_lon: 80.2026,
     status: "IDLE",
     assigned_driver: "Lt. Priya Nair",
-    speed_kmh: 45
+    speed_kmh: 38,
+    home_depot: "South Staging Beta"
+  },
+  {
+    id: "VEH-03",
+    vehicle_code: "BOAT-RESCUE-01",
+    vehicle_type: "BOAT",
+    capacity_kg: 750,
+    current_lat: 13.0600,
+    current_lon: 80.2500,
+    status: "EN_ROUTE",
+    assigned_driver: "Capt. Manikandan",
+    speed_kmh: 22,
+    home_depot: "Kasimedu Maritime Gamma"
+  },
+  {
+    id: "VEH-04",
+    vehicle_code: "BOAT-AMPHIBIAN-02",
+    vehicle_type: "BOAT",
+    capacity_kg: 900,
+    current_lat: 12.9815,
+    current_lon: 80.2180,
+    status: "IDLE",
+    assigned_driver: "Officer S. Murugan",
+    speed_kmh: 26,
+    home_depot: "Velachery Flood Hub Epsilon"
+  },
+  {
+    id: "VEH-05",
+    vehicle_code: "SCOUT-4X4-DELTA",
+    vehicle_type: "4X4",
+    capacity_kg: 850,
+    current_lat: 12.9249,
+    current_lon: 80.1278,
+    status: "IDLE",
+    assigned_driver: "Lt. Arun Prasad",
+    speed_kmh: 50,
+    home_depot: "Tambaram Delta"
+  },
+  {
+    id: "VEH-06",
+    vehicle_code: "AMBULANCE-ICU-01",
+    vehicle_type: "4X4",
+    capacity_kg: 600,
+    current_lat: 13.0827,
+    current_lon: 80.2707,
+    status: "IDLE",
+    assigned_driver: "Dr. Revathi & Driver Selvam",
+    speed_kmh: 48,
+    home_depot: "Central Base Alpha"
+  },
+  {
+    id: "VEH-07",
+    vehicle_code: "DRONE-PAYLOAD-HEAVY",
+    vehicle_type: "DRONE",
+    capacity_kg: 45,
+    current_lat: 12.9249,
+    current_lon: 80.1278,
+    status: "IDLE",
+    assigned_driver: "Remote Pilot Karthik",
+    speed_kmh: 65,
+    home_depot: "Tambaram Delta"
+  },
+  {
+    id: "VEH-08",
+    vehicle_code: "DRONE-RECON-SURVEIL",
+    vehicle_type: "DRONE",
+    capacity_kg: 15,
+    current_lat: 13.1250,
+    current_lon: 80.2970,
+    status: "EN_ROUTE",
+    assigned_driver: "Flight Lead Divya",
+    speed_kmh: 75,
+    home_depot: "Kasimedu Maritime Gamma"
   }
 ];
 
@@ -186,6 +347,22 @@ export async function fetchReliefCenters(): Promise<ReliefCenter[]> {
     return await res.json();
   } catch {
     return MOCK_RELIEF_CENTERS;
+  }
+}
+
+export async function fetchInventory(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/inventory`);
+    if (!res.ok) throw new Error();
+    return await res.json();
+  } catch {
+    return MOCK_RELIEF_CENTERS.flatMap(rc => 
+      (rc.inventory_items || []).map(item => ({
+        ...item,
+        warehouse_name: rc.name,
+        location_name: rc.location_name
+      }))
+    );
   }
 }
 

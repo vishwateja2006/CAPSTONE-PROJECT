@@ -112,13 +112,29 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._json([])
 
-        # Relief Centers (Live from DB)
+        # Relief Centers & Warehouses (Live from DB with nested Inventory)
         if path in ("/api/v1/resources/centers", "/api/v1/relief-centers"):
             try:
                 conn = sqlite3.connect(DB_FILE)
                 conn.row_factory = sqlite3.Row
                 c = conn.cursor()
                 c.execute("SELECT * FROM relief_centers")
+                rows = [dict(r) for r in c.fetchall()]
+                for r in rows:
+                    c.execute("SELECT * FROM inventory_items WHERE relief_center_id = ? ORDER BY item_category", (r["id"],))
+                    r["inventory_items"] = [dict(item) for item in c.fetchall()]
+                conn.close()
+                return self._json(rows)
+            except Exception:
+                return self._json([])
+
+        # Warehouses (Live from DB)
+        if path in ("/api/v1/warehouses", "/api/v1/resources/warehouses"):
+            try:
+                conn = sqlite3.connect(DB_FILE)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute("SELECT * FROM warehouses")
                 rows = [dict(r) for r in c.fetchall()]
                 conn.close()
                 return self._json(rows)
@@ -138,13 +154,18 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             except Exception:
                 return self._json([])
 
-        # Warehouse Inventory (Live from DB)
+        # Warehouse Inventory (Live from DB with respected warehouse info)
         if path in ("/api/v1/inventory", "/api/v1/resources/inventory"):
             try:
                 conn = sqlite3.connect(DB_FILE)
                 conn.row_factory = sqlite3.Row
                 c = conn.cursor()
-                c.execute("SELECT * FROM inventory_items")
+                c.execute("""
+                    SELECT i.*, r.name as warehouse_name, r.location_name 
+                    FROM inventory_items i
+                    LEFT JOIN relief_centers r ON i.relief_center_id = r.id
+                    ORDER BY i.relief_center_id, i.item_category
+                """)
                 rows = [dict(r) for r in c.fetchall()]
                 conn.close()
                 return self._json(rows)
