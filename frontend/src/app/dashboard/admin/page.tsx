@@ -848,9 +848,6 @@ export default function AdminCommandCenterPage() {
                 Incoming citizen SOS signals prioritized automatically by the DistilBERT Natural Language Processing model.
               </p>
             </div>
-            <span className="text-xs font-mono text-cyan-400 font-bold">
-              SORTED: HIGHEST URGENCY FIRST
-            </span>
           </div>
 
           <div className="space-y-3">
