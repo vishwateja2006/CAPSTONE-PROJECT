@@ -3,19 +3,361 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 15, 23, 42;
-  --background-end-rgb: 2, 6, 23;
+  --foreground-rgb: 15, 23, 42;
+  --background-rgb: 248, 250, 252;
+}
+
+html.dark {
+  --foreground-rgb: 248, 250, 252;
+  --background-rgb: 9, 13, 22;
 }
 
 body {
-  color: #f8fafc;
-  background-color: #090d16;
+  color: rgb(var(--foreground-rgb));
+  background-color: rgb(var(--background-rgb));
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom scrollbars */
+/* ==============================================================================
+   LIGHT MODE: Comprehensive High-Contrast & Adaptive Color System
+   ============================================================================== */
+
+html:not(.dark) body {
+  color: #0f172a;
+  background-color: #f8fafc;
+}
+
+/* 1. Base Surfaces & Containers */
+html:not(.dark) .bg-slate-950,
+html:not(.dark) .bg-slate-900,
+html:not(.dark) .bg-\[\#090d16\],
+html:not(.dark) .bg-\[\#090e1a\] {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) .bg-slate-950\/98,
+html:not(.dark) .bg-slate-950\/95,
+html:not(.dark) .bg-slate-950\/90,
+html:not(.dark) .bg-slate-950\/80,
+html:not(.dark) .bg-slate-950\/70,
+html:not(.dark) .bg-slate-950\/60,
+html:not(.dark) .bg-slate-900\/98,
+html:not(.dark) .bg-slate-900\/95,
+html:not(.dark) .bg-slate-900\/90,
+html:not(.dark) .bg-slate-900\/80 {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+html:not(.dark) .bg-slate-900\/70,
+html:not(.dark) .bg-slate-900\/60,
+html:not(.dark) .bg-slate-900\/50,
+html:not(.dark) .bg-slate-900\/40 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Secondary Buttons, Chips, and Subtle Pill Badges */
+html:not(.dark) .bg-slate-800,
+html:not(.dark) .bg-slate-800\/90,
+html:not(.dark) .bg-slate-800\/80,
+html:not(.dark) .bg-slate-800\/70,
+html:not(.dark) .bg-slate-800\/60 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+html:not(.dark) .hover\:bg-slate-800:hover,
+html:not(.dark) .hover\:bg-slate-700:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .hover\:bg-slate-800\/40:hover {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+}
+
+/* 2. Universal Borders & Dividers */
+html:not(.dark) .border-slate-800,
+html:not(.dark) .border-slate-800\/80,
+html:not(.dark) .border-slate-800\/60,
+html:not(.dark) .border-slate-700,
+html:not(.dark) .border-slate-700\/90,
+html:not(.dark) .border-slate-700\/80,
+html:not(.dark) .border-slate-700\/60,
+html:not(.dark) .border-slate-900 {
+  border-color: #e2e8f0 !important;
+}
+
+/* 3. High-Contrast Typography */
+html:not(.dark) .text-white {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .text-slate-100,
+html:not(.dark) .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html:not(.dark) .text-slate-300 {
+  color: #334155 !important;
+}
+
+html:not(.dark) .text-slate-400 {
+  color: #64748b !important;
+}
+
+html:not(.dark) .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* Buttons with vibrant solid backgrounds must preserve crisp white text */
+html:not(.dark) .bg-blue-600,
+html:not(.dark) .bg-blue-600 *,
+html:not(.dark) .bg-blue-500,
+html:not(.dark) .bg-blue-500 *,
+html:not(.dark) .bg-red-600,
+html:not(.dark) .bg-red-600 *,
+html:not(.dark) .bg-red-500,
+html:not(.dark) .bg-red-500 *,
+html:not(.dark) .bg-emerald-600,
+html:not(.dark) .bg-emerald-600 *,
+html:not(.dark) .bg-emerald-500,
+html:not(.dark) .bg-emerald-500 * {
+  color: #ffffff !important;
+}
+
+/* Buttons with solid amber backgrounds preserve dark slate text */
+html:not(.dark) .bg-amber-500,
+html:not(.dark) .bg-amber-500 *,
+html:not(.dark) .bg-amber-400,
+html:not(.dark) .bg-amber-400 * {
+  color: #0f172a !important;
+}
+
+/* 4. Hero Section Gradient Adaptations */
+html:not(.dark) .bg-gradient-to-br.from-slate-900.via-slate-950.to-slate-900 {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #eff6ff 100%) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Headline Gradient Text: Rich Amber / Dark Slate Contrast */
+html:not(.dark) .bg-clip-text.text-transparent {
+  background-image: linear-gradient(135deg, #b45309 0%, #d97706 50%, #0f172a 100%) !important;
+  -webkit-text-fill-color: #b45309 !important;
+  color: #b45309 !important;
+}
+
+/* Ambient Glow softening */
+html:not(.dark) .blur-3xl {
+  opacity: 0.45;
+}
+
+/* 5. Top Navigation Bar & Footer */
+html:not(.dark) header {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) header a {
+  color: #1e293b;
+}
+
+html:not(.dark) header .bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) footer {
+  background-color: #f1f5f9 !important;
+  border-top-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* 6. Category Accent Badges & Adaptive Containers */
+
+/* Blue Citizen / User Accents */
+html:not(.dark) .border-blue-900\/40,
+html:not(.dark) .border-blue-800,
+html:not(.dark) .border-blue-700\/80 {
+  border-color: #bfdbfe !important;
+}
+
+html:not(.dark) .bg-blue-950,
+html:not(.dark) .bg-blue-950\/90,
+html:not(.dark) .bg-blue-950\/80,
+html:not(.dark) .bg-blue-950\/70,
+html:not(.dark) .bg-blue-950\/60,
+html:not(.dark) .bg-blue-950\/40 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+
+html:not(.dark) .text-blue-300,
+html:not(.dark) .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+
+/* Amber Administrator / Command Accents */
+html:not(.dark) .border-amber-900\/60,
+html:not(.dark) .border-amber-900\/40,
+html:not(.dark) .border-amber-800,
+html:not(.dark) .border-amber-700\/80 {
+  border-color: #fde68a !important;
+}
+
+html:not(.dark) .bg-amber-950,
+html:not(.dark) .bg-amber-950\/90,
+html:not(.dark) .bg-amber-950\/80,
+html:not(.dark) .bg-amber-950\/70,
+html:not(.dark) .bg-amber-950\/60,
+html:not(.dark) .bg-amber-950\/40,
+html:not(.dark) .bg-amber-950\/20 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+html:not(.dark) .text-amber-300,
+html:not(.dark) .text-amber-400 {
+  color: #b45309 !important;
+}
+
+/* Red Emergency / Critical Accents */
+html:not(.dark) .border-red-900\/80,
+html:not(.dark) .border-red-900\/60,
+html:not(.dark) .border-red-900\/40,
+html:not(.dark) .border-red-800 {
+  border-color: #fecaca !important;
+}
+
+html:not(.dark) .bg-red-950,
+html:not(.dark) .bg-red-950\/90,
+html:not(.dark) .bg-red-950\/80,
+html:not(.dark) .bg-red-950\/70,
+html:not(.dark) .bg-red-950\/60,
+html:not(.dark) .bg-red-950\/40,
+html:not(.dark) .bg-red-950\/25 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+html:not(.dark) .text-red-200,
+html:not(.dark) .text-red-300,
+html:not(.dark) .text-red-300\/90,
+html:not(.dark) .text-red-400 {
+  color: #dc2626 !important;
+}
+
+/* Emerald Success / Equity Accents */
+html:not(.dark) .border-emerald-900\/80,
+html:not(.dark) .border-emerald-900\/60,
+html:not(.dark) .border-emerald-800 {
+  border-color: #bbf7d0 !important;
+}
+
+html:not(.dark) .bg-emerald-950,
+html:not(.dark) .bg-emerald-950\/60,
+html:not(.dark) .bg-emerald-950\/40,
+html:not(.dark) .bg-emerald-950\/30,
+html:not(.dark) .bg-emerald-950\/20 {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+html:not(.dark) .text-emerald-300,
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-400\/80 {
+  color: #15803d !important;
+}
+
+/* Cyan Telemetry / AI Accents */
+html:not(.dark) .border-cyan-900\/60,
+html:not(.dark) .border-cyan-800,
+html:not(.dark) .border-cyan-800\/80 {
+  border-color: #a5f3fc !important;
+}
+
+html:not(.dark) .bg-cyan-950,
+html:not(.dark) .bg-cyan-950\/40,
+html:not(.dark) .bg-cyan-950\/20 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+}
+
+html:not(.dark) .text-cyan-300,
+html:not(.dark) .text-cyan-400 {
+  color: #0e7490 !important;
+}
+
+/* Purple Cryptography / Audit Accents */
+html:not(.dark) .text-purple-400 {
+  color: #7e22ce !important;
+}
+
+/* 7. Input Fields & Form Controls */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html:not(.dark) input:focus,
+html:not(.dark) textarea:focus,
+html:not(.dark) select:focus {
+  border-color: #f59e0b !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* 8. Theme Dropdown Menu Adaptation */
+html:not(.dark) .bg-slate-900\/98 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 9. Interactive SVG Map & Telemetry Canvas */
+html:not(.dark) svg.bg-\[\#060a14\] {
+  background-color: #f8fafc !important;
+}
+
+html:not(.dark) #tacticalGrid path {
+  stroke: #e2e8f0 !important;
+}
+
+/* 10. Tables & Monospace Logs */
+html:not(.dark) table thead {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+html:not(.dark) table thead th {
+  color: #475569 !important;
+}
+
+html:not(.dark) table tbody tr {
+  border-bottom-color: #f1f5f9 !important;
+}
+
+html:not(.dark) pre,
+html:not(.dark) code {
+  color: #0f172a !important;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -23,15 +365,21 @@ body {
 ::-webkit-scrollbar-track {
   background: #0f172a;
 }
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
 ::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 4px;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
 
-/* Radar pulse animation for critical SOS */
+/* Radar pulse animation */
 @keyframes radar-pulse {
   0% {
     transform: scale(0.95);
@@ -50,4 +398,3 @@ body {
 .radar-pulse {
   animation: radar-pulse 2s infinite;
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,18 +14,22 @@ import {
   ArrowRight,
   Loader2,
   ShieldCheck,
-  Users
+  Users,
+  AlertCircle
 } from "lucide-react";
+import { loginAsRole, getAuthSession } from "../../lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
+  const [lockedRole, setLockedRole] = useState<"USER" | "ADMIN" | null>(null);
   const [email, setEmail] = useState("citizen@resqlink.org");
   const [password, setPassword] = useState("••••••••");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectNotice, setRedirectNotice] = useState<string | null>(null);
 
   // Two canonical roles only
   const roleConfigs = {
@@ -34,21 +38,47 @@ export default function LoginPage() {
       badge: "Public & Affected Citizens",
       target: "/dashboard/user",
       defaultEmail: "citizen@resqlink.org",
-      description: "Request emergency aid, broadcast SOS, track relief delivery, and find safe camps."
+      defaultName: "Citizen User",
+      description: "Request emergency aid, track relief delivery, and find safe camps."
     },
     ADMIN: {
       title: "Administrator / Authority",
       badge: "Command Center Operations",
       target: "/dashboard/admin",
       defaultEmail: "admin@resqlink.org",
+      defaultName: "Commander Sharma",
       description: "Incident command, 5 AI prediction models, warehouse stocks, and fleet CVRP dispatch."
     }
   };
 
   useEffect(() => {
+    // Check if user was redirected or clicked specific role
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get("role");
+      if (roleParam === "USER" || roleParam === "ADMIN") {
+        setRole(roleParam);
+        setLockedRole(roleParam);
+        setEmail(roleConfigs[roleParam].defaultEmail);
+      }
+
+      const redirectTarget = params.get("redirect");
+      if (redirectTarget) {
+        setRedirectNotice(`Please sign in to access ${redirectTarget}. Navigation options become active after login.`);
+      }
+      // If already logged in, redirect directly
+      const session = getAuthSession();
+      if (session) {
+        if (redirectTarget) {
+          router.push(redirectTarget);
+        }
+      }
+    }
+
     try {
       router.prefetch("/dashboard/user");
       router.prefetch("/dashboard/admin");
+      router.prefetch("/map");
     } catch {}
   }, [router]);
 
@@ -60,8 +90,27 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const destination = roleConfigs[role].target;
-    router.push(destination);
+
+    const userName = fullName.trim() || roleConfigs[role].defaultName;
+    loginAsRole(role, email, userName);
+
+    // If there is a redirect parameter matching permitted role, go there, else go to role default
+    let destination = roleConfigs[role].target;
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const redirectTarget = params.get("redirect");
+      if (redirectTarget) {
+        if (role === "USER" && (redirectTarget === "/dashboard/user" || redirectTarget === "/map")) {
+          destination = redirectTarget;
+        } else if (role === "ADMIN" && (redirectTarget === "/dashboard/admin" || redirectTarget === "/map")) {
+          destination = redirectTarget;
+        }
+      }
+    }
+
+    setTimeout(() => {
+      router.push(destination);
+    }, 300);
   };
 
   return (
@@ -72,11 +121,29 @@ export default function LoginPage() {
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center text-white mx-auto shadow-lg shadow-red-500/20">
           <ShieldAlert className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white">ResQLink Access Portal</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-white">
+          {lockedRole === "ADMIN"
+            ? "Administrator Command Access"
+            : lockedRole === "USER"
+            ? "Citizen / User Aid Portal"
+            : "ResQLink Access Portal"}
+        </h1>
         <p className="text-xs text-slate-400">
-          Select whether you are accessing the platform as a <b>Citizen</b> or an <b>Administrator</b>.
+          {lockedRole === "ADMIN"
+            ? "Administrative command login. AI models and CVRP logistics unlock upon authentication."
+            : lockedRole === "USER"
+            ? "Citizen aid sign in. Submit assistance requests and track live relief dispatches."
+            : "Sign in as a Citizen or Administrator. Portal navigation & live GIS tools unlock upon login."}
         </p>
       </div>
+
+      {/* Redirect / Auth Required Notification */}
+      {redirectNotice && (
+        <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-950/80 border border-amber-600/70 text-amber-200 text-xs shadow-lg animate-in fade-in">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-400" />
+          <span>{redirectNotice}</span>
+        </div>
+      )}
 
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
         
@@ -102,61 +169,63 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* The 2 Clear Account Roles (User vs Admin) */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-300">Select Login Portal:</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            
-            {/* User Option */}
-            <button
-              type="button"
-              onClick={() => handleSelectRole("USER")}
-              className={`p-4 rounded-2xl text-left border transition-all ${
-                role === "USER"
-                  ? "bg-blue-950/70 border-blue-500 text-white shadow-lg ring-1 ring-blue-500"
-                  : "bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <div className={`p-2 rounded-xl ${role === "USER" ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-400"}`}>
-                  <Users className="w-5 h-5" />
+        {/* Portal Selection: Hidden when clicking Login as Citizen or Login as Administrator; Shown ONLY from top-right Login */}
+        {!lockedRole && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-300">Select Login Portal:</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              
+              {/* User Option */}
+              <button
+                type="button"
+                onClick={() => handleSelectRole("USER")}
+                className={`p-4 rounded-2xl text-left border transition-all ${
+                  role === "USER"
+                    ? "bg-blue-950/70 border-blue-500 text-white shadow-lg ring-1 ring-blue-500"
+                    : "bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className={`p-2 rounded-xl ${role === "USER" ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-400"}`}>
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-black text-sm text-white">Citizen / User</div>
+                    <div className="text-[10px] text-blue-400 font-mono">Public Access</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-black text-sm text-white">Citizen / User</div>
-                  <div className="text-[10px] text-blue-400 font-mono">Public Access</div>
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
-                SOS intake, delivery tracking & shelter locator.
-              </p>
-            </button>
+                <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
+                  Assistance intake, delivery tracking & shelter locator.
+                </p>
+              </button>
 
-            {/* Admin Option */}
-            <button
-              type="button"
-              onClick={() => handleSelectRole("ADMIN")}
-              className={`p-4 rounded-2xl text-left border transition-all ${
-                role === "ADMIN"
-                  ? "bg-amber-950/70 border-amber-500 text-white shadow-lg ring-1 ring-amber-500"
-                  : "bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <div className={`p-2 rounded-xl ${role === "ADMIN" ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400"}`}>
-                  <ShieldCheck className="w-5 h-5" />
+              {/* Admin Option */}
+              <button
+                type="button"
+                onClick={() => handleSelectRole("ADMIN")}
+                className={`p-4 rounded-2xl text-left border transition-all ${
+                  role === "ADMIN"
+                    ? "bg-amber-950/70 border-amber-500 text-white shadow-lg ring-1 ring-amber-500"
+                    : "bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className={`p-2 rounded-xl ${role === "ADMIN" ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400"}`}>
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-black text-sm text-white">Administrator</div>
+                    <div className="text-[10px] text-amber-400 font-mono">Command Center</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-black text-sm text-white">Administrator</div>
-                  <div className="text-[10px] text-amber-400 font-mono">Command Center</div>
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
-                5 AI Models, CVRP fleet dispatch & stock control.
-              </p>
-            </button>
+                <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
+                  5 AI Models, CVRP fleet dispatch & stock control.
+                </p>
+              </button>
 
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Login / Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -248,25 +317,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* 1-Click Fast Launch Box */}
-        <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-slate-400">⚡ Direct 1-Click Fast Launch:</span>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Link
-              href="/dashboard/user"
-              className="flex-1 sm:flex-none text-center px-3.5 py-1.5 rounded-lg bg-blue-950 text-blue-300 border border-blue-800/80 hover:bg-blue-900 font-bold font-mono text-[11px]"
-            >
-              ➔ User Portal
-            </Link>
-            <Link
-              href="/dashboard/admin"
-              className="flex-1 sm:flex-none text-center px-3.5 py-1.5 rounded-lg bg-amber-950 text-amber-300 border border-amber-800/80 hover:bg-amber-900 font-bold font-mono text-[11px]"
-            >
-              ➔ Admin Portal
-            </Link>
-          </div>
-        </div>
 
       </div>
 

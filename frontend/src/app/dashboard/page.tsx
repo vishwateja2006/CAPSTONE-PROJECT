@@ -88,13 +88,6 @@ export default function DashboardPage() {
 
         <div className="flex items-center space-x-3">
           <Link
-            href="/sos"
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-red-600/30"
-          >
-            <Radio className="w-4 h-4" />
-            <span>New Emergency SOS</span>
-          </Link>
-          <Link
             href="/map"
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700"
           >

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ShieldAlert,
   Users,
@@ -46,8 +47,12 @@ import {
   synthesizeUnifiedActionPlan,
   approveAndDispatchActionPlan
 } from "../../../lib/api";
+import { getAuthSession, AuthSession } from "../../../lib/auth";
 
 export default function AdminCommandCenterPage() {
+  const router = useRouter();
+  const [auth, setAuth] = useState<AuthSession | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "AI_MODELS" | "INVENTORY" | "FLEET" | "AUDIT">("AI_MODELS");
 
   // Operational Data State
@@ -156,8 +161,16 @@ export default function AdminCommandCenterPage() {
   const [unifiedPlan, setUnifiedPlan] = useState<any>(null);
   const [dispatchStatus, setDispatchStatus] = useState<string | null>(null);
 
-  // Initial Load
+  // Initial Load & Admin Route Protection
   useEffect(() => {
+    const session = getAuthSession();
+    if (!session || session.role !== "ADMIN") {
+      router.replace("/login?redirect=/dashboard/admin");
+      return;
+    }
+    setAuth(session);
+    setIsCheckingAuth(false);
+
     async function init() {
       const [s, c, v] = await Promise.all([
         fetchSOSRequests(),
@@ -170,7 +183,7 @@ export default function AdminCommandCenterPage() {
       setIsLoadingData(false);
     }
     init();
-  }, []);
+  }, [router]);
 
   // Handler: Run Model 1 Demand Forecasting
   const handleRunForecast = async () => {
@@ -263,6 +276,15 @@ export default function AdminCommandCenterPage() {
 
   const criticalSOS = (sosList || []).filter((s) => s.urgency_level === "CRITICAL");
   const totalVictims = (sosList || []).reduce((acc, s) => acc + (s.people_count || 0), 0);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-slate-400 font-mono">Verifying administrator command clearance...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 py-2">

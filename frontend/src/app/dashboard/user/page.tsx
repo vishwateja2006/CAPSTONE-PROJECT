@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Radio,
@@ -19,9 +20,24 @@ import {
   ArrowRight
 } from "lucide-react";
 import { submitSOS } from "../../../lib/api";
+import { getAuthSession, AuthSession } from "../../../lib/auth";
 
 export default function UserPortalPage() {
+  const router = useRouter();
+  const [auth, setAuth] = useState<AuthSession | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"SOS" | "MY_REQUESTS" | "RELIEF_CAMPS">("SOS");
+
+  // Route protection
+  useEffect(() => {
+    const session = getAuthSession();
+    if (!session) {
+      router.replace("/login?redirect=/dashboard/user");
+      return;
+    }
+    setAuth(session);
+    setIsCheckingAuth(false);
+  }, [router]);
 
   // Citizen SOS Form State
   const [name, setName] = useState("");
@@ -140,6 +156,15 @@ export default function UserPortalPage() {
     setSubmittedSignal(res);
     setIsSubmitting(false);
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-slate-400 font-mono">Verifying citizen access privileges...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 py-2">
