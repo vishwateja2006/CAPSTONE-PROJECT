@@ -65,12 +65,23 @@ export default function LoginPage() {
       const redirectTarget = params.get("redirect");
       if (redirectTarget) {
         setRedirectNotice(`Please sign in to access ${redirectTarget}. Navigation options become active after login.`);
+        if (!roleParam) {
+          if (redirectTarget.includes("admin")) {
+            setRole("ADMIN");
+            setEmail(roleConfigs.ADMIN.defaultEmail);
+          } else if (redirectTarget.includes("user")) {
+            setRole("USER");
+            setEmail(roleConfigs.USER.defaultEmail);
+          }
+        }
       }
       // If already logged in, redirect directly
       const session = getAuthSession();
       if (session) {
         if (redirectTarget) {
           router.push(redirectTarget);
+        } else {
+          router.push(roleConfigs[session.role].target);
         }
       }
     }
@@ -100,11 +111,7 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const redirectTarget = params.get("redirect");
       if (redirectTarget) {
-        if (role === "USER" && (redirectTarget === "/dashboard/user" || redirectTarget === "/map")) {
-          destination = redirectTarget;
-        } else if (role === "ADMIN" && (redirectTarget === "/dashboard/admin" || redirectTarget === "/map")) {
-          destination = redirectTarget;
-        }
+        destination = redirectTarget;
       }
     }
 

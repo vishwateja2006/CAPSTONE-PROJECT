@@ -14,6 +14,11 @@ echo "==========================================================================
 echo "  🚀 Starting ResQLink: AI Disaster Management & Route Optimization"
 echo "=============================================================================="
 
+# Ensure no orphan processes occupy ports 3001 or 8000
+kill $(lsof -t -i:3001) 2>/dev/null || true
+kill $(lsof -t -i:8000) 2>/dev/null || true
+sleep 1
+
 # Ensure database is seeded
 if [ ! -f "$BACKEND_DIR/disaster_platform.db" ]; then
     echo "[*] Database not detected. Seeding demo database..."

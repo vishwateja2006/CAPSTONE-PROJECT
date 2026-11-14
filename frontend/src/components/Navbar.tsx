@@ -39,7 +39,6 @@ export default function Navbar() {
   };
 
   const handleLogoClick = () => {
-    clearAuthSession();
     setMobileMenuOpen(false);
   };
 
