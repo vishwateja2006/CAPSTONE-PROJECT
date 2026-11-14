@@ -210,6 +210,7 @@ export async function fetchSOSRequests(): Promise<SOSRequest[]> {
 }
 
 export async function submitSOS(payload: any): Promise<SOSRequest> {
+  let createdSOS: SOSRequest;
   try {
     const res = await fetch(`${API_BASE}/sos/`, {
       method: "POST",
@@ -217,10 +218,10 @@ export async function submitSOS(payload: any): Promise<SOSRequest> {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error();
-    return await res.json();
+    createdSOS = await res.json();
   } catch {
     // Return simulated scored SOS
-    return {
+    createdSOS = {
       id: "sos-" + Math.floor(Math.random() * 10000),
       victim_name: payload.victim_name,
       contact_phone: payload.contact_phone,
@@ -237,6 +238,19 @@ export async function submitSOS(payload: any): Promise<SOSRequest> {
       requested_at: "Just now"
     };
   }
+
+  // Register in cross-tab / cross-portal broadcast for immediate Admin notification
+  try {
+    if (typeof window !== "undefined") {
+      const existing = JSON.parse(localStorage.getItem("resqlink_new_citizen_reports") || "[]");
+      existing.unshift(createdSOS);
+      localStorage.setItem("resqlink_new_citizen_reports", JSON.stringify(existing.slice(0, 30)));
+      localStorage.setItem("resqlink_has_unseen_reports", "true");
+      window.dispatchEvent(new CustomEvent("resqlink_new_sos", { detail: createdSOS }));
+    }
+  } catch {}
+
+  return createdSOS;
 }
 
 export async function runFairAllocation(reliefCenterId: string): Promise<FairAllocationResponse> {

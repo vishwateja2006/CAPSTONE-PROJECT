@@ -37,6 +37,16 @@ export default function UserPortalPage() {
     }
     setAuth(session);
     setIsCheckingAuth(false);
+
+    try {
+      const saved = localStorage.getItem("resqlink_user_requests");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setUserRequests(parsed);
+        }
+      }
+    } catch {}
   }, [router]);
 
   // Citizen SOS Form State
@@ -152,7 +162,11 @@ export default function UserPortalPage() {
       created_at: "Just now"
     };
 
-    setUserRequests([newReq, ...userRequests]);
+    const updatedRequests = [newReq, ...userRequests];
+    setUserRequests(updatedRequests);
+    try {
+      localStorage.setItem("resqlink_user_requests", JSON.stringify(updatedRequests));
+    } catch {}
     setSubmittedSignal(res);
     setIsSubmitting(false);
   };

@@ -212,13 +212,24 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 conn.commit()
                 conn.close()
 
+                created_at_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
                 return self._json({
-                    "status": "CREATED",
                     "id": new_id,
+                    "disaster_id": "DIS-CHENNAI-FLOOD-2026",
                     "victim_name": victim_name,
+                    "contact_phone": contact_phone,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "address": address,
                     "people_count": people_count,
                     "urgency_score": urgency_score,
                     "urgency_level": urgency_level,
+                    "special_needs": json.dumps(special_needs),
+                    "category_needs": json.dumps(category_needs),
+                    "description": description,
+                    "status": "PENDING",
+                    "assigned_vehicle_id": None,
+                    "requested_at": created_at_str,
                     "message": "Emergency SOS beacon broadcast successfully and logged to DB."
                 }, status=201)
             except Exception as e:

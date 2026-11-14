@@ -33,7 +33,13 @@ import {
   Sliders,
   CheckCircle2,
   ArrowRight,
-  Flame
+  Flame,
+  Bell,
+  BellRing,
+  Check,
+  X,
+  Phone,
+  AlertCircle
 } from "lucide-react";
 import {
   fetchSOSRequests,
@@ -60,6 +66,54 @@ export default function AdminCommandCenterPage() {
   const [centers, setCenters] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Citizen Distress Alerts & Notification State
+  const [unreadReports, setUnreadReports] = useState<any[]>([]);
+  const [showNotificationBanner, setShowNotificationBanner] = useState(true);
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [newReportToast, setNewReportToast] = useState<any | null>(null);
+
+  // Web Audio emergency alert chime
+  const playAlertChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } catch {}
+  };
+
+  const handleAcknowledgeAll = () => {
+    try {
+      const currentAcknowledged = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
+      const allIds = (sosList || []).map((s) => s.id);
+      const combined = Array.from(new Set([...currentAcknowledged, ...allIds]));
+      localStorage.setItem("resqlink_admin_acknowledged_sos", JSON.stringify(combined));
+      localStorage.setItem("resqlink_has_unseen_reports", "false");
+    } catch {}
+    setUnreadReports([]);
+    setShowNotificationBanner(false);
+    setShowNotificationDropdown(false);
+  };
+
+  const handleAcknowledgeSingle = (sosId: string) => {
+    try {
+      const currentAcknowledged = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
+      const combined = Array.from(new Set([...currentAcknowledged, sosId]));
+      localStorage.setItem("resqlink_admin_acknowledged_sos", JSON.stringify(combined));
+    } catch {}
+    setUnreadReports((prev) => prev.filter((u) => u.id !== sosId));
+  };
 
   // Active AI Model Subtab
   const [activeModel, setActiveModel] = useState<number>(2); // Default to Model 2 so user sees the output immediately!
@@ -161,7 +215,7 @@ export default function AdminCommandCenterPage() {
   const [unifiedPlan, setUnifiedPlan] = useState<any>(null);
   const [dispatchStatus, setDispatchStatus] = useState<string | null>(null);
 
-  // Initial Load & Admin Route Protection
+  // Initial Load, Route Protection, Citizen Report Detection & Live Polling
   useEffect(() => {
     const session = getAuthSession();
     if (!session || session.role !== "ADMIN") {
@@ -177,12 +231,108 @@ export default function AdminCommandCenterPage() {
         fetchReliefCenters(),
         fetchVehicles()
       ]);
-      setSosList(s || []);
+      const fetchedSOS = s || [];
+      setSosList(fetchedSOS);
       setCenters(c || []);
       setVehicles(v || []);
       setIsLoadingData(false);
+
+      // Check for unread citizen reports upon login
+      try {
+        const acknowledged: string[] = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
+        const recentCitizenReports: any[] = JSON.parse(localStorage.getItem("resqlink_new_citizen_reports") || "[]");
+        const hasUnseenFlag = localStorage.getItem("resqlink_has_unseen_reports") === "true";
+        const recentIds = new Set(recentCitizenReports.map((r: any) => r.id));
+
+        // Find reports not yet acknowledged
+        const unread = fetchedSOS.filter((req: any) => {
+          if (acknowledged.includes(req.id)) return false;
+          return recentIds.has(req.id) || (hasUnseenFlag && req.status === "PENDING");
+        });
+
+        if (unread.length > 0) {
+          setUnreadReports(unread);
+          setShowNotificationBanner(true);
+          playAlertChime();
+        } else if (recentCitizenReports.length > 0) {
+          const unreadFromStorage = recentCitizenReports.filter((r: any) => !acknowledged.includes(r.id));
+          if (unreadFromStorage.length > 0) {
+            setUnreadReports(unreadFromStorage);
+            setShowNotificationBanner(true);
+            playAlertChime();
+          }
+        }
+      } catch {}
     }
     init();
+
+    // Cross-tab real-time listener (fires when citizen submits in user portal)
+    const handleNewSOS = (e: any) => {
+      const newSOS = e.detail;
+      if (newSOS) {
+        setSosList((prev) => {
+          if (prev.some((p) => p.id === newSOS.id)) return prev;
+          return [newSOS, ...prev];
+        });
+        setUnreadReports((prev) => {
+          if (prev.some((p) => p.id === newSOS.id)) return prev;
+          return [newSOS, ...prev];
+        });
+        setShowNotificationBanner(true);
+        setNewReportToast(newSOS);
+        playAlertChime();
+        setTimeout(() => setNewReportToast(null), 8000);
+      }
+    };
+
+    window.addEventListener("resqlink_new_sos", handleNewSOS);
+
+    // Cross-window storage listener
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "resqlink_new_citizen_reports" && e.newValue) {
+        try {
+          const reports = JSON.parse(e.newValue);
+          if (Array.isArray(reports) && reports.length > 0) {
+            handleNewSOS({ detail: reports[0] });
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Live auto-polling every 4 seconds to catch citizen reports from database
+    const pollInterval = setInterval(async () => {
+      try {
+        const latestSOS = await fetchSOSRequests();
+        if (latestSOS && latestSOS.length > 0) {
+          setSosList((prev) => {
+            const acknowledged: string[] = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
+            const existingIds = new Set(prev.map((item) => item.id));
+            const brandNew = latestSOS.filter((item: any) => !existingIds.has(item.id));
+
+            if (brandNew.length > 0) {
+              setUnreadReports((prevUnread) => {
+                const unreadSet = new Set(prevUnread.map((u) => u.id));
+                const toAdd = brandNew.filter((b: any) => !acknowledged.includes(b.id) && !unreadSet.has(b.id));
+                return [...toAdd, ...prevUnread];
+              });
+              setShowNotificationBanner(true);
+              setNewReportToast(brandNew[0]);
+              playAlertChime();
+              setTimeout(() => setNewReportToast(null), 8000);
+              return latestSOS;
+            }
+            return prev;
+          });
+        }
+      } catch {}
+    }, 4000);
+
+    return () => {
+      window.removeEventListener("resqlink_new_sos", handleNewSOS);
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(pollInterval);
+    };
   }, [router]);
 
   // Handler: Run Model 1 Demand Forecasting
@@ -303,6 +453,93 @@ export default function AdminCommandCenterPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {/* Notification Bell Button & Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+              className={`relative flex items-center space-x-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                unreadReports.length > 0
+                  ? "bg-red-950/90 border-red-500 text-red-200 hover:bg-red-900 shadow-lg shadow-red-500/25"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+              }`}
+              title="Citizen Distress Notifications"
+            >
+              {unreadReports.length > 0 ? (
+                <BellRing className="w-4 h-4 text-red-400 animate-bounce" />
+              ) : (
+                <Bell className="w-4 h-4 text-slate-400" />
+              )}
+              <span>Alerts</span>
+              {unreadReports.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black animate-pulse">
+                  {unreadReports.length}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Popover Drawer */}
+            {showNotificationDropdown && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950/98 border border-slate-700 shadow-2xl p-4 z-50 space-y-3 animate-in fade-in zoom-in-95 backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center space-x-2">
+                    <Bell className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Distress Notifications ({unreadReports.length})
+                    </span>
+                  </div>
+                  {unreadReports.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAcknowledgeAll}
+                      className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-72 overflow-y-auto space-y-2">
+                  {unreadReports.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-4">No unread distress alerts.</p>
+                  ) : (
+                    unreadReports.map((report) => (
+                      <div
+                        key={report.id}
+                        className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-white text-xs">{report.victim_name}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950 border border-red-800 text-red-400 font-mono font-bold">
+                            Score: {report.urgency_score || 90}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 line-clamp-2">
+                          {report.people_count} people in {report.address || "Sector"}. {report.description}
+                        </p>
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {report.requested_at || "Just now"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab("OVERVIEW");
+                              setShowNotificationDropdown(false);
+                            }}
+                            className="text-[10px] text-amber-400 hover:underline font-bold"
+                          >
+                            View in Triage →
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <Link
             href="/map"
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
@@ -316,6 +553,107 @@ export default function AdminCommandCenterPage() {
           </div>
         </div>
       </div>
+
+      {/* PROMINENT EMERGENCY NOTIFICATION BANNER: When Citizen Makes a Report & Admin Logins */}
+      {showNotificationBanner && unreadReports.length > 0 && (
+        <div className="rounded-3xl bg-gradient-to-r from-red-950/95 via-slate-900/95 to-amber-950/90 border-2 border-red-500/80 p-6 shadow-2xl shadow-red-500/20 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex items-start space-x-4">
+              <div className="p-3.5 rounded-2xl bg-red-600 text-white animate-pulse flex-shrink-0 shadow-lg shadow-red-600/40">
+                <BellRing className="w-6 h-6" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider">
+                    🚨 NEW CITIZEN DISTRESS REPORT
+                  </span>
+                  <span className="text-white font-black text-sm sm:text-base">
+                    {unreadReports.length} Citizen Distress {unreadReports.length === 1 ? "Report" : "Reports"} Received
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-red-200">
+                  Latest urgent report from <strong className="text-white font-bold">{unreadReports[0]?.victim_name}</strong> ({unreadReports[0]?.people_count} {unreadReports[0]?.people_count === 1 ? "person" : "people"} in {unreadReports[0]?.address || "Affected Sector"}).
+                  {unreadReports[0]?.description && <span className="italic ml-1 text-slate-300">"{unreadReports[0]?.description}"</span>}
+                </p>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-amber-300 font-mono pt-0.5">
+                  <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-800">
+                    AI Urgency Score: {unreadReports[0]?.urgency_score || 95}/100 ({unreadReports[0]?.urgency_level || "CRITICAL"})
+                  </span>
+                  {unreadReports[0]?.contact_phone && (
+                    <span className="text-slate-300">
+                      Phone: <strong className="text-white">{unreadReports[0]?.contact_phone}</strong>
+                    </span>
+                  )}
+                  <span className="text-slate-400">
+                    Received: {unreadReports[0]?.requested_at || "Just now"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 self-end md:self-center flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("OVERVIEW");
+                  setShowNotificationBanner(false);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 shadow-md shadow-amber-500/20 transition-all hover:scale-105"
+              >
+                <Eye className="w-4 h-4" />
+                <span>Inspect in Triage Queue</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleAcknowledgeAll}
+                className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all"
+                title="Acknowledge and dismiss notification"
+              >
+                <Check className="w-4 h-4 text-emerald-400 inline mr-1" />
+                <span>Acknowledge</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Real-Time Alert Toast */}
+      {newReportToast && (
+        <div className="fixed top-20 right-6 z-50 max-w-sm w-full bg-slate-950 border-2 border-red-500 text-white p-4 rounded-2xl shadow-2xl shadow-red-500/40 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-2">
+              <BellRing className="w-4 h-4 text-red-400 animate-bounce" />
+              <span className="font-black text-xs uppercase tracking-wider text-red-400">🚨 Incoming Distress Beacon</span>
+            </div>
+            <button
+              onClick={() => setNewReportToast(null)}
+              className="text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="mt-2 space-y-1">
+            <div className="font-bold text-sm text-white">{newReportToast.victim_name}</div>
+            <div className="text-xs text-slate-300">
+              {newReportToast.people_count} People trapped • {newReportToast.address || "Sector"}
+            </div>
+            <div className="text-[11px] font-mono text-amber-400 font-bold">
+              AI Urgency: {newReportToast.urgency_score}/100
+            </div>
+          </div>
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setActiveTab("OVERVIEW");
+                setNewReportToast(null);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs"
+            >
+              Open Triage Queue
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Primary KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -419,11 +757,14 @@ export default function AdminCommandCenterPage() {
             {(sosList || []).map((sos) => {
               const isCrit = sos.urgency_level === "CRITICAL";
               const isHigh = sos.urgency_level === "HIGH";
+              const isUnread = unreadReports.some((u) => u.id === sos.id);
               return (
                 <div
                   key={sos.id}
                   className={`p-4 rounded-2xl border transition-all ${
-                    isCrit
+                    isUnread
+                      ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
+                      : isCrit
                       ? "bg-red-950/25 border-red-900/80"
                       : isHigh
                       ? "bg-amber-950/20 border-amber-900/60"
@@ -432,8 +773,14 @@ export default function AdminCommandCenterPage() {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-bold text-white text-sm">{sos.victim_name}</span>
+                        {isUnread && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center space-x-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                            <span>NEW CITIZEN REPORT</span>
+                          </span>
+                        )}
                         <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-xs font-mono">
                           {sos.people_count} People
                         </span>
@@ -442,15 +789,30 @@ export default function AdminCommandCenterPage() {
                       <p className="text-xs text-slate-300 mt-1 italic">
                         "{sos.description}"
                       </p>
+                      {sos.contact_phone && (
+                        <div className="text-[11px] text-slate-400 mt-1 flex items-center space-x-1">
+                          <Phone className="w-3 h-3 text-cyan-400 inline" />
+                          <span>Phone: <strong className="text-white font-mono">{sos.contact_phone}</strong></span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="text-right flex-shrink-0">
+                    <div className="text-right flex-shrink-0 space-y-1">
                       <span className={`inline-block px-3 py-1 rounded-xl text-xs font-black font-mono ${
                         isCrit ? "bg-red-600 text-white shadow-md shadow-red-600/30" : "bg-amber-500 text-slate-950 font-bold"
                       }`}>
                         AI SCORE: {sos.urgency_score}/100 ({sos.urgency_level})
                       </span>
-                      <div className="text-[10px] text-slate-500 mt-1 font-mono">Status: {sos.status}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">Status: {sos.status}</div>
+                      {isUnread && (
+                        <button
+                          type="button"
+                          onClick={() => handleAcknowledgeSingle(sos.id)}
+                          className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold block ml-auto"
+                        >
+                          Mark Reviewed
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
