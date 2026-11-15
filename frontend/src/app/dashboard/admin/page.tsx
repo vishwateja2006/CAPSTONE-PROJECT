@@ -23,7 +23,6 @@ import {
   Camera,
   MessageSquare,
   Navigation,
-  Scale,
   Sparkles,
   AlertTriangle,
   Play,
@@ -55,7 +54,6 @@ import {
   LifeBuoy,
   Crosshair,
   Layers,
-  Award,
   Wind,
   CloudRain,
   Waves
@@ -78,7 +76,6 @@ import {
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
 import OfficialIAPModal from "../../../components/OfficialIAPModal";
-import AlgorithmicBenchmarkModal from "../../../components/AlgorithmicBenchmarkModal";
 
 export default function AdminCommandCenterPage() {
   const router = useRouter();
@@ -348,7 +345,6 @@ export default function AdminCommandCenterPage() {
     "APPROVED & DISPATCHED: Relief fleet mobilized with verified cryptographic SHA-256 token."
   );
   const [showIAPModal, setShowIAPModal] = useState<boolean>(false);
-  const [showBenchmarkModal, setShowBenchmarkModal] = useState<boolean>(false);
 
   // Handler: ⚡ Simulate Live SOS Trigger (For Presentation / Viva Demo)
   const handleSimulateLiveSOS = async () => {
@@ -786,20 +782,6 @@ export default function AdminCommandCenterPage() {
           >
             <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
             <span>⚡ Simulate SOS</span>
-          </button>
-
-          {/* 📊 Algorithmic Impact & Verification Button */}
-          <button
-            type="button"
-            onClick={() => setShowBenchmarkModal(true)}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-cyan-600/25 transition-all hover:scale-105"
-            title="Open Academic & Scientific Verification Benchmarks"
-          >
-            <Scale className="w-4 h-4 text-cyan-200" />
-            <span>📊 Benchmarks</span>
-            <span className="px-1.5 py-0.5 rounded bg-blue-950 text-[10px] font-mono font-bold text-cyan-300">
-              ACADEMIC RIGOR
-            </span>
           </button>
 
           <Link
@@ -2012,175 +1994,6 @@ export default function AdminCommandCenterPage() {
             </div>
           )}
 
-          {/* STEP 8 / SCIENTIFIC RIGOR: TRADITIONAL FCFS VS RESQLINK AI BENCHMARK GAUGE */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-slate-950/90 border border-slate-800 space-y-6 shadow-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-700 text-cyan-300 font-mono text-[10px] font-black uppercase tracking-wider">
-                    🔬 4. ACADEMIC & SCIENTIFIC RIGOR
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono font-bold">
-                    SAMPLE N = 50 MISSIONS
-                  </span>
-                </div>
-                <h3 className="text-lg sm:text-xl font-black text-white flex items-center space-x-2">
-                  <Scale className="w-5 h-5 text-amber-400" />
-                  <span>Traditional FCFS vs. ResQLink AI — Side-by-Side Benchmark Gauge</span>
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Directly proves your project's quantitative scientific contribution over traditional manual and First-Come First-Served disaster relief.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowBenchmarkModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider flex items-center space-x-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 shrink-0"
-              >
-                <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>Open Full Research Defense</span>
-              </button>
-            </div>
-
-            {/* Side-by-Side Benchmark Comparison Table */}
-            <div className="overflow-x-auto rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-400 uppercase font-mono text-[11px] border-b border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-4 font-bold">Metric</th>
-                    <th className="py-3.5 px-4 font-bold text-red-400">Traditional Manual Relief</th>
-                    <th className="py-3.5 px-4 font-bold text-cyan-400">ResQLink AI Platform</th>
-                    <th className="py-3.5 px-4 font-bold text-emerald-400">Measurable Benefit</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/80">
-                  <tr className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 px-4 font-bold text-white flex items-center space-x-2.5">
-                      <Clock className="w-4 h-4 text-blue-400 shrink-0" />
-                      <div>
-                        <span className="text-sm">Average Delivery Time</span>
-                        <div className="text-[10px] text-slate-500 font-mono font-normal">p &lt; 0.001 Paired t-Test</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-slate-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-800 text-red-300">
-                        54.2 mins
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-cyan-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-300 shadow-sm">
-                        31.8 mins
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-600/80 text-emerald-300 font-mono font-black text-xs inline-flex items-center space-x-1.5 shadow-md">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>41.3% Faster Delivery</span>
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 px-4 font-bold text-white flex items-center space-x-2.5">
-                      <Scale className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div>
-                        <span className="text-sm">Fairness (Gini Index)</span>
-                        <div className="text-[10px] text-slate-500 font-mono font-normal">p &lt; 0.0001 Wilcoxon Test</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-slate-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-800 text-red-300">
-                        0.74 (Hoarding & Inequity)
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-cyan-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-300 shadow-sm">
-                        0.0194 (Mathematical Equity)
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-600/80 text-emerald-300 font-mono font-black text-xs inline-flex items-center space-x-1.5 shadow-md">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>75.7% Equity Gain</span>
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 px-4 font-bold text-white flex items-center space-x-2.5">
-                      <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                      <div>
-                        <span className="text-sm">Submerged Vehicle Incidents</span>
-                        <div className="text-[10px] text-slate-500 font-mono font-normal">Zero fleet damage across 50 dispatches</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-slate-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-800 text-red-300">
-                        1 in 8 dispatches
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-cyan-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-300 shadow-sm">
-                        0 in 50 (Ray-Casting Detours)
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-600/80 text-emerald-300 font-mono font-black text-xs inline-flex items-center space-x-1.5 shadow-md">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>100% Hazard Bypass</span>
-                      </span>
-                    </td>
-                  </tr>
-
-                  <tr className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 px-4 font-bold text-white flex items-center space-x-2.5">
-                      <Award className="w-4 h-4 text-purple-400 shrink-0" />
-                      <div>
-                        <span className="text-sm">Proof-of-Delivery Traceability</span>
-                        <div className="text-[10px] text-slate-500 font-mono font-normal">Cryptographically hash-chained</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-slate-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-800 text-red-300">
-                        38% lost paper slips
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 font-mono font-bold text-cyan-300">
-                      <span className="px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-300 shadow-sm">
-                        100% Cryptographic SHA-256
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-600/80 text-emerald-300 font-mono font-black text-xs inline-flex items-center space-x-1.5 shadow-md">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Zero Fraud / Tamper-proof</span>
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Scientific Impact Defense Anchor */}
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-mono uppercase text-amber-400 font-bold">Examiner Q&A Defense Anchor:</span>
-                <p className="text-slate-300 font-medium">
-                  "ResQLink replaces uncoordinated manual routing with provably optimal Max-Min LP and CVRP Dijkstra tangent detours, preserving human lives, preventing supply hoarding, and securing full traceability."
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBenchmarkModal(true)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold border border-slate-700 text-xs shrink-0 flex items-center space-x-1.5 transition-all"
-              >
-                <span>Inspect Evidence & Methodology</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
         </div>
       )}
 
@@ -2728,12 +2541,6 @@ export default function AdminCommandCenterPage() {
         onClose={() => setShowIAPModal(false)}
         unifiedPlan={unifiedPlan}
         routePlan={routePlan}
-      />
-
-      {/* Academic & Scientific Rigor Benchmark Modal */}
-      <AlgorithmicBenchmarkModal
-        isOpen={showBenchmarkModal}
-        onClose={() => setShowBenchmarkModal(false)}
       />
 
     </div>
