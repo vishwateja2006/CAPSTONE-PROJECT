@@ -64,7 +64,7 @@ class DisasterDamageDetector:
         # Extract road blockages to pass to CVRP routing engine
         blocked_road_segments = [
             {
-                "segment_name": "Adyar Estuary Bridge Link",
+                "segment_name": "Musi River Causeway Bridge",
                 "latitude": center_lat - 0.004,
                 "longitude": center_lon + 0.001,
                 "status": "IMPASSABLE_FLOOD_3FT"

@@ -34,14 +34,14 @@ interface InteractiveMapProps {
   onRecenterGPS?: () => void;
 }
 
-const DEFAULT_USER_COORDS = { lat: 13.0650, lon: 80.2550, isLive: false };
+const DEFAULT_USER_COORDS = { lat: 17.3850, lon: 78.4867, isLive: false };
 const DEFAULT_ENV_DATA: EnvironmentalData = {
   timestamp: new Date().toISOString(),
-  location: { lat: 13.0650, lon: 80.2550, city: "Chennai Sector", isLiveGPS: false },
+  location: { lat: 17.3850, lon: 78.4867, city: "Hyderabad Urban Sector", isLiveGPS: false },
   aqi: { value: 74, category: "MODERATE", label: "Moderate", color: "#f59e0b", pm2_5: 24.2, pm10: 48.0, no2: 14.5, o3: 35.0, co: 0.5, advisory: "Acceptable air quality." },
-  cyclone: { name: "Cyclone Michaung Relict Surge", detected: true, category: "Severe Cyclonic Storm", centralPressure_hpa: 988, windSpeed_kmh: 72, windGusts_kmh: 98, eyeLat: 13.18, eyeLon: 80.45, distanceToEye_km: 26.5, radiusOfGale_km: 180, trajectoryHeading_deg: 310, stormSurge_m: 2.4, threatLevel: "HIGH" },
-  marine: { waveHeight_m: 3.6, swellHeight_m: 2.8, wavePeriod_s: 11.4, waveDirection_deg: 75, tidalSurgeRisk: "HIGH", waveCondition: "High Surge Waves (Coastal Breach Warning)", waterTemp_c: 28.5, tsunamiSurgeAlert: false },
-  hazard: { defconLevel: 2, defconName: "DEFCON-2: SEVERE EMERGENCY WARNING", compositeIndex: 78, primaryThreat: "Coastal Storm Surge & Inundation", evacuationStatus: "Pre-emptive Evacuation Active", recommendedActions: ["Avoid low-lying coastal roads."], hazardZones: [] }
+  cyclone: { name: "Telangana Flash Flood Cloudburst", detected: true, category: "Severe Cloudburst Event", centralPressure_hpa: 988, windSpeed_kmh: 72, windGusts_kmh: 98, eyeLat: 17.42, eyeLon: 78.48, distanceToEye_km: 14.5, radiusOfGale_km: 60, trajectoryHeading_deg: 310, stormSurge_m: 2.1, threatLevel: "HIGH" },
+  marine: { waveHeight_m: 3.6, swellHeight_m: 2.8, wavePeriod_s: 11.4, waveDirection_deg: 75, tidalSurgeRisk: "HIGH", waveCondition: "Musi River Inundation Alert", waterTemp_c: 28.5, tsunamiSurgeAlert: false },
+  hazard: { defconLevel: 2, defconName: "DEFCON-2: SEVERE EMERGENCY WARNING", compositeIndex: 78, primaryThreat: "Urban Flash Flood & Musi Overflow", evacuationStatus: "Pre-emptive Evacuation Active", recommendedActions: ["Avoid low-lying causeways."], hazardZones: [] }
 };
 
 export default function InteractiveMap({
@@ -258,10 +258,10 @@ export default function InteractiveMap({
           opacity="0.35"
         />
         <text x="880" y="90" fill="#38bdf8" fontSize="11" opacity="0.6" transform="rotate(86 880 90)" fontFamily="monospace" fontWeight="bold">
-          BAY OF BENGAL / COASTLINE WATER BOUNDARY
+          HUSSAIN SAGAR / URBAN WATER CORRIDOR
         </text>
 
-        {/* River Canal Network (Adyar Inundation Corridor) */}
+        {/* River Canal Network (Musi River Inundation Corridor) */}
         <path
           d="M 60 520 Q 380 470 620 500 T 850 515"
           fill="none"
@@ -270,7 +270,7 @@ export default function InteractiveMap({
           opacity="0.45"
         />
         <text x="360" y="505" fill="#38bdf8" fontSize="10" opacity="0.7" fontFamily="monospace" fontWeight="bold">
-          ADYAR ESTUARY RIVER BASIN (SURGING OVERFLOW)
+          MUSI RIVER BASIN CORRIDOR (SURGING OVERFLOW)
         </text>
 
         {/* Layer 3: AIR QUALITY DISPERSION HEATMAP (AQI) */}

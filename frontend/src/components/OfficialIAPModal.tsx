@@ -38,7 +38,7 @@ export default function OfficialIAPModal({
 
   if (!isOpen) return null;
 
-  const planId = unifiedPlan?.action_plan_id || "UDAP-DIS-CHENNAI-FLOOD-2026-89104";
+  const planId = unifiedPlan?.action_plan_id || "UDAP-DIS-HYD-FLOOD-2026-89104";
   const sha256Digest =
     unifiedPlan?.sha256_digest ||
     "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
@@ -168,8 +168,8 @@ export default function OfficialIAPModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 border border-slate-900 rounded-lg overflow-hidden text-xs bg-slate-50 divide-x divide-y sm:divide-y-0 divide-slate-300">
                 <div className="p-2.5">
                   <div className="text-[10px] font-bold text-slate-700 uppercase">Incident Code</div>
-                  <div className="font-mono font-black text-slate-950 text-xs">DIS-CHENNAI-FLOOD-2026</div>
-                  <div className="text-[9px] text-slate-700">Cyclone Fengal Surge</div>
+                  <div className="font-mono font-black text-slate-950 text-xs">DIS-HYD-FLOOD-2026</div>
+                  <div className="text-[9px] text-slate-700">Hyderabad Cloudburst Surge</div>
                 </div>
                 <div className="p-2.5">
                   <div className="text-[10px] font-bold text-slate-700 uppercase">Operational Period</div>
@@ -202,8 +202,8 @@ export default function OfficialIAPModal({
               <div className="bg-slate-50 border border-slate-300 rounded-lg p-3.5 text-xs text-slate-800 space-y-2">
                 <p className="leading-relaxed">
                   <b>Primary Mission Directive:</b> Mobilize immediate humanitarian relief payload from{" "}
-                  <b>Central Regional Relief Logistics Hub (WH-CHENNAI-CENTRAL)</b> servicing 135 verified flood victims
-                  across Adyar Basin and Velachery Lowlands. All deliveries are coordinated under strict adherence to UN
+                  <b>Central Regional Relief Logistics Hub (WH-HYD-CENTRAL)</b> servicing 135 verified flood victims
+                  across Musi River Basin and Moosarambagh Lowlands. All deliveries are coordinated under strict adherence to UN
                   Sphere Humanitarian Standards and algorithmic Max-Min Fair Allocation (Gini coefficient 0.0194).
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
@@ -461,11 +461,11 @@ export default function OfficialIAPModal({
                         <span className="font-bold text-emerald-800">LOAD CHECK PASSED</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between bg-red-50 text-red-900">
-                        <span><b>STOP 2 [BYPASS / +03.9m]:</b> ⚠️ <b>Detour:</b> Bypass Adyar Canal Bridge (3.2 ft deep floodwater)</span>
+                        <span><b>STOP 2 [BYPASS / +03.9m]:</b> ⚠️ <b>Detour:</b> Bypass Musi River Causeway Bridge (3.2 ft deep floodwater)</span>
                         <span className="font-bold">MODEL 2 HAZARD DETOUR</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between text-slate-900">
-                        <span><b>STOP 3 [DELIVERY / +08.0m]:</b> SOS: Velachery Ward 178 (Community Shelter - 45 Victims)</span>
+                        <span><b>STOP 3 [DELIVERY / +08.0m]:</b> SOS: Moosarambagh Ward 45 (Community Shelter - 45 Victims)</span>
                         <span className="font-bold text-blue-900">900L Water, 150kg Food, 45 Meds</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between text-slate-900">
@@ -561,11 +561,11 @@ export default function OfficialIAPModal({
                         <span className="font-bold text-emerald-800">LOAD CHECK PASSED</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between bg-amber-50 text-amber-900">
-                        <span><b>STOP 2 [BYPASS / +04.5m]:</b> ⚠️ <b>Detour:</b> Bypass Velachery Lake Outflow Channel</span>
+                        <span><b>STOP 2 [BYPASS / +04.5m]:</b> ⚠️ <b>Detour:</b> Bypass Moosarambagh Low Bridge Channel</span>
                         <span className="font-bold">LOWLAND SURGE AVOIDED</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between text-slate-900">
-                        <span><b>STOP 3 [DELIVERY / +06.4m]:</b> SOS: Senior Care Home (Madipakkam - 60 Elderly Trapped)</span>
+                        <span><b>STOP 3 [DELIVERY / +06.4m]:</b> SOS: Senior Care Home (Malakpet - 60 Elderly Trapped)</span>
                         <span className="font-bold text-blue-900">720L Water, 120kg Food, 45 Meds</span>
                       </div>
                       <div className="p-1.5 flex items-center justify-between text-slate-700">
@@ -592,7 +592,7 @@ export default function OfficialIAPModal({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs border-b border-slate-200 pb-2">
                   <div>
                     <span className="text-[10px] font-bold text-slate-700 uppercase">Issuing Warehouse Depot: </span>
-                    <b className="text-slate-950">Central Strategic Relief Hub (WH-CHENNAI-CENTRAL)</b>
+                    <b className="text-slate-950">Central Strategic Relief Hub (WH-HYD-CENTRAL)</b>
                   </div>
                   <div className="font-mono text-[11px] text-slate-700">
                     Voucher Ref: <b>WH-ISSUE-2026-NOV-4902</b>
@@ -654,7 +654,7 @@ export default function OfficialIAPModal({
                   <div className="border border-slate-300 rounded p-2.5 bg-white space-y-1">
                     <div className="text-[10px] font-bold text-slate-700 uppercase">Released By (Depot Manager)</div>
                     <div className="font-mono text-xs font-black text-slate-950">Col. Rajesh Sharma</div>
-                    <div className="text-[9px] text-slate-700">Chief Logistics Custodian, WH-CHENNAI-CENTRAL</div>
+                    <div className="text-[9px] text-slate-700">Chief Logistics Custodian, WH-HYD-CENTRAL</div>
                     <div className="pt-2 mt-1 border-t border-dashed border-slate-300 flex justify-between text-[8px] text-slate-600">
                       <span>Signature: __________________________</span>
                       <span>Date: {authorizedAt}</span>

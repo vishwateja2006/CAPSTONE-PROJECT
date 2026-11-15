@@ -265,25 +265,25 @@ def main():
     # 2. Active Disaster
     cursor.execute("""
     INSERT INTO disasters (id, name, disaster_type, severity, status, epicenter_lat, epicenter_lon, radius_km, description, declared_by)
-    VALUES ('DIS-CHENNAI-FLOOD-2026', 'Cyclone Michaung Relict Inundation', 'FLOOD', 'CRITICAL', 'ACTIVE', 13.0600, 80.2500, 30.0, 'Category 4 Surge Surge breach with severe low-lying inundation.', 'USR-02')
+    VALUES ('DIS-HYD-FLOOD-2026', 'Hyderabad Urban Flash Floods & Musi River Basin Breach', 'FLOOD', 'CRITICAL', 'ACTIVE', 17.3850, 78.4867, 30.0, 'Severe urban cloudburst and Musi River surge with extensive inundation.', 'USR-02')
     """)
 
     # 3. Relief Centers & Warehouses (5 Regional Strategic Depots)
     relief_centers = [
-        ("RC-01", "DIS-CHENNAI-FLOOD-2026", "Chennai Central Humanitarian Relief Base Alpha", "Jawaharlal Nehru Stadium Complex", 13.0827, 80.2707, "Col. Rajesh Sharma (Logistics Cmdr)", "+91-9444012345", 3000, 450),
-        ("RC-02", "DIS-CHENNAI-FLOOD-2026", "South Chennai Emergency Staging Depot Beta", "Guindy SIDCO Logistics Hub", 13.0067, 80.2026, "Capt. Sundar Raman (Ops Head)", "+91-9444054321", 2000, 320),
-        ("RC-03", "DIS-CHENNAI-FLOOD-2026", "North Coastal Maritime Relief Depot Gamma", "Kasimedu Fishing Harbour Forward Base", 13.1250, 80.2970, "Officer K. Annamalai (Maritime Cmdr)", "+91-9444078901", 1500, 210),
-        ("RC-04", "DIS-CHENNAI-FLOOD-2026", "Western Inundation Relief Depot Delta", "Tambaram Airfield Perimeter Park", 12.9249, 80.1278, "Wing Cmdr. Arpitha Sen (Air Logistics)", "+91-9444099887", 3500, 580),
-        ("RC-05", "DIS-CHENNAI-FLOOD-2026", "Velachery Flood Response Hub Epsilon", "Velachery Lowland Basin Command Center", 12.9815, 80.2180, "Insp. David Pushparaj (Flood Command)", "+91-9444033221", 1800, 390)
+        ("RC-01", "DIS-HYD-FLOOD-2026", "Secunderabad Central Humanitarian Relief Base Alpha", "Gymkhana Grounds Complex, Secunderabad, Telangana", 17.4399, 78.4983, "Col. Rajesh Sharma (Logistics Cmdr)", "+91-9444012345", 3000, 450),
+        ("RC-02", "DIS-HYD-FLOOD-2026", "South Hyderabad Emergency Staging Depot Beta", "Rajendranagar PJTSAU Complex, Hyderabad, Telangana", 17.3200, 78.4070, "Capt. Sundar Raman (Ops Head)", "+91-9444054321", 2000, 320),
+        ("RC-03", "DIS-HYD-FLOOD-2026", "North-West Transit Relief Depot Gamma", "Kukatpally / Sanathnagar Industrial Hub, Hyderabad, Telangana", 17.4700, 78.3700, "Officer K. Annamalai (Transit Cmdr)", "+91-9444078901", 1500, 210),
+        ("RC-04", "DIS-HYD-FLOOD-2026", "West Zone Rapid Logistics Depot Delta", "Gachibowli Stadium Base Complex, Hyderabad, Telangana", 17.4435, 78.3489, "Wing Cmdr. Arpitha Sen (Air Logistics)", "+91-9444099887", 3500, 580),
+        ("RC-05", "DIS-HYD-FLOOD-2026", "Amberpet Musi Basin Flood Response Hub Epsilon", "Amberpet / Moosarambagh Command Center, Hyderabad, Telangana", 17.3871, 78.5173, "Insp. David Pushparaj (Flood Command)", "+91-9444033221", 1800, 390)
     ]
     cursor.executemany("INSERT INTO relief_centers (id, disaster_id, name, location_name, latitude, longitude, contact_person, phone, capacity_people, current_occupancy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", relief_centers)
 
     warehouses = [
-        ("WH-CHENNAI-CENTRAL", "Chennai Central Humanitarian Relief Base Alpha", 13.0827, 80.2707, "USR-04", 6000.0),
-        ("WH-CHENNAI-SOUTH", "South Chennai Emergency Staging Depot Beta", 13.0067, 80.2026, "USR-04", 4500.0),
-        ("WH-CHENNAI-NORTH", "North Coastal Maritime Relief Depot Gamma", 13.1250, 80.2970, "USR-05", 3500.0),
-        ("WH-CHENNAI-WEST", "Western Inundation Relief Depot Delta", 12.9249, 80.1278, "USR-04", 7500.0),
-        ("WH-CHENNAI-VELACHERY", "Velachery Flood Response Hub Epsilon", 12.9815, 80.2180, "USR-05", 4000.0)
+        ("WH-HYD-CENTRAL", "Secunderabad Central Humanitarian Relief Base Alpha", 17.4399, 78.4983, "USR-04", 6000.0),
+        ("WH-HYD-SOUTH", "South Hyderabad Emergency Staging Depot Beta", 17.3200, 78.4070, "USR-04", 4500.0),
+        ("WH-HYD-NORTH", "North-West Transit Relief Depot Gamma", 17.4700, 78.3700, "USR-05", 3500.0),
+        ("WH-HYD-WEST", "West Zone Rapid Logistics Depot Delta", 17.4435, 78.3489, "USR-04", 7500.0),
+        ("WH-HYD-EAST", "Amberpet Musi Basin Flood Response Hub Epsilon", 17.3871, 78.5173, "USR-05", 4000.0)
     ]
     cursor.executemany("INSERT INTO warehouses (id, name, latitude, longitude, manager_id, max_storage_sqm) VALUES (?, ?, ?, ?, ?, ?)", warehouses)
 
@@ -353,11 +353,11 @@ def main():
 
     # Cross-populate resources table with corresponding warehouse IDs
     wh_map = {
-        "RC-01": "WH-CHENNAI-CENTRAL",
-        "RC-02": "WH-CHENNAI-SOUTH",
-        "RC-03": "WH-CHENNAI-NORTH",
-        "RC-04": "WH-CHENNAI-WEST",
-        "RC-05": "WH-CHENNAI-VELACHERY"
+        "RC-01": "WH-HYD-CENTRAL",
+        "RC-02": "WH-HYD-SOUTH",
+        "RC-03": "WH-HYD-NORTH",
+        "RC-04": "WH-HYD-WEST",
+        "RC-05": "WH-HYD-EAST"
     }
     resources = [
         (f"RES-{inv[0][4:]}", wh_map[inv[1]], inv[2], inv[3], inv[4], inv[5], inv[6])
@@ -367,14 +367,14 @@ def main():
 
     # 5. Relief Vehicles (Expanded Emergency Fleet: Trucks, Boats, 4x4s, Ambulances, Drones)
     fleet = [
-        ("VEH-01", "TRUCK-4x4-ALPHA", "TRUCK", 2000.0, 13.0827, 80.2707, "IDLE", "Officer Vikram Singh", 42.0),
-        ("VEH-02", "TRUCK-RESCUE-BETA", "TRUCK", 1500.0, 13.0067, 80.2026, "IDLE", "Lt. Priya Nair", 38.0),
-        ("VEH-03", "BOAT-RESCUE-01", "BOAT", 750.0, 13.0600, 80.2500, "EN_ROUTE", "Capt. Manikandan", 22.0),
-        ("VEH-04", "BOAT-AMPHIBIAN-02", "BOAT", 900.0, 12.9815, 80.2180, "IDLE", "Officer S. Murugan", 26.0),
-        ("VEH-05", "SCOUT-4X4-DELTA", "4X4", 850.0, 12.9249, 80.1278, "IDLE", "Lt. Arun Prasad", 50.0),
-        ("VEH-06", "AMBULANCE-ICU-01", "4X4", 600.0, 13.0827, 80.2707, "IDLE", "Dr. Revathi & Driver Selvam", 48.0),
-        ("VEH-07", "DRONE-PAYLOAD-HEAVY", "DRONE", 45.0, 12.9249, 80.1278, "IDLE", "Remote Pilot Karthik", 65.0),
-        ("VEH-08", "DRONE-RECON-SURVEIL", "DRONE", 15.0, 13.1250, 80.2970, "EN_ROUTE", "Flight Lead Divya", 75.0)
+        ("VEH-01", "TRUCK-4x4-ALPHA", "TRUCK", 2000.0, 17.4399, 78.4983, "IDLE", "Officer Vikram Singh", 42.0),
+        ("VEH-02", "TRUCK-RESCUE-BETA", "TRUCK", 1500.0, 17.3200, 78.4070, "IDLE", "Lt. Priya Nair", 38.0),
+        ("VEH-03", "BOAT-RESCUE-01", "BOAT", 750.0, 17.3850, 78.4867, "EN_ROUTE", "Capt. Manikandan", 22.0),
+        ("VEH-04", "BOAT-AMPHIBIAN-02", "BOAT", 900.0, 17.3871, 78.5173, "IDLE", "Officer S. Murugan", 26.0),
+        ("VEH-05", "SCOUT-4X4-DELTA", "4X4", 850.0, 17.4435, 78.3489, "IDLE", "Lt. Arun Prasad", 50.0),
+        ("VEH-06", "AMBULANCE-ICU-01", "4X4", 600.0, 17.4399, 78.4983, "IDLE", "Dr. Revathi & Driver Selvam", 48.0),
+        ("VEH-07", "DRONE-PAYLOAD-HEAVY", "DRONE", 45.0, 17.4435, 78.3489, "IDLE", "Remote Pilot Karthik", 65.0),
+        ("VEH-08", "DRONE-RECON-SURVEIL", "DRONE", 15.0, 17.3850, 78.4867, "EN_ROUTE", "Flight Lead Divya", 75.0)
     ]
     cursor.executemany("INSERT INTO relief_vehicles (id, vehicle_code, vehicle_type, capacity_kg, current_lat, current_lon, status, assigned_driver, speed_kmh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", fleet)
 
@@ -386,46 +386,46 @@ def main():
 
     # 6. SOS Requests
     sos_records = [
-        ("sos-01", "DIS-CHENNAI-FLOOD-2026", "Kavitha Sundaram (Infant & Diabetic)", "+91-9840112233", 13.0650, 80.2550, "12 Canal Bank Road, Kotturpuram", 4, "CRITICAL", 95.0, json.dumps(["infant", "insulin-dependent"]), json.dumps(["FOOD", "WATER", "MEDICAL"]), "Water reached first floor. Diabetic grandmother needs cold-storage insulin, infant needs formula.", "PENDING", None),
-        ("sos-02", "DIS-CHENNAI-FLOOD-2026", "Senior Care Care Home (Ramesh Babu)", "+91-9840556677", 13.0450, 80.2400, "Senior Care Annex, T. Nagar", 12, "CRITICAL", 88.5, json.dumps(["elderly", "oxygen-cylinder", "wheelchair"]), json.dumps(["MEDICAL", "WATER", "EVACUATION"]), "Old age home generator failed. 12 elderly residents stranded without drinking water or oxygen.", "PENDING", None),
-        ("sos-03", "DIS-CHENNAI-FLOOD-2026", "Anand Kumar (Fishermen Colony)", "+91-9840998811", 13.0950, 80.2850, "Fishermen Colony, Kasimedu", 6, "HIGH", 72.0, json.dumps(["pregnant"]), json.dumps(["FOOD", "WATER"]), "Roof damaged by gale winds. Drinking water contaminated by tidal seawater intrusion.", "PENDING", None),
-        ("sos-04", "DIS-CHENNAI-FLOOD-2026", "Dr. Farooq (Community Clinic)", "+91-9840334455", 13.0550, 80.2750, "Royapettah High Road", 8, "HIGH", 68.0, json.dumps(["injured", "trauma"]), json.dumps(["MEDICAL", "FOOD"]), "Trauma victims taking shelter in clinic lobby. Running out of clean bandages and antipyretics.", "PENDING", None)
+        ("sos-01", "DIS-HYD-FLOOD-2026", "Kavitha Sundaram (Infant & Diabetic)", "+91-9840112233", 17.3780, 78.4910, "12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad", 4, "CRITICAL", 95.0, json.dumps(["infant", "insulin-dependent"]), json.dumps(["FOOD", "WATER", "MEDICAL"]), "Water reached first floor. Diabetic grandmother needs cold-storage insulin, infant needs formula.", "PENDING", None),
+        ("sos-02", "DIS-HYD-FLOOD-2026", "Senior Care Care Home (Ramesh Babu)", "+91-9840556677", 17.3810, 78.5120, "Moosarambagh Old Age Center, Ward 45, Hyderabad", 12, "CRITICAL", 88.5, json.dumps(["elderly", "oxygen-cylinder", "wheelchair"]), json.dumps(["MEDICAL", "WATER", "EVACUATION"]), "Old age home generator failed. 12 elderly residents stranded without drinking water or oxygen.", "PENDING", None),
+        ("sos-03", "DIS-HYD-FLOOD-2026", "Anand Kumar (Alaknanda Colony)", "+91-9840998811", 17.3750, 78.4980, "Alaknanda Colony, Malakpet / Chaderghat Basin, Hyderabad", 6, "HIGH", 72.0, json.dumps(["pregnant"]), json.dumps(["FOOD", "WATER"]), "Roof damaged by gale winds. Drinking water contaminated by flood silt.", "PENDING", None),
+        ("sos-04", "DIS-HYD-FLOOD-2026", "Dr. Farooq (Community Clinic)", "+91-9840334455", 17.3616, 78.4747, "Charminar South Relief Shelter, Falaknuma Link, Hyderabad", 8, "HIGH", 68.0, json.dumps(["injured", "trauma"]), json.dumps(["MEDICAL", "FOOD"]), "Trauma victims taking shelter in clinic lobby. Running out of clean bandages and antipyretics.", "PENDING", None)
     ]
     cursor.executemany("INSERT INTO sos_requests (id, disaster_id, victim_name, contact_phone, latitude, longitude, address, people_count, urgency_level, urgency_score, special_needs, category_needs, description, status, assigned_vehicle_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", sos_records)
 
     # 7. Beneficiaries & Requests for Supabase Schema
     bens = [
-        ("BEN-01", "Kavitha Sundaram (Infant & Diabetic)", 4, 13.0650, 80.2550, 95.0),
-        ("BEN-02", "Senior Care Care Home (12 Residents)", 12, 13.0450, 80.2400, 88.5),
-        ("BEN-03", "Anand Kumar (Fishermen Colony)", 6, 13.0950, 80.2850, 72.0),
-        ("BEN-04", "Dr. Farooq (Community Clinic)", 8, 13.0550, 80.2750, 68.0)
+        ("BEN-01", "Kavitha Sundaram (Infant & Diabetic)", 4, 17.3780, 78.4910, 95.0),
+        ("BEN-02", "Senior Care Care Home (12 Residents)", 12, 17.3810, 78.5120, 88.5),
+        ("BEN-03", "Anand Kumar (Alaknanda Colony)", 6, 17.3750, 78.4980, 72.0),
+        ("BEN-04", "Dr. Farooq (Community Clinic)", 8, 17.3616, 78.4747, 68.0)
     ]
     cursor.executemany("INSERT INTO beneficiaries (id, head_of_household, household_size, latitude, longitude, vulnerability_score) VALUES (?, ?, ?, ?, ?, ?)", bens)
 
     requests = [
-        ("REQ-01", "BEN-01", "DIS-CHENNAI-FLOOD-2026", json.dumps(["WATER", "FOOD", "MEDICAL"]), 95.0, "PENDING", "Water reached first floor. Insulin and baby formula needed."),
-        ("REQ-02", "BEN-02", "DIS-CHENNAI-FLOOD-2026", json.dumps(["MEDICAL", "WATER"]), 88.5, "PENDING", "12 elderly residents stranded without drinking water."),
-        ("REQ-03", "BEN-03", "DIS-CHENNAI-FLOOD-2026", json.dumps(["WATER", "FOOD"]), 72.0, "PENDING", "Roof damaged by gale winds. Drinking water contaminated."),
-        ("REQ-04", "BEN-04", "DIS-CHENNAI-FLOOD-2026", json.dumps(["MEDICAL", "FOOD"]), 68.0, "PENDING", "Trauma victims taking shelter in clinic lobby.")
+        ("REQ-01", "BEN-01", "DIS-HYD-FLOOD-2026", json.dumps(["WATER", "FOOD", "MEDICAL"]), 95.0, "PENDING", "Water reached first floor. Insulin and baby formula needed."),
+        ("REQ-02", "BEN-02", "DIS-HYD-FLOOD-2026", json.dumps(["MEDICAL", "WATER"]), 88.5, "PENDING", "12 elderly residents stranded without drinking water."),
+        ("REQ-03", "BEN-03", "DIS-HYD-FLOOD-2026", json.dumps(["WATER", "FOOD"]), 72.0, "PENDING", "Roof damaged by gale winds. Drinking water contaminated."),
+        ("REQ-04", "BEN-04", "DIS-HYD-FLOOD-2026", json.dumps(["MEDICAL", "FOOD"]), 68.0, "PENDING", "Trauma victims taking shelter in clinic lobby.")
     ]
     cursor.executemany("INSERT INTO requests (id, beneficiary_id, disaster_id, requested_categories, urgency_score, status, description) VALUES (?, ?, ?, ?, ?, ?, ?)", requests)
 
     # 8. Hazard Zones
     hazard_zones = [
-        ("HZ-01", "DIS-CHENNAI-FLOOD-2026", "Zone A - Adyar Basin Flooded Sector", "RED", json.dumps({"type": "Polygon", "coordinates": [[[80.245, 13.010], [80.265, 13.010], [80.265, 13.035], [80.245, 13.035], [80.245, 13.010]]]}), 0, json.dumps(["Adyar Estuary Bridge Link submerged (3.2ft flood depth)"]))
+        ("HZ-01", "DIS-HYD-FLOOD-2026", "Zone A - Flooded Musi River Causeway Sector", "RED", json.dumps({"type": "Polygon", "coordinates": [[[78.470, 17.360], [78.530, 17.360], [78.530, 17.395], [78.470, 17.395], [78.470, 17.360]]]}), 0, json.dumps(["Musi River Causeway Bridge Link submerged (3.2ft flood depth)"]))
     ]
     cursor.executemany("INSERT INTO hazard_zones (id, disaster_id, name, risk_level, boundary_geojson, is_passable, road_blockages_json) VALUES (?, ?, ?, ?, ?, ?, ?)", hazard_zones)
 
     # 9. Alerts
     cursor.execute("""
     INSERT INTO alerts (id, disaster_id, title, message, severity, broadcast_channel)
-    VALUES ('ALT-01', 'DIS-CHENNAI-FLOOD-2026', 'DEFCON-1 Coastal Flash Flood Warning', 'Adyar river basin overflowing. Low-lying wards 170-182 evacuate immediately.', 'CRITICAL', 'ALL_CHANNELS')
+    VALUES ('ALT-01', 'DIS-HYD-FLOOD-2026', 'DEFCON-1 Urban Flash Flood Warning', 'Musi River basin overflowing. Low-lying Chaderghat and Moosarambagh sectors evacuate immediately.', 'CRITICAL', 'ALL_CHANNELS')
     """)
 
     # 10. Audit Logs
     cursor.execute("""
     INSERT INTO audit_logs (id, actor_id, actor_role, action, entity_id, details)
-    VALUES ('LOG-001', 'USR-02', 'DISASTER_AUTHORITY', 'INCIDENT_DECLARED', 'DIS-CHENNAI-FLOOD-2026', 'Declared Cyclone Michaung Category 4 Inundation Event.')
+    VALUES ('LOG-001', 'USR-02', 'DISASTER_AUTHORITY', 'INCIDENT_DECLARED', 'DIS-HYD-FLOOD-2026', 'Declared Hyderabad Urban Cloudburst Category 4 Inundation Event.')
     """)
 
     conn.commit()

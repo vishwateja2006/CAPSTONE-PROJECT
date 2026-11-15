@@ -40,14 +40,14 @@ def init_db():
 
         # 2. Active Disaster: Coastal Super-Cyclone & Urban Flood
         disaster = Disaster(
-            name="Cyclone Vardah & Coastal Inundation",
+            name="Hyderabad Urban Flash Floods & Musi River Basin Breach",
             disaster_type="FLOOD",
             status="ACTIVE",
             severity="CRITICAL",
-            epicenter_lat=13.0827,
-            epicenter_lon=80.2707,
+            epicenter_lat=17.3850,
+            epicenter_lon=78.4867,
             radius_km=30.0,
-            description="Severe Category 4 cyclone accompanied by rapid coastal storm surge and torrential flooding of low-lying urban sectors."
+            description="Severe urban cloudburst and Musi River surge with extensive inundation across low-lying Hyderabad sectors."
         )
         db.add(disaster)
         db.commit()
@@ -56,16 +56,16 @@ def init_db():
         # 3. Hazard Zone (Red Zone - Severely Inundated / Impassable)
         hazard = HazardZone(
             disaster_id=disaster.id,
-            name="Zone A - Adyar Basin Flooded Sector",
+            name="Zone A - Flooded Musi River Causeway Sector",
             risk_level="RED",
             boundary_geojson=json.dumps({
                 "type": "Polygon",
                 "coordinates": [[
-                    [80.245, 13.010],
-                    [80.265, 13.010],
-                    [80.265, 13.035],
-                    [80.245, 13.035],
-                    [80.245, 13.010]
+                    [78.470, 17.360],
+                    [78.530, 17.360],
+                    [78.530, 17.395],
+                    [78.470, 17.395],
+                    [78.470, 17.360]
                 ]]
             }),
             is_passable=False,
@@ -140,9 +140,9 @@ def init_db():
                 disaster_id=disaster.id,
                 victim_name="Kavitha Sundaram",
                 contact_phone="+91-9840112233",
-                latitude=13.0650,
-                longitude=80.2550,
-                address="12 Canal Bank Road, Kotturpuram",
+                latitude=17.3780,
+                longitude=78.4910,
+                address="12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad",
                 people_count=4,
                 urgency_level="CRITICAL",
                 urgency_score=92.0,

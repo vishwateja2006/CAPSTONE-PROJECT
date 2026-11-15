@@ -69,14 +69,14 @@ export default function AIDashboardPage() {
   const [isLoadingVision, setIsLoadingVision] = useState(false);
   const [visionResult, setVisionResult] = useState<any>({
     model_name: "Spectral-NDWI-UNet-DamageDetector-v2",
-    tile_id: "SENTINEL-2B-CHENNAI-T14",
+    tile_id: "SENTINEL-2B-HYDERABAD-T14",
     water_detected: true,
     estimated_flood_area_sqkm: 1.84,
     confidence_score: 0.942,
     impassable_road_segments: [
       {
-        road_id: "ROAD-ADYAR-01",
-        name: "Adyar Canal Bridge / Dr. Muthulakshmi Rd",
+        road_id: "ROAD-MUSI-01",
+        name: "Musi River Causeway / Chaderghat Bridge",
         status: "IMPASSABLE_FLOOD_3FT"
       }
     ]
@@ -107,11 +107,11 @@ export default function AIDashboardPage() {
     estimated_duration_mins: 42.0,
     hazard_detours_inserted: 1,
     waypoints: [
-      { sequence: 1, location_name: "Central Base Alpha [START]", action: "DEPOT_START", eta_mins: 0 },
-      { sequence: 2, location_name: "⚠ Adyar Red Zone Perimeter [HAZARD_BYPASS]", action: "HAZARD_BYPASS", eta_mins: 8.5 },
+      { sequence: 1, location_name: "Secunderabad Central Hub [START]", action: "DEPOT_START", eta_mins: 0 },
+      { sequence: 2, location_name: "⚠ Musi Flood Sector Perimeter [HAZARD_BYPASS]", action: "HAZARD_BYPASS", eta_mins: 8.5 },
       { sequence: 3, location_name: "SOS: Senior Care Home (12 People)", action: "DELIVER_AID", demand_kg: 180, eta_mins: 16.5 },
       { sequence: 4, location_name: "SOS: Kavitha & Infant (4 People)", action: "DELIVER_AID", demand_kg: 60, eta_mins: 28.2 },
-      { sequence: 5, location_name: "Central Base Alpha [RETURN]", action: "DEPOT_RETURN", eta_mins: 42.0 }
+      { sequence: 5, location_name: "Secunderabad Central Hub [RETURN]", action: "DEPOT_RETURN", eta_mins: 42.0 }
     ]
   });
 
@@ -158,10 +158,10 @@ export default function AIDashboardPage() {
     setIsLoadingVision(true);
     try {
       const data = await detectDamageVision({
-        tile_id: "SENTINEL-2B-CHENNAI-T14",
+        tile_id: "SENTINEL-2B-HYDERABAD-T14",
         ndwi_threshold: ndwiThreshold,
-        center_lat: 13.0600,
-        center_lon: 80.2500
+        center_lat: 17.3850,
+        center_lon: 78.4867
       });
       setVisionResult(data);
     } finally {
@@ -187,7 +187,7 @@ export default function AIDashboardPage() {
   const handleRunRouteSolver = async () => {
     setIsLoadingRoutes(true);
     try {
-      const data = await runRouteOptimization("WH-CHENNAI-CENTRAL", ["VEH-01", "VEH-02"]);
+      const data = await runRouteOptimization("WH-HYD-CENTRAL", ["VEH-01", "VEH-02"]);
       if (data && data.length > 0) {
         setRoutePlan(data[0]);
       }
@@ -200,7 +200,7 @@ export default function AIDashboardPage() {
   const handleRunFairAllocation = async () => {
     setIsSolvingAllocation(true);
     try {
-      const data = await runFairAllocation("WH-CHENNAI-CENTRAL");
+      const data = await runFairAllocation("WH-HYD-CENTRAL");
       setAllocationResult(data);
     } finally {
       setIsSolvingAllocation(false);
@@ -213,8 +213,8 @@ export default function AIDashboardPage() {
     setDispatchStatus(null);
     try {
       const plan = await synthesizeUnifiedActionPlan(
-        "DIS-CHENNAI-FLOOD-2026",
-        "WH-CHENNAI-CENTRAL",
+        "DIS-HYD-FLOOD-2026",
+        "WH-HYD-CENTRAL",
         ["VEH-01", "VEH-02"]
       );
       setUnifiedPlan(plan);
@@ -230,8 +230,8 @@ export default function AIDashboardPage() {
     try {
       const res = await approveAndDispatchActionPlan({
         action_plan_id: unifiedPlan.action_plan_id,
-        disaster_id: "DIS-CHENNAI-FLOOD-2026",
-        warehouse_id: "WH-CHENNAI-CENTRAL",
+        disaster_id: "DIS-HYD-FLOOD-2026",
+        warehouse_id: "WH-HYD-CENTRAL",
         routes: unifiedPlan.step5_route_dispatch_plan || [],
         allocations: unifiedPlan.step4_fair_allocation_plan?.allocations || []
       });
@@ -281,11 +281,10 @@ export default function AIDashboardPage() {
             <button
               key={tab.id}
               onClick={() => setActiveModelTab(tab.id)}
-              className={`flex items-center justify-center space-x-2 py-3 px-2 rounded-xl transition-all ${
-                isAct
-                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
+              className={`flex items-center justify-center space-x-2 py-3 px-2 rounded-xl transition-all ${isAct
+                ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                }`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{tab.label}</span>
@@ -461,17 +460,15 @@ export default function AIDashboardPage() {
             <div className="flex items-center space-x-2 text-xs font-bold">
               <button
                 onClick={() => setSelectedImageMode("RAW")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  selectedImageMode === "RAW" ? "bg-slate-800 text-white" : "text-slate-400"
-                }`}
+                className={`px-3 py-1.5 rounded-lg transition-all ${selectedImageMode === "RAW" ? "bg-slate-800 text-white" : "text-slate-400"
+                  }`}
               >
                 Raw Optical Frame
               </button>
               <button
                 onClick={() => setSelectedImageMode("SEGMENTED")}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  selectedImageMode === "SEGMENTED" ? "bg-amber-500 text-slate-950 font-black" : "text-slate-400"
-                }`}
+                className={`px-3 py-1.5 rounded-lg transition-all ${selectedImageMode === "SEGMENTED" ? "bg-amber-500 text-slate-950 font-black" : "text-slate-400"
+                  }`}
               >
                 AI Segmentation Mask
               </button>
@@ -484,7 +481,7 @@ export default function AIDashboardPage() {
                 <rect width="100%" height="100%" fill="#0a0f1d" />
                 <path d="M 0 180 Q 200 120 400 190 T 600 200" fill="none" stroke="#1e293b" strokeWidth="30" />
                 <text x="30" y="150" fill="#64748b" fontSize="12" fontFamily="monospace">
-                  NH-45 / ADYAR HIGHWAY CORRIDOR
+                  MUSI RIVER EXPRESSWAY CORRIDOR
                 </text>
 
                 {selectedImageMode === "SEGMENTED" && (
@@ -598,7 +595,7 @@ export default function AIDashboardPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setNlpText("Rooftop stranded in Velachery. Water level 5 feet. Pregnant mother and infant need evacuation.")
+                    setNlpText("Rooftop stranded in Moosarambagh. Water level 5 feet. Pregnant mother and infant need evacuation.")
                   }
                   className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200"
                 >
@@ -631,11 +628,10 @@ export default function AIDashboardPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Assessed Urgency Level:</span>
                   <span
-                    className={`px-2.5 py-1 rounded-lg font-black font-mono ${
-                      nlpResult.urgency_level === "CRITICAL"
-                        ? "bg-red-950 text-red-400 border border-red-800"
-                        : "bg-amber-950 text-amber-400"
-                    }`}
+                    className={`px-2.5 py-1 rounded-lg font-black font-mono ${nlpResult.urgency_level === "CRITICAL"
+                      ? "bg-red-950 text-red-400 border border-red-800"
+                      : "bg-amber-950 text-amber-400"
+                      }`}
                   >
                     {nlpResult.urgency_level} ({nlpResult.urgency_score}/100)
                   </span>
@@ -694,7 +690,7 @@ export default function AIDashboardPage() {
               <div className="space-y-2 text-slate-300">
                 <div>✓ <b>Capacity Limit:</b> Cargo ≤ 1500 kg per truck</div>
                 <div>✓ <b>Sub-tour Elimination:</b> Closed loop depot start/end</div>
-                <div>✓ <b>Polygon Avoidance:</b> Adyar flood zone impassable</div>
+                <div>✓ <b>Polygon Avoidance:</b> Musi River flood zone impassable</div>
                 <div>✓ <b>Priority Scheduling:</b> Scores ≥ 80 served in first 30 mins</div>
               </div>
               <div className="pt-3 border-t border-slate-800">
@@ -713,11 +709,10 @@ export default function AIDashboardPage() {
                   return (
                     <div
                       key={idx}
-                      className={`p-2.5 rounded-lg flex justify-between ${
-                        isDetour
-                          ? "bg-red-950/40 border border-red-900/60 text-red-300 font-bold"
-                          : "bg-slate-900 text-white"
-                      }`}
+                      className={`p-2.5 rounded-lg flex justify-between ${isDetour
+                        ? "bg-red-950/40 border border-red-900/60 text-red-300 font-bold"
+                        : "bg-slate-900 text-white"
+                        }`}
                     >
                       <span>
                         {wp.sequence}. {wp.location_name || wp.name}
@@ -788,8 +783,8 @@ export default function AIDashboardPage() {
                     <span className="text-amber-400 font-bold">
                       {typeof alloc.allocated_items === "object"
                         ? Object.entries(alloc.allocated_items)
-                            .map(([k, v]) => `${v} ${k}`)
-                            .join(", ")
+                          .map(([k, v]) => `${v} ${k}`)
+                          .join(", ")
                         : JSON.stringify(alloc.allocated_items)}
                     </span>
                   </div>
@@ -841,11 +836,10 @@ export default function AIDashboardPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`px-3 py-1 rounded-xl text-xs font-mono font-black ${
-                        unifiedPlan.status === "DISPATCH_AUTHORIZED"
-                          ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                          : "bg-amber-950 text-amber-400 border border-amber-800"
-                      }`}
+                      className={`px-3 py-1 rounded-xl text-xs font-mono font-black ${unifiedPlan.status === "DISPATCH_AUTHORIZED"
+                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                        : "bg-amber-950 text-amber-400 border border-amber-800"
+                        }`}
                     >
                       {unifiedPlan.status}
                     </span>
@@ -909,7 +903,7 @@ export default function AIDashboardPage() {
               <Sparkles className="w-8 h-8 text-amber-400 mx-auto" />
               <h3 className="text-base font-bold text-white">Unified Action Plan Ready for Generation</h3>
               <p className="text-xs text-slate-400 max-w-md mx-auto">
-                Click "Synthesize Action Plan" to execute the 5-model pipeline across Chennai's flood epicenter and generate the complete relief dispatch recommendation.
+                Click "Synthesize Action Plan" to execute the 5-model pipeline across Hyderabad's flood epicenter and generate the complete relief dispatch recommendation.
               </p>
             </div>
           )}

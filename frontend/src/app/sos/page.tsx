@@ -55,8 +55,8 @@ export default function SOSPage() {
     const result = await submitSOS({
       victim_name: victimName || "Citizen In Need",
       contact_phone: phone || "+91-9876500000",
-      latitude: parseFloat(latitude) || 13.0650,
-      longitude: parseFloat(longitude) || 80.2550,
+      latitude: parseFloat(latitude) || 17.3780,
+      longitude: parseFloat(longitude) || 78.4910,
       address,
       people_count: peopleCount,
       special_needs: specialNeeds,
@@ -157,7 +157,7 @@ export default function SOSPage() {
               <label className="text-xs font-semibold text-slate-300">Street Address or Landmark</label>
               <input
                 type="text"
-                placeholder="e.g. Near Kotturpuram Bridge, 2nd Cross Street"
+                placeholder="e.g. Near Musi Causeway Bridge, Chaderghat, Hyderabad"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-red-500 focus:outline-none"

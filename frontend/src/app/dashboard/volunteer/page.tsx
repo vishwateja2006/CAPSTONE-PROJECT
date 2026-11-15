@@ -30,7 +30,7 @@ export default function VolunteerDashboardPage() {
       sequence: 2,
       name: "SOS: Senior Care Home (12 Residents)",
       action: "DELIVER_AID",
-      address: "T. Nagar Annex, Senior Care Ward",
+      address: "Moosarambagh Old Age Ward, Hyderabad",
       eta: "+16 mins",
       status: "PENDING",
       items: "3x Medical Kits, 24x 5L Water Cans"
@@ -39,16 +39,16 @@ export default function VolunteerDashboardPage() {
       sequence: 3,
       name: "SOS: Kavitha & Infant (4 Trapped)",
       action: "DELIVER_AID",
-      address: "12 Canal Bank Road, Kotturpuram",
+      address: "12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad",
       eta: "+28 mins",
       status: "PENDING",
       items: "4x Food Packs, 8x Water Cans, Insulin Kit"
     },
     {
       sequence: 4,
-      name: "Central Base Alpha (Return Journey)",
+      name: "Secunderabad Central Hub (Return Journey)",
       action: "DEPOT_RETURN",
-      address: "Jawaharlal Nehru Stadium Complex",
+      address: "Gymkhana Grounds Complex, Secunderabad, Telangana",
       eta: "+42 mins",
       status: "PENDING",
       items: "Debrief & Vehicle Inspection"

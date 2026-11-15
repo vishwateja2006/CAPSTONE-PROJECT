@@ -25,7 +25,7 @@ export default function NGODashboardPage() {
       description: "200 Trauma & Emergency Surgical Kits",
       quantity: 200,
       unit: "kits",
-      allocated_sector: "Central Depot Alpha -> Kotturpuram Basin",
+      allocated_sector: "Secunderabad Central Depot -> Chaderghat Basin, Hyderabad",
       status: "DISTRIBUTED",
       date: "Nov 05, 2026"
     },
@@ -38,7 +38,7 @@ export default function NGODashboardPage() {
       description: "1,500 Purified Drinking Water Cans (5L)",
       quantity: 1500,
       unit: "cans",
-      allocated_sector: "Adyar Basin & Fishermen Colony",
+      allocated_sector: "Musi River Basin & Moosarambagh, Hyderabad",
       status: "STAGED",
       date: "Nov 06, 2026"
     },

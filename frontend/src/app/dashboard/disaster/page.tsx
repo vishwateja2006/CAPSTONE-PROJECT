@@ -19,22 +19,22 @@ export default function DisasterDashboardPage() {
   const [disasters, setDisasters] = useState([
     {
       id: "DIS-01",
-      name: "Cyclone Vardah & Storm Surge",
+      name: "Hyderabad Urban Flash Floods & Musi Basin Surge",
       type: "FLOOD",
       severity: "CRITICAL",
       status: "ACTIVE",
-      epicenter: "13.0827°N, 80.2707°E",
-      affected_villages: ["Kotturpuram", "T. Nagar Basin", "Kasimedu Coastal Belt"],
+      epicenter: "17.3850°N, 78.4867°E",
+      affected_villages: ["Chaderghat Lowlands", "Moosarambagh Ward 45", "Malakpet Basin"],
       declared_at: "Today, 06:00 AM"
     },
     {
       id: "DIS-02",
-      name: "Cuddalore Coastal Depression",
+      name: "Warangal Storm Inundation Sector",
       type: "CYCLONE",
       severity: "HIGH",
       status: "ALERT",
-      epicenter: "11.7480°N, 79.7714°E",
-      affected_villages: ["Silver Beach Sector", "Port Quarters"],
+      epicenter: "17.9689°N, 79.5941°E",
+      affected_villages: ["Bhadrakali Lake Link", "Kazipet Sector"],
       declared_at: "Yesterday"
     }
   ]);
@@ -96,7 +96,7 @@ export default function DisasterDashboardPage() {
             <span>Active Hazard Zones & Impacted Sectors (PostGIS Spatial Overlay)</span>
           </h2>
           <span className="text-xs font-mono text-red-400 font-semibold animate-pulse">
-            ● RED ZONE: ADYAR BASIN IMPASSABLE
+            ● RED ZONE: MUSI RIVER BASIN IMPASSABLE
           </span>
         </div>
 

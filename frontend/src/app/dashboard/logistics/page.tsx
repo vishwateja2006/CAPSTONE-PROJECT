@@ -132,7 +132,7 @@ export default function LogisticsDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-white">Active Delivery Waypoint Mission</h3>
-              <p className="text-xs text-slate-400">Avoids Adyar flooded red zone and prioritizes critical medical needs</p>
+              <p className="text-xs text-slate-400">Avoids Musi River flooded red zone and prioritizes critical medical needs</p>
             </div>
             <button
               onClick={handleToggleSimulation}

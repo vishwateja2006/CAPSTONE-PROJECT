@@ -33,8 +33,8 @@ def print_header(title: str):
 def run_simulation():
     print_header("PHASE 05: Disaster Incident Declaration")
     disaster_event = {
-        "name": "Super Cyclone Vardah - Storm Surge Inundation",
-        "epicenter": (13.0827, 80.2707),
+        "name": "Hyderabad Urban Flash Floods & Musi Basin Surge",
+        "epicenter": (17.3850, 78.4867),
         "severity": "CRITICAL (DEFCON-1)",
         "radius_km": 35.0
     }
@@ -43,16 +43,16 @@ def run_simulation():
 
     # Hazard Zone Polygon (Flooded Sector)
     hazard_zone = {
-        "name": "Adyar Basin Submerged Sector (Red Zone)",
+        "name": "Musi River Basin Submerged Sector (Red Zone)",
         "is_passable": False,
         "boundary_geojson": json.dumps({
             "type": "Polygon",
             "coordinates": [[
-                [80.240, 13.030],
-                [80.265, 13.030],
-                [80.265, 13.055],
-                [80.240, 13.055],
-                [80.240, 13.030]
+                [78.470, 17.360],
+                [78.530, 17.360],
+                [78.530, 17.395],
+                [78.470, 17.395],
+                [78.470, 17.360]
             ]]
         })
     }

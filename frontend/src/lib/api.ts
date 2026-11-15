@@ -16,28 +16,28 @@ const API_BASE = getApiBase();
 
 // Mock Fallback Data in case the backend server is not active during frontend preview
 export const MOCK_DISASTER: Disaster = {
-  id: "dis-001",
-  name: "Cyclone Vardah & Coastal Inundation",
+  id: "DIS-HYD-FLOOD-2026",
+  name: "Hyderabad Urban Flash Floods & Musi River Basin Breach",
   disaster_type: "FLOOD",
   status: "ACTIVE",
   severity: "CRITICAL",
-  epicenter_lat: 13.0827,
-  epicenter_lon: 80.2707,
+  epicenter_lat: 17.3850,
+  epicenter_lon: 78.4867,
   radius_km: 30.0,
-  description: "Category 4 coastal storm surge with extensive urban flooding across low-lying coastal basins.",
+  description: "Severe urban cloudburst and Musi River surge with extensive inundation across low-lying Hyderabad sectors.",
   hazard_zones: [
     {
       id: "hz-001",
-      name: "Zone A - Flooded Adyar Estuary Basin",
+      name: "Zone A - Flooded Musi River Causeway Sector",
       risk_level: "RED",
       boundary_geojson: JSON.stringify({
         type: "Polygon",
         coordinates: [[
-          [80.245, 13.010],
-          [80.265, 13.010],
-          [80.265, 13.035],
-          [80.245, 13.035],
-          [80.245, 13.010]
+          [78.470, 17.360],
+          [78.530, 17.360],
+          [78.530, 17.395],
+          [78.470, 17.395],
+          [78.470, 17.360]
         ]]
       }),
       is_passable: false
@@ -48,10 +48,10 @@ export const MOCK_DISASTER: Disaster = {
 export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   {
     id: "RC-01",
-    name: "Chennai Central Humanitarian Relief Base Alpha",
-    location_name: "Jawaharlal Nehru Stadium Complex",
-    latitude: 13.0827,
-    longitude: 80.2707,
+    name: "Secunderabad Central Humanitarian Relief Base Alpha",
+    location_name: "Gymkhana Grounds Complex, Secunderabad, Telangana",
+    latitude: 17.4399,
+    longitude: 78.4983,
     contact_person: "Col. Rajesh Sharma (Logistics Cmdr)",
     phone: "+91-9444012345",
     capacity_people: 3000,
@@ -71,10 +71,10 @@ export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   },
   {
     id: "RC-02",
-    name: "South Chennai Emergency Staging Depot Beta",
-    location_name: "Guindy SIDCO Logistics Hub",
-    latitude: 13.0067,
-    longitude: 80.2026,
+    name: "South Hyderabad Emergency Staging Depot Beta",
+    location_name: "Rajendranagar PJTSAU Complex, Hyderabad, Telangana",
+    latitude: 17.3200,
+    longitude: 78.4070,
     contact_person: "Capt. Sundar Raman (Ops Head)",
     phone: "+91-9444054321",
     capacity_people: 2000,
@@ -94,20 +94,20 @@ export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   },
   {
     id: "RC-03",
-    name: "North Coastal Maritime Relief Depot Gamma",
-    location_name: "Kasimedu Fishing Harbour Forward Base",
-    latitude: 13.1250,
-    longitude: 80.2970,
-    contact_person: "Officer K. Annamalai (Maritime Cmdr)",
+    name: "North-West Transit Relief Depot Gamma",
+    location_name: "Kukatpally / Sanathnagar Industrial Hub, Hyderabad, Telangana",
+    latitude: 17.4700,
+    longitude: 78.3700,
+    contact_person: "Officer K. Annamalai (Transit Cmdr)",
     phone: "+91-9444078901",
     capacity_people: 1500,
     current_occupancy: 210,
     inventory_items: [
-      { id: "INV-21", relief_center_id: "RC-03", item_category: "WATER", item_name: "Seawater Desalination Sachets & Water Cans (5L)", quantity_available: 950, quantity_reserved: 40, unit: "cans" },
+      { id: "INV-21", relief_center_id: "RC-03", item_category: "WATER", item_name: "Purified Water Canisters & Mineral Cans (5L)", quantity_available: 950, quantity_reserved: 40, unit: "cans" },
       { id: "INV-22", relief_center_id: "RC-03", item_category: "WATER", item_name: "Electrolyte Oral Rehydration Salts (ORS)", quantity_available: 2200, quantity_reserved: 100, unit: "sachets" },
-      { id: "INV-23", relief_center_id: "RC-03", item_category: "FOOD", item_name: "Maritime High-Energy Compact Ration Bars", quantity_available: 1350, quantity_reserved: 60, unit: "packs" },
+      { id: "INV-23", relief_center_id: "RC-03", item_category: "FOOD", item_name: "Disaster High-Energy Compact Ration Bars", quantity_available: 1350, quantity_reserved: 60, unit: "packs" },
       { id: "INV-24", relief_center_id: "RC-03", item_category: "FOOD", item_name: "Vacuum-Sealed Long-Life Grain & Rice Sacks (10kg)", quantity_available: 380, quantity_reserved: 20, unit: "sacks" },
-      { id: "INV-25", relief_center_id: "RC-03", item_category: "MEDICAL", item_name: "Marine Shock & Hypothermia Trauma Kits", quantity_available: 175, quantity_reserved: 12, unit: "kits" },
+      { id: "INV-25", relief_center_id: "RC-03", item_category: "MEDICAL", item_name: "Shock & Hypothermia Trauma Kits", quantity_available: 175, quantity_reserved: 12, unit: "kits" },
       { id: "INV-26", relief_center_id: "RC-03", item_category: "MEDICAL", item_name: "Broad-Spectrum Emergency Antibiotics", quantity_available: 850, quantity_reserved: 35, unit: "packs" },
       { id: "INV-27", relief_center_id: "RC-03", item_category: "SHELTER", item_name: "Stormproof High-Wind Geodesic Tents", quantity_available: 90, quantity_reserved: 8, unit: "units" },
       { id: "INV-28", relief_center_id: "RC-03", item_category: "SHELTER", item_name: "Emergency Aluminized Foil Space Blankets", quantity_available: 1300, quantity_reserved: 50, unit: "sheets" },
@@ -117,10 +117,10 @@ export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   },
   {
     id: "RC-04",
-    name: "Western Inundation Relief Depot Delta",
-    location_name: "Tambaram Airfield Perimeter Park",
-    latitude: 12.9249,
-    longitude: 80.1278,
+    name: "West Zone Rapid Logistics Depot Delta",
+    location_name: "Gachibowli Stadium Base Complex, Hyderabad, Telangana",
+    latitude: 17.4435,
+    longitude: 78.3489,
     contact_person: "Wing Cmdr. Arpitha Sen (Air Logistics)",
     phone: "+91-9444099887",
     capacity_people: 3500,
@@ -140,10 +140,10 @@ export const MOCK_RELIEF_CENTERS: ReliefCenter[] = [
   },
   {
     id: "RC-05",
-    name: "Velachery Flood Response Hub Epsilon",
-    location_name: "Velachery Lowland Basin Command Center",
-    latitude: 12.9815,
-    longitude: 80.2180,
+    name: "Amberpet Musi Basin Flood Response Hub Epsilon",
+    location_name: "Amberpet / Moosarambagh Humanitarian Command Center, Hyderabad, Telangana",
+    latitude: 17.3871,
+    longitude: 78.5173,
     contact_person: "Insp. David Pushparaj (Flood Command)",
     phone: "+91-9444033221",
     capacity_people: 1800,
@@ -169,96 +169,96 @@ export const MOCK_VEHICLES: ReliefVehicle[] = [
     vehicle_code: "TRUCK-4x4-ALPHA",
     vehicle_type: "TRUCK",
     capacity_kg: 2000,
-    current_lat: 13.0827,
-    current_lon: 80.2707,
+    current_lat: 17.4399,
+    current_lon: 78.4983,
     status: "IDLE",
     assigned_driver: "Officer Vikram Singh",
     speed_kmh: 42,
-    home_depot: "Central Base Alpha"
+    home_depot: "Secunderabad Base Alpha"
   },
   {
     id: "VEH-02",
     vehicle_code: "TRUCK-RESCUE-BETA",
     vehicle_type: "TRUCK",
     capacity_kg: 1500,
-    current_lat: 13.0067,
-    current_lon: 80.2026,
+    current_lat: 17.3200,
+    current_lon: 78.4070,
     status: "IDLE",
     assigned_driver: "Lt. Priya Nair",
     speed_kmh: 38,
-    home_depot: "South Staging Beta"
+    home_depot: "Rajendranagar Staging Beta"
   },
   {
     id: "VEH-03",
     vehicle_code: "BOAT-RESCUE-01",
     vehicle_type: "BOAT",
     capacity_kg: 750,
-    current_lat: 13.0600,
-    current_lon: 80.2500,
+    current_lat: 17.3850,
+    current_lon: 78.4867,
     status: "EN_ROUTE",
     assigned_driver: "Capt. Manikandan",
     speed_kmh: 22,
-    home_depot: "Kasimedu Maritime Gamma"
+    home_depot: "Musi Basin Maritime Gamma"
   },
   {
     id: "VEH-04",
     vehicle_code: "BOAT-AMPHIBIAN-02",
     vehicle_type: "BOAT",
     capacity_kg: 900,
-    current_lat: 12.9815,
-    current_lon: 80.2180,
+    current_lat: 17.3871,
+    current_lon: 78.5173,
     status: "IDLE",
     assigned_driver: "Officer S. Murugan",
     speed_kmh: 26,
-    home_depot: "Velachery Flood Hub Epsilon"
+    home_depot: "Amberpet / Moosarambagh Hub Epsilon"
   },
   {
     id: "VEH-05",
     vehicle_code: "SCOUT-4X4-DELTA",
     vehicle_type: "4X4",
     capacity_kg: 850,
-    current_lat: 12.9249,
-    current_lon: 80.1278,
+    current_lat: 17.4435,
+    current_lon: 78.3489,
     status: "IDLE",
     assigned_driver: "Lt. Arun Prasad",
     speed_kmh: 50,
-    home_depot: "Tambaram Delta"
+    home_depot: "Gachibowli Delta"
   },
   {
     id: "VEH-06",
     vehicle_code: "AMBULANCE-ICU-01",
     vehicle_type: "4X4",
     capacity_kg: 600,
-    current_lat: 13.0827,
-    current_lon: 80.2707,
+    current_lat: 17.4399,
+    current_lon: 78.4983,
     status: "IDLE",
     assigned_driver: "Dr. Revathi & Driver Selvam",
     speed_kmh: 48,
-    home_depot: "Central Base Alpha"
+    home_depot: "Secunderabad Base Alpha"
   },
   {
     id: "VEH-07",
     vehicle_code: "DRONE-PAYLOAD-HEAVY",
     vehicle_type: "DRONE",
     capacity_kg: 45,
-    current_lat: 12.9249,
-    current_lon: 80.1278,
+    current_lat: 17.4435,
+    current_lon: 78.3489,
     status: "IDLE",
     assigned_driver: "Remote Pilot Karthik",
     speed_kmh: 65,
-    home_depot: "Tambaram Delta"
+    home_depot: "Gachibowli Delta"
   },
   {
     id: "VEH-08",
     vehicle_code: "DRONE-RECON-SURVEIL",
     vehicle_type: "DRONE",
     capacity_kg: 15,
-    current_lat: 13.1250,
-    current_lon: 80.2970,
+    current_lat: 17.3850,
+    current_lon: 78.4867,
     status: "EN_ROUTE",
     assigned_driver: "Flight Lead Divya",
     speed_kmh: 75,
-    home_depot: "Kasimedu Maritime Gamma"
+    home_depot: "Musi Basin Maritime Gamma"
   }
 ];
 
@@ -267,15 +267,15 @@ export const MOCK_SOS: SOSRequest[] = [
     id: "sos-01",
     victim_name: "Kavitha Sundaram",
     contact_phone: "+91-9840112233",
-    latitude: 13.0650,
-    longitude: 80.2550,
-    address: "12 Canal Bank Road, Kotturpuram",
+    latitude: 17.3780,
+    longitude: 78.4910,
+    address: "12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad, Telangana",
     people_count: 4,
     urgency_level: "CRITICAL",
     urgency_score: 92.0,
     special_needs: JSON.stringify(["infant", "insulin-dependent"]),
     category_needs: JSON.stringify(["FOOD", "WATER", "MEDICAL"]),
-    description: "Water reached first floor, baby needs formula milk and mother needs cold storage insulin urgently. Trapped.",
+    description: "Musi flood surge reached ground floor, baby needs formula milk and mother needs cold storage insulin urgently. Trapped.",
     status: "PENDING",
     requested_at: "10 mins ago"
   },
@@ -283,9 +283,9 @@ export const MOCK_SOS: SOSRequest[] = [
     id: "sos-02",
     victim_name: "Senior Care Care Home (Ramesh Babu)",
     contact_phone: "+91-9840556677",
-    latitude: 13.0450,
-    longitude: 80.2400,
-    address: "Senior Care Annex, T. Nagar",
+    latitude: 17.3810,
+    longitude: 78.5120,
+    address: "Moosarambagh Old Age Center, Ward 45, Hyderabad, Telangana",
     people_count: 12,
     urgency_level: "CRITICAL",
     urgency_score: 88.5,
@@ -299,9 +299,9 @@ export const MOCK_SOS: SOSRequest[] = [
     id: "sos-03",
     victim_name: "Anand Kumar",
     contact_phone: "+91-9840998811",
-    latitude: 13.0950,
-    longitude: 80.2850,
-    address: "Fishermen Colony, Kasimedu",
+    latitude: 17.3750,
+    longitude: 78.4980,
+    address: "Alaknanda Colony, Malakpet / Chaderghat Basin, Hyderabad, Telangana",
     people_count: 6,
     urgency_level: "HIGH",
     urgency_score: 72.0,
@@ -315,9 +315,9 @@ export const MOCK_SOS: SOSRequest[] = [
     id: "sos-04",
     victim_name: "Dr. Farooq",
     contact_phone: "+91-9840334455",
-    latitude: 13.0550,
-    longitude: 80.2750,
-    address: "Royapettah High Road",
+    latitude: 17.3616,
+    longitude: 78.4747,
+    address: "Charminar South Relief Shelter, Falaknuma Link, Hyderabad, Telangana",
     people_count: 8,
     urgency_level: "HIGH",
     urgency_score: 68.0,
@@ -683,9 +683,9 @@ export async function detectDamageVision(payload: {
       confidence_score: 0.942,
       impassable_road_segments: [
         {
-          road_id: "ROAD-ADYAR-01",
-          name: "Dr. Muthulakshmi Salai / Canal Bridge",
-          coordinates: [[13.008, 80.255], [13.015, 80.260]],
+          road_id: "ROAD-MUSI-01",
+          name: "Musi River Causeway / Chaderghat Bridge",
+          coordinates: [[17.376, 78.488], [17.382, 78.494]],
           status: "IMPASSABLE_FLOOD_3FT"
         }
       ]
@@ -760,19 +760,19 @@ export async function synthesizeUnifiedActionPlan(
         inaccessible_road_blocks_identified: 1
       },
       step1_demand_forecast: { WATER_LITERS: 2125, FOOD_RATIONS: 810 },
-      step2_damage_intelligence: { flood_extent_sqkm: 1.45, blocked_road_segments: [{ name: "Canal Bank Rd", status: "BLOCKED" }] },
+      step2_damage_intelligence: { flood_extent_sqkm: 1.45, blocked_road_segments: [{ name: "Musi River Causeway", status: "BLOCKED" }] },
       step3_nlp_triage_summary: { critical_cases: 2, high_cases: 1 },
       step4_fair_allocation_plan: {
         gini_fairness_coefficient: 0.18,
         allocations: [
-          { recipient: "Velachery Ward 178", allocated_items: { FOOD: 45, WATER: 90, MEDICINE: 1 } },
-          { recipient: "Madipakkam Sector 4", allocated_items: { FOOD: 60, WATER: 120 } }
+          { recipient: "Moosarambagh Ward 45", allocated_items: { FOOD: 45, WATER: 90, MEDICINE: 1 } },
+          { recipient: "Chaderghat Sector 4", allocated_items: { FOOD: 60, WATER: 120 } }
         ]
       },
       step5_route_dispatch_plan: [
         { vehicle_code: "TRUCK-4x4-ALPHA", total_distance_km: 9.8, estimated_duration_mins: 28.0, stops_count: 2 }
       ],
-      recommendation: "Authority action recommended: Authorize dispatch of 2 relief units. Bypasses 1 flooded canal bridge."
+      recommendation: "Authority action recommended: Authorize dispatch of 2 relief units. Bypasses 1 flooded Musi causeway."
     };
   }
 }

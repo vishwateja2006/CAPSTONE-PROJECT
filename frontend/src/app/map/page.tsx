@@ -57,10 +57,10 @@ export default function MapPage() {
     isLive: boolean;
     locationName: string;
   }>({
-    lat: 13.0650,
-    lon: 80.2550,
+    lat: 17.3850,
+    lon: 78.4867,
     isLive: false,
-    locationName: "Adyar Basin / Central Relief Hub"
+    locationName: "Musi River Basin / Hyderabad Central Hub"
   });
   const [isLocating, setIsLocating] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
@@ -394,28 +394,28 @@ export default function MapPage() {
 
         <div className="flex flex-wrap items-center gap-2 font-mono">
           <button
-            onClick={() => setPresetLocation(13.0650, 80.2550, "Adyar Flooded Estuary Basin")}
+            onClick={() => setPresetLocation(17.3780, 78.4910, "Musi River Flooded Causeway Basin")}
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
           >
-            🌊 Adyar Basin (Flood Zone)
+            🌊 Musi River Basin (Flood Zone)
           </button>
           <button
-            onClick={() => setPresetLocation(13.0827, 80.2707, "Chennai Central Humanitarian Hub Alpha")}
+            onClick={() => setPresetLocation(17.4399, 78.4983, "Secunderabad Central Humanitarian Hub")}
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
           >
-            🏛️ Central Relief Hub Alpha
+            🏛️ Secunderabad Hub Alpha
           </button>
           <button
-            onClick={() => setPresetLocation(13.1800, 80.4500, "Bay of Bengal Cyclone Vortex Eye")}
+            onClick={() => setPresetLocation(17.4200, 78.4800, "Hussain Sagar Lake Spillway Surge")}
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-900/60 transition-all"
           >
-            🌪️ Cyclone Vortex Center
+            🌊 Hussain Sagar Spillway
           </button>
           <button
-            onClick={() => setPresetLocation(13.0450, 80.2800, "Marina Coastal High Swell Sector")}
+            onClick={() => setPresetLocation(17.4435, 78.3489, "Gachibowli Relief Staging Sector")}
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-900/60 transition-all"
           >
-            🏖️ Marina Coastal Surge
+            🏟️ Gachibowli Base Delta
           </button>
         </div>
       </div>

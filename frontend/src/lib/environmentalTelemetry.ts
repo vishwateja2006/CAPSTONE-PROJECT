@@ -138,15 +138,15 @@ export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: nu
 export async function fetchLiveEnvironmentalData(
   lat: number,
   lon: number,
-  cityName: string = "Chennai Coastal Sector",
+  cityName: string = "Hyderabad Urban Sector",
   isLiveGPS: boolean = false,
   accuracyMeters?: number
 ): Promise<EnvironmentalData> {
   const timestamp = new Date().toISOString();
 
   // Active cyclone vortex center (Simulated or Live Detected in the Bay of Bengal / Indian Ocean basin)
-  const cycloneEyeLat = 13.18;
-  const cycloneEyeLon = 80.45;
+  const cycloneEyeLat = 17.42;
+  const cycloneEyeLon = 78.48;
   const distToEye = getDistanceKm(lat, lon, cycloneEyeLat, cycloneEyeLon);
 
   // Defaults initialized with realistic physical baselines
@@ -303,7 +303,7 @@ export async function fetchLiveEnvironmentalData(
   const hazardZones: HazardZone[] = [
     {
       id: "zone-crit-01",
-      name: "Adyar Estuary Coastal Surge Zone",
+      name: "Musi River Basin Flash Surge Zone",
       severity: "CRITICAL",
       hazardType: "COASTAL_SURGE",
       inundationDepth_ft: 3.8,
@@ -318,7 +318,7 @@ export async function fetchLiveEnvironmentalData(
     },
     {
       id: "zone-sev-02",
-      name: "Velachery Basin Inundation Sector",
+      name: "Moosarambagh Lowland Inundation Sector",
       severity: "SEVERE",
       hazardType: "INUNDATION_FLOOD",
       inundationDepth_ft: 2.4,
@@ -370,7 +370,7 @@ export async function fetchLiveEnvironmentalData(
       advisory: aqiInfo.advisory
     },
     cyclone: {
-      name: "Cyclone Michaung Relict Surge",
+      name: "Telangana Urban Cloudburst Surge",
       detected: distToEye < 250,
       category: cycloneCategory,
       centralPressure_hpa: Math.round(pressureHpa),
@@ -401,7 +401,7 @@ export async function fetchLiveEnvironmentalData(
       primaryThreat,
       evacuationStatus,
       recommendedActions: [
-        "Avoid low-lying coastal roads and Adyar canal bridge corridors.",
+        "Avoid low-lying causeways and Musi River bridge corridors.",
         "Secure emergency drinking water (Sphere standard: 3.5L/person/day).",
         "Monitor live telemetry for tidal surge warnings before vehicular transit.",
         "Wear N95 masks in high particulate smog sectors (AQI > 150)."

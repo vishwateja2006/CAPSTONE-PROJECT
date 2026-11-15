@@ -129,7 +129,7 @@ class DiscreteEventSimulationEngine:
             events_timeline.append({
                 "t_mins": 12,
                 "event": "SATELLITE_ROAD_CLOSURE_DETECTED",
-                "details": "Sentinel-2 tile detects flood inundation over Adyar bridge. Segment closed."
+                "details": "Sentinel-2 tile detects flood inundation over Musi River causeway bridge. Segment closed."
             })
             events_timeline.append({
                 "t_mins": 13,

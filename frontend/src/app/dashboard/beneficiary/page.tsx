@@ -21,9 +21,9 @@ export default function BeneficiaryDashboardPage() {
       id: "BEN-01",
       head_of_household: "Kavitha Sundaram",
       phone: "+91-9840112233",
-      location: "Kotturpuram Canal Bank",
-      latitude: 13.0650,
-      longitude: 80.2550,
+      location: "Musi Causeway Road, Chaderghat, Hyderabad",
+      latitude: 17.3780,
+      longitude: 78.4910,
       family_count: 4,
       special_vulnerabilities: ["Infant (8mo)", "Insulin-dependent mother"],
       requested_aid: ["FOOD", "WATER", "MEDICAL"],
@@ -368,7 +368,7 @@ export default function BeneficiaryDashboardPage() {
             <input
               type="text"
               required
-              placeholder="e.g. 15 Anna Salai near Bus Stand, Adyar Basin"
+              placeholder="e.g. 15 Musi Causeway Rd near Bridge, Chaderghat, Hyderabad"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-amber-500"

@@ -234,31 +234,7 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 ]
             })
 
-        # 5. Direct Status Updates for Distress Reports
-        if path.startswith("/api/v1/sos/") and path.endswith("/status"):
-            sos_id = path.split("/")[-2]
-            return self._handle_sos_update(sos_id, data)
-        if path == "/api/v1/sos/status":
-            sos_id = data.get("id") or data.get("sos_id")
-            return self._handle_sos_update(sos_id, data)
-
         self._json({"error": "Not Found", "path": path}, status=404)
-
-    def do_PATCH(self):
-        parsed = urlparse(self.path)
-        path = parsed.path.rstrip("/")
-        length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-        try:
-            data = json.loads(body)
-        except Exception:
-            data = {}
-
-        if path.startswith("/api/v1/sos/"):
-            sos_id = path.split("/")[-1]
-            return self._handle_sos_update(sos_id, data)
-
-        self._json({"error": "Method not allowed for path"}, status=405)
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -305,7 +281,7 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                     id, disaster_id, victim_name, contact_phone, latitude, longitude,
                     address, people_count, urgency_level, urgency_score,
                     special_needs, category_needs, description, status
-                ) VALUES (?, 'DIS-CHENNAI-FLOOD-2026', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
+                ) VALUES (?, 'DIS-HYD-FLOOD-2026', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
                 """, (
                     new_id, victim_name, contact_phone, latitude, longitude,
                     address, people_count, urgency_level, urgency_score,
@@ -317,7 +293,7 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 created_at_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
                 return self._json({
                     "id": new_id,
-                    "disaster_id": "DIS-CHENNAI-FLOOD-2026",
+                    "disaster_id": "DIS-HYD-FLOOD-2026",
                     "victim_name": victim_name,
                     "contact_phone": contact_phone,
                     "latitude": latitude,
@@ -343,15 +319,15 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             area = round(1.84 * (0.30 / max(0.05, thresh)), 2)
             return self._json({
                 "model_name": "Spectral-NDWI-UNet-DamageDetector-v2",
-                "tile_id": data.get("tile_id", "SENTINEL-2B-CHENNAI-T14"),
+                "tile_id": data.get("tile_id", "SENTINEL-2B-HYDERABAD-T14"),
                 "water_detected": True,
                 "mean_ndwi": 0.48,
                 "estimated_flood_area_sqkm": area,
                 "confidence_score": 0.942,
                 "impassable_road_segments": [
                     {
-                        "road_id": "ROAD-ADYAR-01",
-                        "name": "Adyar Canal Bridge Link",
+                        "road_id": "ROAD-MUSI-01",
+                        "name": "Musi River Causeway Bridge",
                         "status": "IMPASSABLE_FLOOD_3FT",
                         "depth_ft": 3.2
                     }
@@ -385,10 +361,10 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                         "distance_km": 10.71,
                         "duration_mins": 16.1,
                         "waypoints": [
-                            {"name": "Central Relief Hub Alpha", "action": "DEPOT_START", "eta": "+0.0m"},
-                            {"name": "Adyar Estuary Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+3.9m"},
-                            {"name": "SOS: Velachery Ward 178", "action": "DELIVER_AID", "eta": "+8.0m"},
-                            {"name": "Central Relief Hub Alpha", "action": "DEPOT_RETURN", "eta": "+16.1m"}
+                            {"name": "Secunderabad Central Hub", "action": "DEPOT_START", "eta": "+0.0m"},
+                            {"name": "Musi River Causeway Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+3.9m"},
+                            {"name": "SOS: Moosarambagh Ward 45", "action": "DELIVER_AID", "eta": "+8.0m"},
+                            {"name": "Secunderabad Central Hub", "action": "DEPOT_RETURN", "eta": "+16.1m"}
                         ]
                     },
                     {
@@ -396,10 +372,10 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                         "distance_km": 7.23,
                         "duration_mins": 12.4,
                         "waypoints": [
-                            {"name": "Central Relief Hub Alpha", "action": "DEPOT_START", "eta": "+0.0m"},
-                            {"name": "Adyar Estuary Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+4.5m"},
+                            {"name": "Secunderabad Central Hub", "action": "DEPOT_START", "eta": "+0.0m"},
+                            {"name": "Musi River Causeway Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+4.5m"},
                             {"name": "SOS: Senior Care Home", "action": "DELIVER_AID", "eta": "+6.4m"},
-                            {"name": "Central Relief Hub Alpha", "action": "DEPOT_RETURN", "eta": "+12.4m"}
+                            {"name": "Secunderabad Central Hub", "action": "DEPOT_RETURN", "eta": "+12.4m"}
                         ]
                     }
                 ]
@@ -414,18 +390,18 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 "allocations": [
                     {"victim_name": "Kavitha Sundaram (Infant & Diabetic)", "people_count": 4, "urgency_score": 95.0, "items": {"WATER": 8, "FOOD": 4, "MEDICINE": 1}},
                     {"victim_name": "Senior Care Care Home (12 Residents)", "people_count": 12, "urgency_score": 88.5, "items": {"WATER": 24, "FOOD": 12, "MEDICINE": 3}},
-                    {"victim_name": "Anand Kumar (Fishermen Colony)", "people_count": 6, "urgency_score": 72.0, "items": {"WATER": 12, "FOOD": 6, "MEDICINE": 1}},
+                    {"victim_name": "Anand Kumar (Alaknanda Colony)", "people_count": 6, "urgency_score": 72.0, "items": {"WATER": 12, "FOOD": 6, "MEDICINE": 1}},
                     {"victim_name": "Dr. Farooq (Community Clinic)", "people_count": 8, "urgency_score": 68.0, "items": {"WATER": 16, "FOOD": 8, "MEDICINE": 2}}
                 ]
             })
 
         # 6. Step 6: UDAP Synthesis
         if path in ("/api/v1/decision/synthesize", "/api/v1/udap/synthesize", "/api/v1/decision-engine/synthesize-action-plan"):
-            plan_id = f"UDAP-CHENNAI-{int(datetime.now().timestamp())}"
+            plan_id = f"UDAP-HYD-{int(datetime.now().timestamp())}"
             return self._json({
                 "action_plan_id": plan_id,
                 "status": "PENDING_AUTHORITY_APPROVAL",
-                "recommendation": "Authority action recommended: Authorize dispatch of 2 vehicles from Central Depot Alpha. Supplies allocated with Gini equity 0.0194. Bypasses 1 flooded bridge link.",
+                "recommendation": "Authority action recommended: Authorize dispatch of 2 vehicles from Secunderabad Central Depot. Supplies allocated with Gini equity 0.0194. Bypasses 1 flooded Musi causeway.",
                 "step5_route_dispatch_plan": [
                     {"vehicle_code": "TRUCK-4x4-ALPHA", "distance_km": 10.71, "duration_mins": 16.1},
                     {"vehicle_code": "TRUCK-RESCUE-BETA", "distance_km": 7.23, "duration_mins": 12.4}
@@ -442,7 +418,7 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
         if path in ("/api/v1/decision/dispatch", "/api/v1/udap/dispatch", "/api/v1/decision-engine/approve-and-dispatch"):
             token = f"POD-{hashlib.sha256(str(datetime.now().timestamp()).encode()).hexdigest()[:12].upper()}"
             digest = hashlib.sha256(f"{token}:{datetime.now().isoformat()}".encode()).hexdigest()
-            plan_id = data.get("action_plan_id", "UDAP-DIS-CHENNAI-FLOOD-2026-89104")
+            plan_id = data.get("action_plan_id", "UDAP-DIS-HYD-FLOOD-2026-89104")
 
             # Write into audit_logs table
             try:
@@ -490,10 +466,14 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             data = {}
 
         if path.startswith("/api/v1/sos/"):
-            sos_id = path.split("/")[-1]
+            parts = path.split("/")
+            sos_id = parts[-2] if parts[-1] == "status" else parts[-1]
             return self._handle_sos_update(sos_id, data)
 
         self._json({"error": "Method not allowed for path"}, status=405)
+
+    def do_PUT(self):
+        return self.do_PATCH()
 
     def log_message(self, format, *args):
         sys.stderr.write(f"[{datetime.now().strftime('%H:%M:%S')}] {args[0]} {args[1]} -> {args[2]}\n")

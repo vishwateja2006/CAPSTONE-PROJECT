@@ -112,7 +112,7 @@ export default function AdminCommandCenterPage() {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
-    } catch {}
+    } catch { }
   };
 
   const handleAcknowledgeAll = () => {
@@ -122,7 +122,7 @@ export default function AdminCommandCenterPage() {
       const combined = Array.from(new Set([...currentAcknowledged, ...allIds]));
       localStorage.setItem("resqlink_admin_acknowledged_sos", JSON.stringify(combined));
       localStorage.setItem("resqlink_has_unseen_reports", "false");
-    } catch {}
+    } catch { }
     setUnreadReports([]);
     setShowNotificationBanner(false);
     setShowNotificationDropdown(false);
@@ -133,7 +133,7 @@ export default function AdminCommandCenterPage() {
       const currentAcknowledged = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
       const combined = Array.from(new Set([...currentAcknowledged, sosId]));
       localStorage.setItem("resqlink_admin_acknowledged_sos", JSON.stringify(combined));
-    } catch {}
+    } catch { }
     setUnreadReports((prev) => prev.filter((u) => u.id !== sosId));
   };
 
@@ -181,7 +181,7 @@ export default function AdminCommandCenterPage() {
       try {
         const p = JSON.parse(val);
         if (Array.isArray(p)) return p;
-      } catch {}
+      } catch { }
       return [val];
     }
     return [];
@@ -242,16 +242,16 @@ export default function AdminCommandCenterPage() {
   const [ndwiThreshold, setNdwiThreshold] = useState<number>(0.30);
   const [visionResult, setVisionResult] = useState<any>({
     model_name: "Spectral-NDWI-UNet-DamageDetector-v2",
-    tile_id: "SENTINEL-2B-CHENNAI-T14",
+    tile_id: "SENTINEL-2B-HYDERABAD-T14",
     water_detected: true,
     mean_ndwi: 0.48,
     estimated_flood_area_sqkm: 1.84,
     confidence_score: 0.942,
     impassable_road_segments: [
       {
-        road_id: "ROAD-ADYAR-01",
-        name: "Adyar Canal Bridge / Dr. Muthulakshmi Rd",
-        coordinates: [[13.008, 80.255], [13.015, 80.260]],
+        road_id: "ROAD-MUSI-01",
+        name: "Musi River Causeway / Chaderghat Bridge",
+        coordinates: [[17.376, 78.488], [17.382, 78.494]],
         flood_depth_ft: 3.2,
         status: "IMPASSABLE_FLOOD_3FT"
       }
@@ -281,11 +281,11 @@ export default function AdminCommandCenterPage() {
         duration_mins: 16.1,
         payload_kg: 1125,
         stops: [
-          { sequence: 1, name: "Chennai Central Humanitarian Relief Hub [START]", action: "DEPOT_START", eta: "+0.0m" },
+          { sequence: 1, name: "Secunderabad Central Humanitarian Relief Hub [START]", action: "DEPOT_START", eta: "+0.0m" },
           { sequence: 2, name: "⚠ Hazard Bypass Detour [FLOOD AVOIDANCE]", action: "HAZARD_BYPASS", eta: "+3.9m" },
-          { sequence: 3, name: "SOS: Velachery Ward 178 (Community Shelter)", action: "DELIVER_AID", eta: "+8.0m" },
-          { sequence: 4, name: "SOS: Fishermen Colony (Kasimedu Coast)", action: "DELIVER_AID", eta: "+13.3m" },
-          { sequence: 5, name: "Chennai Central Humanitarian Relief Hub [RETURN]", action: "DEPOT_RETURN", eta: "+16.1m" }
+          { sequence: 3, name: "SOS: Moosarambagh Ward 45 (Community Shelter)", action: "DELIVER_AID", eta: "+8.0m" },
+          { sequence: 4, name: "SOS: Chaderghat Lowlands (Musi Basin)", action: "DELIVER_AID", eta: "+13.3m" },
+          { sequence: 5, name: "Secunderabad Central Humanitarian Relief Hub [RETURN]", action: "DEPOT_RETURN", eta: "+16.1m" }
         ]
       },
       {
@@ -294,10 +294,10 @@ export default function AdminCommandCenterPage() {
         duration_mins: 12.4,
         payload_kg: 900,
         stops: [
-          { sequence: 1, name: "Chennai Central Humanitarian Relief Hub [START]", action: "DEPOT_START", eta: "+0.0m" },
+          { sequence: 1, name: "Secunderabad Central Humanitarian Relief Hub [START]", action: "DEPOT_START", eta: "+0.0m" },
           { sequence: 2, name: "⚠ Hazard Bypass Detour [FLOOD AVOIDANCE]", action: "HAZARD_BYPASS", eta: "+4.5m" },
-          { sequence: 3, name: "SOS: Senior Care Home (Madipakkam)", action: "DELIVER_AID", eta: "+6.4m" },
-          { sequence: 4, name: "Chennai Central Humanitarian Relief Hub [RETURN]", action: "DEPOT_RETURN", eta: "+12.4m" }
+          { sequence: 3, name: "SOS: Senior Care Home (Malakpet)", action: "DELIVER_AID", eta: "+6.4m" },
+          { sequence: 4, name: "Secunderabad Central Humanitarian Relief Hub [RETURN]", action: "DEPOT_RETURN", eta: "+12.4m" }
         ]
       }
     ]
@@ -310,30 +310,30 @@ export default function AdminCommandCenterPage() {
     target_gini_threshold: 0.40,
     status: "HIGH MATHEMATICAL EQUITY",
     allocations: [
-      { victim_name: "Velachery Ward 178 (Community Shelter)", people_count: 45, urgency_score: 100.0, items: { WATER: 90, FOOD: 45, MEDICINE: 49 }, fairness_index: 3.25 },
-      { victim_name: "Senior Care Care Home (Madipakkam)", people_count: 60, urgency_score: 71.0, items: { WATER: 120, FOOD: 60, MEDICINE: 45 }, fairness_index: 3.18 },
-      { victim_name: "Fishermen Colony (Kasimedu Coast)", people_count: 30, urgency_score: 68.0, items: { WATER: 60, FOOD: 30, MEDICINE: 24 }, fairness_index: 3.10 }
+      { victim_name: "Moosarambagh Ward 45 (Community Shelter)", people_count: 45, urgency_score: 100.0, items: { WATER: 90, FOOD: 45, MEDICINE: 49 }, fairness_index: 3.25 },
+      { victim_name: "Senior Care Care Home (Malakpet)", people_count: 60, urgency_score: 71.0, items: { WATER: 120, FOOD: 60, MEDICINE: 45 }, fairness_index: 3.18 },
+      { victim_name: "Chaderghat Lowlands (Musi Basin)", people_count: 30, urgency_score: 68.0, items: { WATER: 60, FOOD: 30, MEDICINE: 24 }, fairness_index: 3.10 }
     ]
   });
 
   // UDAP Decision Engine & Dispatch State
   const [unifiedPlan, setUnifiedPlan] = useState<any>({
-    action_plan_id: "UDAP-DIS-CHENNAI-FLOOD-2026-89104",
+    action_plan_id: "UDAP-DIS-HYD-FLOOD-2026-89104",
     status: "DISPATCH_AUTHORIZED",
     sha256_digest: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
     proof_of_delivery_token: "POD-8F4A19B3",
-    authorized_by: "Col. S. Ramanathan, Senior Incident Commander",
+    authorized_by: "Col. K. Srinivas Rao, Senior Incident Commander (TGSDMA)",
     authorized_at: "2026-11-14T16:30:00.000Z",
-    recommendation: "Authority action executed: Mobilize 2 tactical relief units from Central Regional Hub. Detours around 3.2 ft flood breach at Adyar Canal Bridge.",
+    recommendation: "Authority action executed: Mobilize 2 tactical relief units from Secunderabad Regional Hub. Detours around 3.2 ft flood breach at Musi River Causeway.",
     step1_demand_forecast: { WATER_LITERS: 2125, FOOD_RATIONS: 810 },
-    step2_damage_intelligence: { flood_extent_sqkm: 1.45, blocked_road_segments: [{ name: "Canal Bank Rd", status: "BLOCKED" }] },
+    step2_damage_intelligence: { flood_extent_sqkm: 1.45, blocked_road_segments: [{ name: "Musi River Causeway", status: "BLOCKED" }] },
     step3_nlp_triage_summary: { critical_cases: 2, high_cases: 1 },
     step4_fair_allocation_plan: {
       gini_fairness_coefficient: 0.0194,
       allocations: [
-        { victim_name: "Velachery Ward 178 (Community Shelter)", items: { FOOD: 45, WATER: 90, MEDICINE: 49 }, people_count: 45 },
-        { victim_name: "Senior Care Home (Madipakkam)", items: { FOOD: 60, WATER: 120, MEDICINE: 45 }, people_count: 60 },
-        { victim_name: "Fishermen Colony (Kasimedu Coast)", items: { FOOD: 30, WATER: 60, MEDICINE: 24 }, people_count: 30 }
+        { victim_name: "Moosarambagh Ward 45 (Community Shelter)", items: { FOOD: 45, WATER: 90, MEDICINE: 49 }, people_count: 45 },
+        { victim_name: "Senior Care Home (Malakpet)", items: { FOOD: 60, WATER: 120, MEDICINE: 45 }, people_count: 60 },
+        { victim_name: "Chaderghat Lowlands (Musi Basin)", items: { FOOD: 30, WATER: 60, MEDICINE: 24 }, people_count: 30 }
       ]
     },
     step5_route_dispatch_plan: [
@@ -352,15 +352,15 @@ export default function AdminCommandCenterPage() {
       id: `SOS-${Math.floor(8000 + Math.random() * 1999)}`,
       victim_name: "Kavitha Sundaram & Family (Live Viva Demo)",
       contact_phone: "+91-9840112233",
-      latitude: 13.0652,
-      longitude: 80.2548,
-      address: "12 Canal Bank Road, Kotturpuram Lowlands",
+      latitude: 17.3782,
+      longitude: 78.4912,
+      address: "12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad",
       people_count: 5,
       urgency_level: "CRITICAL",
       urgency_score: 96.5,
       special_needs: ["infant", "insulin-dependent", "rooftop-trapped"],
       category_needs: ["WATER", "FOOD", "MEDICAL", "EVACUATION"],
-      description: "Water reached 4.5 feet. Trapped on rooftop with 8-month infant and diabetic elder. Immediate boat rescue needed.",
+      description: "Musi River surge reached 4.5 feet. Trapped on rooftop with 8-month infant and diabetic elder. Immediate boat rescue needed.",
       status: "PENDING",
       requested_at: "Just now"
     };
@@ -384,7 +384,7 @@ export default function AdminCommandCenterPage() {
         category_needs: mockSos.category_needs,
         description: mockSos.description
       });
-    } catch {}
+    } catch { }
   };
 
   // Initial Load, Route Protection, Citizen Report Detection & Live Polling
@@ -434,7 +434,7 @@ export default function AdminCommandCenterPage() {
             playAlertChime();
           }
         }
-      } catch {}
+      } catch { }
     }
     init();
 
@@ -467,7 +467,7 @@ export default function AdminCommandCenterPage() {
           if (Array.isArray(reports) && reports.length > 0) {
             handleNewSOS({ detail: reports[0] });
           }
-        } catch {}
+        } catch { }
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -497,7 +497,7 @@ export default function AdminCommandCenterPage() {
             return prev;
           });
         }
-      } catch {}
+      } catch { }
     }, 4000);
 
     return () => {
@@ -520,7 +520,7 @@ export default function AdminCommandCenterPage() {
     setIsSolvingAI(true);
     try {
       const res = await detectDamageVision({
-        tile_id: "SENTINEL-2B-CHENNAI-T14",
+        tile_id: "SENTINEL-2B-HYDERABAD-T14",
         ndwi_threshold: ndwiThreshold
       });
       // Adjust area dynamically with threshold for live response feel
@@ -547,7 +547,7 @@ export default function AdminCommandCenterPage() {
   const handleRunRoutes = async () => {
     setIsSolvingAI(true);
     try {
-      await runRouteOptimization("WH-CHENNAI-CENTRAL", ["VEH-01", "VEH-02"]);
+      await runRouteOptimization("WH-HYD-CENTRAL", ["VEH-01", "VEH-02"]);
       setRoutePlan((prev: any) => ({
         ...prev,
         total_distance_km: Number((16.5 + Math.random() * 2).toFixed(2)),
@@ -562,7 +562,7 @@ export default function AdminCommandCenterPage() {
   const handleRunAllocation = async () => {
     setIsSolvingAI(true);
     try {
-      const res = await runFairAllocation("WH-CHENNAI-CENTRAL");
+      const res = await runFairAllocation("WH-HYD-CENTRAL");
       setAllocationResult((prev: any) => ({
         ...prev,
         gini_fairness_coefficient: res.gini_fairness_coefficient || 0.0194
@@ -575,7 +575,7 @@ export default function AdminCommandCenterPage() {
   // Handler: Step 6 Synthesize UDAP
   const handleSynthesizeUDAP = async () => {
     setIsSolvingAI(true);
-    const plan = await synthesizeUnifiedActionPlan("DIS-CHENNAI-FLOOD-2026", "WH-CHENNAI-CENTRAL", ["VEH-01", "VEH-02"]);
+    const plan = await synthesizeUnifiedActionPlan("DIS-HYD-FLOOD-2026", "WH-HYD-CENTRAL", ["VEH-01", "VEH-02"]);
     setUnifiedPlan(plan);
     setDispatchStatus(null);
     setIsSolvingAI(false);
@@ -587,8 +587,8 @@ export default function AdminCommandCenterPage() {
     setIsSolvingAI(true);
     const res = await approveAndDispatchActionPlan({
       action_plan_id: unifiedPlan.action_plan_id,
-      disaster_id: "DIS-CHENNAI-FLOOD-2026",
-      warehouse_id: "WH-CHENNAI-CENTRAL",
+      disaster_id: "DIS-HYD-FLOOD-2026",
+      warehouse_id: "WH-HYD-CENTRAL",
       routes: unifiedPlan.step5_route_dispatch_plan || [],
       allocations: unifiedPlan.step4_fair_allocation_plan?.allocations || []
     });
@@ -600,13 +600,17 @@ export default function AdminCommandCenterPage() {
       status: "DISPATCH_AUTHORIZED",
       sha256_digest: digest,
       proof_of_delivery_token: token,
-      authorized_by: res.authorized_by || "Col. S. Ramanathan, Senior Incident Commander",
+      authorized_by: res.authorized_by || "Col. K. Srinivas Rao, Senior Incident Commander (TGSDMA)",
       authorized_at: res.authorized_at || new Date().toISOString()
     }));
     setIsSolvingAI(false);
   };
 
-  const criticalSOS = (sosList || []).filter((s) => s.urgency_level === "CRITICAL");
+  const activeSOS = (sosList || []).filter((s) => s.status !== "DELIVERED" && s.status !== "RESOLVED");
+  const solvedSOS = (sosList || []).filter((s) => s.status === "DELIVERED" || s.status === "RESOLVED");
+  const criticalSOS = activeSOS.filter((s) => s.urgency_level === "CRITICAL");
+  const activeVictims = activeSOS.reduce((acc, s) => acc + (s.people_count || 0), 0);
+  const solvedVictims = solvedSOS.reduce((acc, s) => acc + (s.people_count || 0), 0);
   const totalVictims = (sosList || []).reduce((acc, s) => acc + (s.people_count || 0), 0);
 
   if (isCheckingAuth) {
@@ -620,7 +624,7 @@ export default function AdminCommandCenterPage() {
 
   return (
     <div className="space-y-6 py-2">
-      
+
       {/* 🌪️ LIVE ACTIVE DISASTER & WEATHER TELEMETRY RIBBON (Top Command Ribbon) */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-950/90 via-slate-950 to-blue-950/90 border border-red-500/40 p-2.5 sm:px-4 sm:py-3 shadow-xl shadow-red-950/30">
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -634,9 +638,9 @@ export default function AdminCommandCenterPage() {
               DEFCON-1 ALERT
             </span>
             <div className="flex items-center space-x-1.5 font-bold text-white">
-              <span>Cyclone Vardah (Cat-4 Landfall)</span>
+              <span>Hyderabad Urban Cloudburst</span>
               <span className="text-slate-500 font-normal">|</span>
-              <span className="text-amber-400 font-mono text-[11px]">Chennai Coastal Sector</span>
+              <span className="text-amber-400 font-mono text-[11px]">Musi River Inundation Sector</span>
             </div>
           </div>
 
@@ -644,15 +648,15 @@ export default function AdminCommandCenterPage() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 font-mono text-[11px]">
             <div className="flex items-center space-x-1.5 text-blue-300 bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-800/50">
               <CloudRain className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span>IMD Doppler: <strong className="text-white">82 mm/hr</strong></span>
+              <span>IMD Doppler: <strong className="text-white">114 mm/hr</strong></span>
             </div>
             <div className="flex items-center space-x-1.5 text-cyan-300 bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-800/50">
               <Wind className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-              <span>Sustained Gusts: <strong className="text-white">94 km/h NE</strong></span>
+              <span>Sustained Gusts: <strong className="text-white">88 km/h NW</strong></span>
             </div>
             <div className="flex items-center space-x-1.5 text-amber-300 bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-800/50">
               <Waves className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>Adyar River: <strong className="text-white">+1.8m Danger Mark</strong></span>
+              <span>Musi River: <strong className="text-white">+2.1m Danger Mark</strong></span>
             </div>
             <div className="hidden xl:flex items-center space-x-1.5 text-emerald-300 bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-800/50">
               <Activity className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -691,11 +695,10 @@ export default function AdminCommandCenterPage() {
             <button
               type="button"
               onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
-              className={`relative flex items-center space-x-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                unreadReports.length > 0
-                  ? "bg-red-950/90 border-red-500 text-red-200 hover:bg-red-900 shadow-lg shadow-red-500/25"
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
-              }`}
+              className={`relative flex items-center space-x-2 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all ${unreadReports.length > 0
+                ? "bg-red-950/90 border-red-500 text-red-200 hover:bg-red-900 shadow-lg shadow-red-500/25"
+                : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+                }`}
               title="Citizen Distress Notifications"
             >
               {unreadReports.length > 0 ? (
@@ -899,26 +902,42 @@ export default function AdminCommandCenterPage() {
         </div>
       )}
 
-      {/* Primary KPI Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Primary KPI Strip - 5 Key Real-Time Command Metrics in One Line */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* Card 1: Distress Signals */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
           <span className="text-slate-400 text-xs font-semibold uppercase">Distress Signals</span>
-          <div className="text-3xl font-black text-white">{sosList.length || 4}</div>
-          <div className="text-[11px] text-red-400 font-mono font-semibold">({criticalSOS.length || 2} Critical Priority)</div>
+          <div className="text-3xl font-black text-white">{activeSOS.length}</div>
+          <div className="text-[11px] text-red-400 font-mono font-semibold">({criticalSOS.length} Critical Priority)</div>
         </div>
 
+        {/* Card 2: Trapped Citizens */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
           <span className="text-slate-400 text-xs font-semibold uppercase">Trapped Citizens</span>
-          <div className="text-3xl font-black text-amber-400">{totalVictims || 135} People</div>
-          <div className="text-[11px] text-slate-500">Across 4 affected sectors</div>
+          <div className="text-3xl font-black text-amber-400">{activeVictims} People</div>
+          <div className="text-[11px] text-slate-500">Awaiting relief rescue</div>
         </div>
 
+        {/* Card 3: Reports Solved - Beside Active Fleet on the Left */}
+        <div className="p-5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
+          <span className="text-emerald-400 text-xs font-semibold uppercase flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            Reports Solved
+          </span>
+          <div className="text-3xl font-black text-emerald-400">
+            {solvedSOS.length} <span className="text-xs font-normal text-slate-400 font-sans">Delivered</span>
+          </div>
+          <div className="text-[11px] text-emerald-400/80 font-mono font-semibold">{solvedVictims} Citizens Rescued</div>
+        </div>
+
+        {/* Card 4: Active Fleet */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
           <span className="text-slate-400 text-xs font-semibold uppercase">Active Fleet</span>
-          <div className="text-3xl font-black text-emerald-400">{vehicles.length || 3} Units</div>
+          <div className="text-3xl font-black text-emerald-400">{effectiveVehicles.length} Units</div>
           <div className="text-[11px] text-emerald-400/80">Boats, 4x4s, Rescue Trucks</div>
         </div>
 
+        {/* Card 5: AI Decision Engine */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
           <span className="text-slate-400 text-xs font-semibold uppercase">AI Decision Engine</span>
           <div className="text-3xl font-black text-cyan-400 font-mono">ONLINE</div>
@@ -930,9 +949,8 @@ export default function AdminCommandCenterPage() {
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-bold">
         <button
           onClick={() => setActiveTab("OVERVIEW")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "OVERVIEW" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "OVERVIEW" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Radio className="w-4 h-4" />
           <span className="truncate">1. Live Triage Queue</span>
@@ -940,9 +958,8 @@ export default function AdminCommandCenterPage() {
 
         <button
           onClick={() => setActiveTab("AI_MODELS")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "AI_MODELS" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "AI_MODELS" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Cpu className="w-4 h-4" />
           <span className="truncate">2. AI Models & UDAP</span>
@@ -950,9 +967,8 @@ export default function AdminCommandCenterPage() {
 
         <button
           onClick={() => setActiveTab("INVENTORY")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "INVENTORY" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "INVENTORY" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Package className="w-4 h-4" />
           <span className="truncate">3. Warehouses & Stock</span>
@@ -960,9 +976,8 @@ export default function AdminCommandCenterPage() {
 
         <button
           onClick={() => setActiveTab("FLEET")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "FLEET" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "FLEET" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Truck className="w-4 h-4" />
           <span className="truncate">4. Fleet & Logistics</span>
@@ -970,9 +985,8 @@ export default function AdminCommandCenterPage() {
 
         <button
           onClick={() => setActiveTab("AUDIT")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "AUDIT" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "AUDIT" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <FileText className="w-4 h-4" />
           <span className="truncate">5. Audit Ledger</span>
@@ -1005,15 +1019,14 @@ export default function AdminCommandCenterPage() {
                 <div
                   key={sos.id}
                   onClick={() => setSelectedSOS(sos)}
-                  className={`p-5 rounded-2xl border transition-all cursor-pointer hover:border-amber-500/70 hover:shadow-xl ${
-                    isUnread
-                      ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
-                      : isCrit
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer hover:border-amber-500/70 hover:shadow-xl ${isUnread
+                    ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
+                    : isCrit
                       ? "bg-red-950/25 border-red-900/80"
                       : isHigh
-                      ? "bg-amber-950/20 border-amber-900/60"
-                      : "bg-slate-950 border-slate-800"
-                  }`}
+                        ? "bg-amber-950/20 border-amber-900/60"
+                        : "bg-slate-950 border-slate-800"
+                    }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
@@ -1042,9 +1055,8 @@ export default function AdminCommandCenterPage() {
                     </div>
 
                     <div className="text-right flex-shrink-0 space-y-1">
-                      <span className={`inline-block px-3 py-1 rounded-xl text-xs font-black font-mono ${
-                        isCrit ? "bg-red-600 text-white shadow-md shadow-red-600/30" : "bg-amber-500 text-slate-950 font-bold"
-                      }`}>
+                      <span className={`inline-block px-3 py-1 rounded-xl text-xs font-black font-mono ${isCrit ? "bg-red-600 text-white shadow-md shadow-red-600/30" : "bg-amber-500 text-slate-950 font-bold"
+                        }`}>
                         AI SCORE: {sos.urgency_score}/100 ({sos.urgency_level})
                       </span>
                       <div className="text-[10px] text-slate-400 font-mono">
@@ -1065,37 +1077,68 @@ export default function AdminCommandCenterPage() {
                     </div>
                   </div>
 
-                  {/* Real-Time Status Progress Bar */}
+                  {/* Real-Time Status Progress Bar & Quick Action */}
                   <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
                         Real-Time Tracker:
                       </span>
                       <div className="flex items-center space-x-1.5 font-mono text-[11px]">
-                        <span className={`px-2 py-0.5 rounded-full ${
-                          stageIdx >= 1 ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-slate-900 text-slate-500"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 1 ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-slate-900 text-slate-500"
+                          }`}>
                           1. Intake ✓
                         </span>
                         <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${
-                          stageIdx >= 2 ? "bg-blue-950 text-blue-400 border border-blue-800" : "bg-slate-900 text-slate-500"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 2 ? "bg-blue-950 text-blue-400 border border-blue-800" : "bg-slate-900 text-slate-500"
+                          }`}>
                           2. Assigned
                         </span>
                         <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${
-                          stageIdx >= 3 ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse" : "bg-slate-900 text-slate-500"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 3 ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse" : "bg-slate-900 text-slate-500"
+                          }`}>
                           3. Dispatched
                         </span>
                         <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${
-                          stageIdx >= 4 ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold" : "bg-slate-900 text-slate-500"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 4 ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold" : "bg-slate-900 text-slate-500"
+                          }`}>
                           4. Delivered
                         </span>
                       </div>
+                    </div>
+
+                    {/* Quick Solve / Status Action Button on Card */}
+                    <div className="flex items-center gap-2">
+                      {sos.status === "DELIVERED" || sos.status === "RESOLVED" ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Report Solved
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateStatus(sos.id, "PENDING");
+                            }}
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono border border-slate-700 transition-colors"
+                            title="Re-open distress signal"
+                          >
+                            Re-Open
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateStatus(sos.id, "DELIVERED");
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md flex items-center space-x-1.5"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Solve Report (Delivered)</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1111,7 +1154,7 @@ export default function AdminCommandCenterPage() {
       {selectedSOS && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
           <div className="relative w-full max-w-4xl bg-slate-950 border border-slate-700 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl text-left my-8">
-            
+
             {/* Modal Header */}
             <div className="flex items-start justify-between border-b border-slate-800 pb-4">
               <div className="space-y-1">
@@ -1119,22 +1162,20 @@ export default function AdminCommandCenterPage() {
                   <span className="font-mono text-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-bold">
                     DISTRESS CALL #{selectedSOS.id}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-mono font-black ${
-                    selectedSOS.status === "DELIVERED"
-                      ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                      : selectedSOS.status === "DISPATCHED"
+                  <span className={`px-3 py-1 rounded-full text-xs font-mono font-black ${selectedSOS.status === "DELIVERED"
+                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                    : selectedSOS.status === "DISPATCHED"
                       ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
                       : selectedSOS.status === "ASSIGNED"
-                      ? "bg-blue-950 text-blue-400 border border-blue-800"
-                      : "bg-amber-950 text-amber-400 border border-amber-800"
-                  }`}>
+                        ? "bg-blue-950 text-blue-400 border border-blue-800"
+                        : "bg-amber-950 text-amber-400 border border-amber-800"
+                    }`}>
                     ● LIVE STATUS: {selectedSOS.status || "PENDING"}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-black ${
-                    selectedSOS.urgency_level === "CRITICAL"
-                      ? "bg-red-600 text-white shadow-md shadow-red-600/30"
-                      : "bg-amber-500 text-slate-950"
-                  }`}>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-black ${selectedSOS.urgency_level === "CRITICAL"
+                    ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                    : "bg-amber-500 text-slate-950"
+                    }`}>
                     AI URGENCY: {selectedSOS.urgency_score}/100 ({selectedSOS.urgency_level})
                   </span>
                 </div>
@@ -1182,13 +1223,12 @@ export default function AdminCommandCenterPage() {
                   return (
                     <div key={st.step} className="flex flex-col items-center text-center space-y-1.5 relative">
                       <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
-                          isDone
-                            ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
-                            : isCurrent
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all ${isDone
+                          ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
+                          : isCurrent
                             ? "bg-cyan-500 text-slate-950 font-black ring-4 ring-cyan-500/30 scale-110 shadow-lg shadow-cyan-500/30"
                             : "bg-slate-800 text-slate-400 border border-slate-700"
-                        }`}
+                          }`}
                       >
                         {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : st.step}
                       </div>
@@ -1277,7 +1317,7 @@ export default function AdminCommandCenterPage() {
 
             {/* Detailed Metadata Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-              
+
               {/* Card 1: Citizen Distress Narrative */}
               <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
                 <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-2">
@@ -1315,7 +1355,7 @@ export default function AdminCommandCenterPage() {
                   <HeartPulse className="w-4 h-4 text-amber-400" />
                   <span>Assessed Vulnerabilities & Relief Needs</span>
                 </div>
-                
+
                 <div>
                   <span className="text-slate-400 text-[11px] font-semibold">Special Vulnerabilities Flagged:</span>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -1384,7 +1424,7 @@ export default function AdminCommandCenterPage() {
       {/* TAB 2: AI MODELS & UDAP ACTION PLAN */}
       {activeTab === "AI_MODELS" && (
         <div className="space-y-6 animate-in fade-in">
-          
+
           {/* Sub-tab switcher for models */}
           <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-bold">
             {[
@@ -1398,9 +1438,8 @@ export default function AdminCommandCenterPage() {
               <button
                 key={m.id}
                 onClick={() => setActiveModel(m.id)}
-                className={`py-2 px-3 rounded-xl transition-all ${
-                  activeModel === m.id ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
-                }`}
+                className={`py-2 px-3 rounded-xl transition-all ${activeModel === m.id ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
+                  }`}
               >
                 {m.label}
               </button>
@@ -1489,7 +1528,7 @@ export default function AdminCommandCenterPage() {
           {/* ========================================================================= */}
           {activeModel === 2 && (
             <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-              
+
               {/* Header with Display Mode Toggles */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
@@ -1505,17 +1544,15 @@ export default function AdminCommandCenterPage() {
                 <div className="flex items-center space-x-2 text-xs font-bold">
                   <button
                     onClick={() => setSelectedVisionMode("RAW")}
-                    className={`px-3 py-1.5 rounded-xl transition-all ${
-                      selectedVisionMode === "RAW" ? "bg-slate-800 text-white border border-slate-700" : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl transition-all ${selectedVisionMode === "RAW" ? "bg-slate-800 text-white border border-slate-700" : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     Raw Optical Frame
                   </button>
                   <button
                     onClick={() => setSelectedVisionMode("SEGMENTED")}
-                    className={`px-3 py-1.5 rounded-xl transition-all ${
-                      selectedVisionMode === "SEGMENTED" ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl transition-all ${selectedVisionMode === "SEGMENTED" ? "bg-amber-500 text-slate-950 font-black shadow-md" : "text-slate-400 hover:text-white"
+                      }`}
                   >
                     AI Segmentation Mask
                   </button>
@@ -1524,12 +1561,12 @@ export default function AdminCommandCenterPage() {
 
               {/* Main Visualizer Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
+
                 {/* Visual Satellite / Simulation Canvas */}
                 <div className="lg:col-span-2 relative h-80 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center shadow-inner">
                   <svg viewBox="0 0 600 350" className="w-full h-full">
                     <rect width="100%" height="100%" fill="#070c18" />
-                    
+
                     {/* Grid Pattern */}
                     <defs>
                       <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
@@ -1563,7 +1600,7 @@ export default function AdminCommandCenterPage() {
                     />
 
                     <text x="35" y="40" fill="#94a3b8" fontSize="12" fontFamily="monospace" fontWeight="bold">
-                      SENTINEL-2 TILE: 13.01°N, 80.25°E (ADYAR ESTUARY BASIN)
+                      SENTINEL-2 TILE: 17.38°N, 78.48°E (MUSI RIVER BASIN)
                     </text>
 
                     {/* Overlay AI Segmentation Masks when Active */}
@@ -1591,7 +1628,7 @@ export default function AdminCommandCenterPage() {
                           ROAD IMPEDANCE (3.2 FT)
                         </text>
                         <text x="370" y="105" fill="#fde68a" fontSize="9" fontFamily="monospace">
-                          Adyar Estuary Bridge Link
+                          Musi River Causeway Bridge
                         </text>
                       </>
                     )}
@@ -1678,7 +1715,7 @@ export default function AdminCommandCenterPage() {
                       <span>Downstream Dispatch Action</span>
                     </div>
                     <p className="text-[10px] leading-relaxed text-red-300/90">
-                      Flagged road: <b>Adyar Canal Bridge Link</b> (3.2 ft flood). Coordinates streamed to Model 4 for detour bypass.
+                      Flagged road: <b>Musi River Causeway Bridge</b> (3.2 ft flood). Coordinates streamed to Model 4 for detour bypass.
                     </p>
                   </div>
                 </div>
@@ -1805,9 +1842,8 @@ export default function AdminCommandCenterPage() {
                         return (
                           <div
                             key={sIdx}
-                            className={`p-2 rounded-lg flex justify-between items-center ${
-                              isHazard ? "bg-amber-950/40 border border-amber-900/60 text-amber-300" : "bg-slate-900 text-slate-300"
-                            }`}
+                            className={`p-2 rounded-lg flex justify-between items-center ${isHazard ? "bg-amber-950/40 border border-amber-900/60 text-amber-300" : "bg-slate-900 text-slate-300"
+                              }`}
                           >
                             <span>Stop {stop.sequence}: {stop.name}</span>
                             <span className="font-bold">{stop.eta}</span>
@@ -1918,11 +1954,10 @@ export default function AdminCommandCenterPage() {
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="font-mono text-xs text-amber-400 font-bold">{unifiedPlan.action_plan_id}</span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                      unifiedPlan.status === "DISPATCH_AUTHORIZED"
-                        ? "bg-emerald-950 text-emerald-400 border border-emerald-700"
-                        : "bg-amber-950 text-amber-400 border border-amber-700"
-                    }`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${unifiedPlan.status === "DISPATCH_AUTHORIZED"
+                      ? "bg-emerald-950 text-emerald-400 border border-emerald-700"
+                      : "bg-amber-950 text-amber-400 border border-amber-700"
+                      }`}>
                       {unifiedPlan.status}
                     </span>
                   </div>
@@ -2094,11 +2129,10 @@ export default function AdminCommandCenterPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedWarehouseFilter("ALL_SEGREGATED")}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
-                  selectedWarehouseFilter === "ALL_SEGREGATED"
-                    ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                    : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
-                }`}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${selectedWarehouseFilter === "ALL_SEGREGATED"
+                  ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                  : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
+                  }`}
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>All 5 Warehouses (Segregated View)</span>
@@ -2111,17 +2145,15 @@ export default function AdminCommandCenterPage() {
                   <button
                     key={rc.id}
                     onClick={() => setSelectedWarehouseFilter(rc.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-2 ${
-                      isSelected
-                        ? "bg-amber-500 text-slate-950 shadow-md font-black"
-                        : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
-                    }`}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-2 ${isSelected
+                      ? "bg-amber-500 text-slate-950 shadow-md font-black"
+                      : "bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700"
+                      }`}
                   >
                     <Building2 className="w-3.5 h-3.5 opacity-80" />
-                    <span>{rc.name.replace("Chennai ", "").replace("Humanitarian Relief ", "")}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                      isSelected ? "bg-slate-950/30 text-slate-950 font-bold" : "bg-slate-800 text-slate-400"
-                    }`}>
+                    <span>{rc.name.replace("Secunderabad ", "").replace("Humanitarian Relief ", "")}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${isSelected ? "bg-slate-950/30 text-slate-950 font-bold" : "bg-slate-800 text-slate-400"
+                      }`}>
                       {itemsCount} SKUs
                     </span>
                   </button>
@@ -2151,11 +2183,10 @@ export default function AdminCommandCenterPage() {
                   <button
                     key={cat.key}
                     onClick={() => setInventoryCategoryFilter(cat.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                      isSelected
-                        ? "bg-slate-200 text-slate-950 font-black shadow"
-                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
+                      ? "bg-slate-200 text-slate-950 font-black shadow"
+                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                      }`}
                   >
                     {IconComponent && <IconComponent className={`w-3 h-3 ${cat.color || ""}`} />}
                     <span>{cat.label}</span>
@@ -2300,9 +2331,9 @@ export default function AdminCommandCenterPage() {
 
                             const CategoryIcon =
                               item.item_category === "WATER" ? Droplet :
-                              item.item_category === "FOOD" ? Flame :
-                              item.item_category === "MEDICAL" ? HeartPulse :
-                              item.item_category === "SHELTER" ? Shield : Sparkles;
+                                item.item_category === "FOOD" ? Flame :
+                                  item.item_category === "MEDICAL" ? HeartPulse :
+                                    item.item_category === "SHELTER" ? Shield : Sparkles;
 
                             return (
                               <div
@@ -2341,11 +2372,10 @@ export default function AdminCommandCenterPage() {
                                     )}
                                   </div>
 
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                                    isLowStock
-                                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
-                                      : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                                  }`}>
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isLowStock
+                                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                                    : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                                    }`}>
                                     {isLowStock ? "LOW" : "OPTIMAL"}
                                   </span>
                                 </div>
@@ -2403,11 +2433,10 @@ export default function AdminCommandCenterPage() {
                   <button
                     key={f.key}
                     onClick={() => setFleetTypeFilter(f.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                      isSelected
-                        ? "bg-emerald-500 text-slate-950 font-black shadow"
-                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
+                      ? "bg-emerald-500 text-slate-950 font-black shadow"
+                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                      }`}
                   >
                     <IconComp className="w-3.5 h-3.5" />
                     <span>{f.label}</span>
@@ -2422,11 +2451,10 @@ export default function AdminCommandCenterPage() {
                 <button
                   key={st}
                   onClick={() => setFleetStatusFilter(st)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-                    fleetStatusFilter === st
-                      ? "bg-slate-200 text-slate-950"
-                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                  }`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${fleetStatusFilter === st
+                    ? "bg-slate-200 text-slate-950"
+                    : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                    }`}
                 >
                   {st}
                 </button>
@@ -2456,11 +2484,10 @@ export default function AdminCommandCenterPage() {
                             {isDrone ? "Autonomous Aerial Drone" : isBoat ? "Maritime Rescue Craft" : isAmbulance ? "Mobile ICU Ambulance" : `${v.vehicle_type} Relief Transport`}
                           </span>
                         </div>
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${
-                          v.status === "IDLE"
-                            ? "bg-slate-800 text-slate-300"
-                            : "bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse"
-                        }`}>
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${v.status === "IDLE"
+                          ? "bg-slate-800 text-slate-300"
+                          : "bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse"
+                          }`}>
                           {v.status}
                         </span>
                       </div>
@@ -2519,9 +2546,9 @@ export default function AdminCommandCenterPage() {
           <div className="space-y-3">
             {[
               { time: "12:28:10", action: "DISPATCH_AUTHORIZED", details: "Authorized 2 vehicles via UDAP. Sealed block: 85a381e36402..." },
-              { time: "12:25:44", action: "SOLVED_CVRP_ROUTING", details: "Model 4 solved 17.94 km route avoiding Adyar flooded red zone." },
-              { time: "12:20:15", action: "INBOUND_DONATION_LOGGED", details: "Staged 1,200L Water & 850 Rations at Central Depot Alpha." },
-              { time: "12:15:30", action: "DISASTER_DECLARED", details: "Declared Cyclone Vardah DEFCON-1 (Severity: CRITICAL)." }
+              { time: "12:25:44", action: "SOLVED_CVRP_ROUTING", details: "Model 4 solved 17.94 km route avoiding Musi River flooded red zone." },
+              { time: "12:20:15", action: "INBOUND_DONATION_LOGGED", details: "Staged 1,200L Water & 850 Rations at Secunderabad Central Hub." },
+              { time: "12:15:30", action: "DISASTER_DECLARED", details: "Declared Hyderabad Urban Cloudburst DEFCON-1 (Severity: CRITICAL)." }
             ].map((log, idx) => (
               <div key={idx} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1 text-xs">
                 <div className="flex justify-between font-mono text-[11px]">

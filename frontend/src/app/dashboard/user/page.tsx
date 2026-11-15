@@ -43,7 +43,7 @@ const translations = {
     phoneLabel: "Contact Phone Number",
     phonePlaceholder: "+91-9840112233",
     locationLabel: "Detailed Location / Landmark",
-    locationPlaceholder: "e.g. 12 Canal Bank Road, near Kotturpuram Bridge",
+    locationPlaceholder: "e.g. 12 Musi Causeway Road, near Chaderghat Bridge, Hyderabad",
     autoDetectGPS: "📍 Auto-Detect My Live Location",
     headcountLabel: "People Trapped / With You",
     vulnSectionTitle: "⚠ Flag Urgent Vulnerabilities (Increases Priority):",
@@ -78,7 +78,7 @@ const translations = {
     phoneLabel: "தொடர்பு தொலைபேசி எண்",
     phonePlaceholder: "+91-9840112233",
     locationLabel: "இடம் / அடையாளம் (Landmark)",
-    locationPlaceholder: "எ.கா. 12 கால்வாய் கரை சாலை, கோட்டூர்புரம் பாலம் அருகே",
+    locationPlaceholder: "எ.கா. 12 மூசி காஸ்வே சாலை, சாதர்காட் பாலம் அருகே, ஹைதராபாத்",
     autoDetectGPS: "📍 என் இருப்பிடத்தை தானாகக் கண்டறி (GPS)",
     headcountLabel: "உங்களுடன் உள்ள நபர்கள்",
     vulnSectionTitle: "⚠ அவசர முன்னுரிமை நிலைகள் (உடனடி உதவிக்கு):",
@@ -113,7 +113,7 @@ const translations = {
     phoneLabel: "संपर्क मोबाइल नंबर",
     phonePlaceholder: "+91-9840112233",
     locationLabel: "विस्तृत स्थान / लैंडमार्क",
-    locationPlaceholder: "उदा. 12 कैनाल बैंक रोड, कोट्टूरपुरम पुल के पास",
+    locationPlaceholder: "उदा. 12 मूसी कॉजवे रोड, चादरघाट पुल के पास, हैदराबाद",
     autoDetectGPS: "📍 मेरी लाइव लोकेशन ऑटो-डिटेक्ट करें (GPS)",
     headcountLabel: "फंसे हुए लोगों की संख्या",
     vulnSectionTitle: "⚠ गंभीर आवश्यकताएं (उच्च प्राथमिकता के लिए):",
@@ -189,7 +189,7 @@ export default function UserPortalPage() {
       family_count: 4,
       needs: ["FOOD", "WATER", "MEDICAL"],
       vulnerabilities: ["Infant (8mo)", "Diabetic Mother"],
-      address: "12 Canal Bank Road, Kotturpuram",
+      address: "12 Musi Causeway Road, Chaderghat Lowlands, Hyderabad",
       status: "DISPATCHED",
       urgency_score: 92.0,
       eta: "12–15 mins",
@@ -199,7 +199,7 @@ export default function UserPortalPage() {
         pilot: "Capt. Murugan",
         phone: "+91-9444088112",
         speed: "18 km/h amphibious",
-        heading: "Adyar Canal West",
+        heading: "Musi River Link / Chaderghat Expressway",
         last_ping: "20s ago"
       },
       created_at: "25 mins ago"
@@ -209,7 +209,7 @@ export default function UserPortalPage() {
       family_count: 2,
       needs: ["WATER", "SHELTER"],
       vulnerabilities: ["Elderly (72yo)"],
-      address: "T. Nagar Ward 12",
+      address: "Malakpet Ward 12, Hyderabad",
       status: "DELIVERED",
       urgency_score: 74.0,
       eta: "Delivered",
@@ -251,7 +251,7 @@ export default function UserPortalPage() {
                   pilot: "Capt. Murugan",
                   phone: "+91-9444088112",
                   speed: "18 km/h amphibious",
-                  heading: "Adyar Canal West",
+                  heading: "Musi River Link / Chaderghat Expressway",
                   last_ping: "20s ago"
                 }
               };
@@ -333,34 +333,34 @@ export default function UserPortalPage() {
             accuracy: acc,
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
           });
-          setAddress(`GPS Sat-Fix: ${lat}° N, ${lon}° E (±${acc}m accuracy) • Adyar-Kotturpuram Lowlands`);
+          setAddress(`GPS Sat-Fix: ${lat}° N, ${lon}° E (±${acc}m accuracy) • Musi River Chaderghat Lowlands, Hyderabad`);
           setIsDetectingGPS(false);
         },
         (err) => {
           // Graceful fallback for mock/sandboxed environments without hardware sensors
-          const mockLat = 13.0652;
-          const mockLon = 80.2548;
+          const mockLat = 17.3780;
+          const mockLon = 78.4910;
           setGpsLocked({
             lat: mockLat,
             lon: mockLon,
             accuracy: 5,
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
           });
-          setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Adyar Sector 4 Lowlands`);
+          setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Musi River Sector 4 Lowlands, Hyderabad`);
           setIsDetectingGPS(false);
         },
         { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
       );
     } else {
-      const mockLat = 13.0652;
-      const mockLon = 80.2548;
+      const mockLat = 17.3780;
+      const mockLon = 78.4910;
       setGpsLocked({
         lat: mockLat,
         lon: mockLon,
         accuracy: 5,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
       });
-      setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Adyar Sector 4 Lowlands`);
+      setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Musi River Sector 4 Lowlands, Hyderabad`);
       setIsDetectingGPS(false);
     }
   };
@@ -368,8 +368,8 @@ export default function UserPortalPage() {
   // Relief Camps list
   const reliefCamps = [
     {
-      name: "Central Emergency Relief Base Alpha",
-      location: "Jawaharlal Nehru Stadium Complex",
+      name: "Secunderabad Central Relief Base Alpha",
+      location: "Gymkhana Grounds Complex, Secunderabad",
       distance: "1.8 km away",
       capacity: "2,500 people",
       occupancy: "450 sheltered",
@@ -378,8 +378,8 @@ export default function UserPortalPage() {
       phone: "+91-9444012345"
     },
     {
-      name: "Forward Staging Depot B (South)",
-      location: "Guindy Industrial Community Center",
+      name: "Rajendranagar Emergency Camp Beta",
+      location: "Rajendranagar PJTSAU Complex, Hyderabad",
       distance: "3.2 km away",
       capacity: "1,200 people",
       occupancy: "310 sheltered",
@@ -388,8 +388,8 @@ export default function UserPortalPage() {
       phone: "+91-9444056789"
     },
     {
-      name: "Kasimedu Coastal Relief Camp",
-      location: "Kasimedu Community Hall",
+      name: "Amberpet Musi Basin Relief Camp",
+      location: "Amberpet / Moosarambagh Hall, Hyderabad",
       distance: "4.5 km away",
       capacity: "800 people",
       occupancy: "620 sheltered",
@@ -692,7 +692,7 @@ export default function UserPortalPage() {
                             </span>
                           </div>
                           <div className="text-[11px] text-cyan-300/80 font-mono mt-0.5">
-                            Sat-Fix Lock Confirmed • Sector: Adyar Lowlands • Locked at {gpsLocked.timestamp}
+                            Sat-Fix Lock Confirmed • Sector: Musi River Lowlands, Hyderabad • Locked at {gpsLocked.timestamp}
                           </div>
                         </div>
                       </div>
@@ -964,7 +964,7 @@ export default function UserPortalPage() {
                             <span>{req.eta || "12–15 mins"}</span>
                           </div>
                           <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 truncate">
-                            Route: <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Adyar River / Canal West"}</span>
+                            Route: <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Musi River Link / Chaderghat Expressway"}</span>
                           </div>
                         </div>
 
