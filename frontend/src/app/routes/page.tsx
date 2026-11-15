@@ -21,14 +21,19 @@ export default function RoutesPage() {
   }, []);
 
   const handleRunOptimizer = async () => {
-    if (centers.length === 0 || vehicles.length === 0) return;
     setIsSolving(true);
-    const plans = await runRouteOptimization(
-      centers[0].id,
-      vehicles.map((v) => v.id)
-    );
-    setRoutePlans(plans);
-    setIsSolving(false);
+    try {
+      const centerId = centers.length > 0 ? centers[0].id : "RC-01";
+      const vehicleIds = vehicles.length > 0 ? vehicles.map((v) => v.id) : ["VEH-01", "VEH-02"];
+      const plans = await runRouteOptimization(centerId, vehicleIds);
+      if (Array.isArray(plans)) {
+        setRoutePlans(plans);
+      }
+    } catch (err) {
+      console.error("Error solving CVRP routes:", err);
+    } finally {
+      setIsSolving(false);
+    }
   };
 
   return (

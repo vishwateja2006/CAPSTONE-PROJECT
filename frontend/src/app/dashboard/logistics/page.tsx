@@ -33,14 +33,19 @@ export default function LogisticsDashboardPage() {
   }, []);
 
   const handleComputeRoutes = async () => {
-    if (centers.length === 0 || vehicles.length === 0) return;
     setIsSolving(true);
-    const plans = await runRouteOptimization(
-      centers[0].id,
-      vehicles.map((v) => v.id)
-    );
-    setRoutePlans(plans);
-    setIsSolving(false);
+    try {
+      const centerId = centers.length > 0 ? centers[0].id : "RC-01";
+      const vehicleIds = vehicles.length > 0 ? vehicles.map((v) => v.id) : ["VEH-01", "VEH-02"];
+      const plans = await runRouteOptimization(centerId, vehicleIds);
+      if (Array.isArray(plans)) {
+        setRoutePlans(plans);
+      }
+    } catch (err) {
+      console.error("Error computing routes:", err);
+    } finally {
+      setIsSolving(false);
+    }
   };
 
   const handleToggleSimulation = () => {
@@ -54,7 +59,7 @@ export default function LogisticsDashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -98,11 +103,10 @@ export default function LogisticsDashboardPage() {
                   <h3 className="font-bold text-white text-base">{v.vehicle_code}</h3>
                   <div className="text-[11px] text-slate-400">Driver: {v.assigned_driver || "Assigned Driver"}</div>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold ${
-                  v.status === "EN_ROUTE"
-                    ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
-                    : "bg-slate-800 text-slate-300"
-                }`}>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold ${v.status === "EN_ROUTE"
+                  ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
+                  : "bg-slate-800 text-slate-300"
+                  }`}>
                   {v.status}
                 </span>
               </div>
@@ -136,9 +140,8 @@ export default function LogisticsDashboardPage() {
             </div>
             <button
               onClick={handleToggleSimulation}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all ${
-                simulationActive ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300 hover:text-white"
-              }`}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all ${simulationActive ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-300 hover:text-white"
+                }`}
             >
               <Play className="w-3.5 h-3.5" />
               <span>{simulationActive ? "LIVE TELEMETRY STREAMING" : "SIMULATE VEHICLE PROGRESS"}</span>

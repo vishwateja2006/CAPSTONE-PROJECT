@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header & Active Disaster Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
+
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active SOS Signals</span>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
 
       {/* Main Two-Column Layout: Emergency Incidents & AI Demand Simulator */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column (2 Cols): Live Emergency Triage Stream */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
@@ -181,13 +181,12 @@ export default function DashboardPage() {
               return (
                 <div
                   key={sos.id}
-                  className={`p-4 rounded-xl border transition-all ${
-                    isCrit
-                      ? "bg-red-950/20 border-red-900/80 hover:border-red-600"
-                      : isHigh
+                  className={`p-4 rounded-xl border transition-all ${isCrit
+                    ? "bg-red-950/20 border-red-900/80 hover:border-red-600"
+                    : isHigh
                       ? "bg-amber-950/20 border-amber-900/70 hover:border-amber-600"
                       : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -207,13 +206,12 @@ export default function DashboardPage() {
 
                     <div className="text-right flex-shrink-0">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-black tracking-wide ${
-                          isCrit
-                            ? "bg-red-600 text-white shadow-md shadow-red-600/30"
-                            : isHigh
+                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-black tracking-wide ${isCrit
+                          ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                          : isHigh
                             ? "bg-amber-500 text-slate-950"
                             : "bg-yellow-500 text-slate-950"
-                        }`}
+                          }`}
                       >
                         SCORE: {sos.urgency_score} ({sos.urgency_level})
                       </span>
@@ -236,9 +234,8 @@ export default function DashboardPage() {
                     ))}
 
                     <div className="ml-auto">
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                        sos.status === "PENDING" ? "bg-amber-950 text-amber-400" : "bg-emerald-950 text-emerald-400"
-                      }`}>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${sos.status === "PENDING" ? "bg-amber-950 text-amber-400" : "bg-emerald-950 text-emerald-400"
+                        }`}>
                         STATUS: {sos.status}
                       </span>
                     </div>

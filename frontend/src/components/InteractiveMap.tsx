@@ -70,8 +70,8 @@ export default function InteractiveMap({
   const [basemapStyle, setBasemapStyle] = useState<"TACTICAL_DARK" | "SATELLITE_RECON" | "GRID">("TACTICAL_DARK");
 
   // Dynamic Geographic Projection Bounds centered on current region
-  const centerLat = userCoords.lat || 13.065;
-  const centerLon = userCoords.lon || 80.255;
+  const centerLat = userCoords.lat || 17.3850;
+  const centerLon = userCoords.lon || 78.4867;
   const LAT_SPAN = 0.12; // ~13 km North-South span
   const LON_SPAN = 0.16; // ~17 km East-West span
 
@@ -98,20 +98,19 @@ export default function InteractiveMap({
 
   return (
     <div className="relative w-full h-[680px] rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none group">
-      
+
       {/* Top Floating HUD: Real-time Telemetry & Layer Toggles */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        
+
         {/* Left: Dynamic DEFCON & Telemetry Indicators */}
         <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
           {/* DEFCON Rating Badge */}
-          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border text-xs font-mono font-black shadow-lg backdrop-blur-md ${
-            environmentalData.hazard.defconLevel === 1
-              ? "bg-red-950/90 border-red-700 text-red-300 animate-pulse"
-              : environmentalData.hazard.defconLevel === 2
+          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border text-xs font-mono font-black shadow-lg backdrop-blur-md ${environmentalData.hazard.defconLevel === 1
+            ? "bg-red-950/90 border-red-700 text-red-300 animate-pulse"
+            : environmentalData.hazard.defconLevel === 2
               ? "bg-amber-950/90 border-amber-700 text-amber-300"
               : "bg-blue-950/90 border-blue-700 text-blue-300"
-          }`}>
+            }`}>
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
             <span>{environmentalData.hazard.defconName}</span>
           </div>
@@ -168,9 +167,8 @@ export default function InteractiveMap({
           <button
             onClick={() => setShowCyclone(!showCyclone)}
             title="Toggle Cyclone Vortex"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${
-              showCyclone ? "bg-amber-500/20 text-amber-300 border border-amber-500/50" : "text-slate-500 hover:text-slate-300"
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showCyclone ? "bg-amber-500/20 text-amber-300 border border-amber-500/50" : "text-slate-500 hover:text-slate-300"
+              }`}
           >
             🌪️ Storm
           </button>
@@ -178,9 +176,8 @@ export default function InteractiveMap({
           <button
             onClick={() => setShowWaves(!showWaves)}
             title="Toggle Coastal Waves & Ocean Surge"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${
-              showWaves ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50" : "text-slate-500 hover:text-slate-300"
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showWaves ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50" : "text-slate-500 hover:text-slate-300"
+              }`}
           >
             🌊 Waves
           </button>
@@ -188,9 +185,8 @@ export default function InteractiveMap({
           <button
             onClick={() => setShowAQI(!showAQI)}
             title="Toggle Air Quality Index (AQI)"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${
-              showAQI ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50" : "text-slate-500 hover:text-slate-300"
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showAQI ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50" : "text-slate-500 hover:text-slate-300"
+              }`}
           >
             🌫️ AQI
           </button>
@@ -198,9 +194,8 @@ export default function InteractiveMap({
           <button
             onClick={() => setShowHazards(!showHazards)}
             title="Toggle DEFCON Hazard Zones"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${
-              showHazards ? "bg-red-500/20 text-red-300 border border-red-500/50" : "text-slate-500 hover:text-slate-300"
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showHazards ? "bg-red-500/20 text-red-300 border border-red-500/50" : "text-slate-500 hover:text-slate-300"
+              }`}
           >
             ⚠️ Hazard
           </button>
@@ -412,43 +407,89 @@ export default function InteractiveMap({
         )}
 
         {/* Layer 7: OPTIMIZED FLEET ROUTE TRAJECTORIES (CVRP) */}
-        {showRoutes && (routePlans || []).map((plan, idx) => {
-          if (!plan || !plan.waypoints || plan.waypoints.length < 2) return null;
-          const pointsStr = plan.waypoints
-            .map((wp) => {
-              const p = project(wp.latitude, wp.longitude);
-              return `${p.x},${p.y}`;
-            })
-            .join(" ");
+        {showRoutes && (() => {
+          const validRoutes: RoutePlan[] = Array.isArray(routePlans)
+            ? routePlans
+            : (routePlans as any)?.routes && Array.isArray((routePlans as any).routes)
+            ? (routePlans as any).routes
+            : [];
 
-          return (
-            <g key={plan.id || idx}>
-              <polyline
-                points={pointsStr}
-                fill="none"
-                stroke="#38bdf8"
-                strokeWidth="4"
-                strokeDasharray="8,6"
-                opacity="0.85"
-                filter="url(#mapGlow)"
-              />
-              {(plan.waypoints || []).map((wp, wIdx) => {
-                const pt = project(wp.latitude, wp.longitude);
-                return (
-                  <circle
-                    key={wIdx}
-                    cx={pt.x}
-                    cy={pt.y}
-                    r="4"
-                    fill="#38bdf8"
-                    stroke="#0284c7"
-                    strokeWidth="2"
-                  />
-                );
-              })}
-            </g>
-          );
-        })}
+          return validRoutes.map((plan, idx) => {
+            if (!plan || !Array.isArray(plan.waypoints) || plan.waypoints.length < 2) return null;
+            const validWps = plan.waypoints.filter(
+              (wp) => wp && wp.latitude != null && !isNaN(Number(wp.latitude)) && wp.longitude != null && !isNaN(Number(wp.longitude))
+            );
+            if (validWps.length < 2) return null;
+
+            const pointsStr = validWps
+              .map((wp) => {
+                const p = project(Number(wp.latitude), Number(wp.longitude));
+                return `${p.x},${p.y}`;
+              })
+              .join(" ");
+
+            const strokeColor = idx % 2 === 0 ? "#38bdf8" : "#a855f7";
+            const nodeFill = idx % 2 === 0 ? "#0284c7" : "#7e22ce";
+
+            return (
+              <g key={plan.id || `plan-${idx}`}>
+                {/* Route Vector Polyline */}
+                <polyline
+                  points={pointsStr}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth="4"
+                  strokeDasharray="8,6"
+                  opacity="0.85"
+                  filter="url(#mapGlow)"
+                />
+                {/* Route Waypoint Nodes & Badges */}
+                {validWps.map((wp, wIdx) => {
+                  const pt = project(Number(wp.latitude), Number(wp.longitude));
+                  const isDepot = wp.action?.includes("DEPOT");
+                  const isDetour = wp.action?.includes("HAZARD") || wp.action?.includes("BYPASS");
+                  const badgeColor = isDepot ? "#3b82f6" : isDetour ? "#f59e0b" : "#10b981";
+
+                  return (
+                    <g key={wIdx} className="cursor-pointer">
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r={isDepot ? "7" : "5"}
+                        fill={badgeColor}
+                        stroke="#0f172a"
+                        strokeWidth="2"
+                      />
+                      <rect
+                        x={pt.x - 30}
+                        y={pt.y - 20}
+                        width="60"
+                        height="14"
+                        rx="3"
+                        fill="#090d16"
+                        opacity="0.85"
+                        stroke={badgeColor}
+                        strokeWidth="0.8"
+                      />
+                      <text
+                        x={pt.x}
+                        y={pt.y - 10}
+                        textAnchor="middle"
+                        fill="#ffffff"
+                        fontSize="8"
+                        fontWeight="bold"
+                        fontFamily="monospace"
+                        className="pointer-events-none select-none"
+                      >
+                        {wp.sequence ? `Stop #${wp.sequence}` : `WP ${wIdx + 1}`}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          });
+        })()}
 
         {/* Layer 8: RELIEF DEPOTS */}
         {(reliefCenters || []).map((depot) => {
@@ -582,18 +623,18 @@ export default function InteractiveMap({
                 {activeItem.type === "USER"
                   ? "Real-Time User Location"
                   : activeItem.type === "CYCLONE"
-                  ? "Cyclone Atmospheric Vortex"
-                  : activeItem.type === "WAVE"
-                  ? "Ocean Wave & Surge Telemetry"
-                  : activeItem.type === "AQI"
-                  ? "Air Quality Index (AQI)"
-                  : activeItem.type === "HAZARD_ZONE"
-                  ? "Hazard Zone Perimeter"
-                  : activeItem.type === "SOS"
-                  ? "Distress Incident"
-                  : activeItem.type === "DEPOT"
-                  ? "Relief Base Depot"
-                  : "Relief Fleet Unit"}
+                    ? "Cyclone Atmospheric Vortex"
+                    : activeItem.type === "WAVE"
+                      ? "Ocean Wave & Surge Telemetry"
+                      : activeItem.type === "AQI"
+                        ? "Air Quality Index (AQI)"
+                        : activeItem.type === "HAZARD_ZONE"
+                          ? "Hazard Zone Perimeter"
+                          : activeItem.type === "SOS"
+                            ? "Distress Incident"
+                            : activeItem.type === "DEPOT"
+                              ? "Relief Base Depot"
+                              : "Relief Fleet Unit"}
               </span>
             </div>
             <button
@@ -684,11 +725,10 @@ export default function InteractiveMap({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Tidal Surge Threat:</span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                  activeItem.data.tidalSurgeRisk === "EXTREME"
-                    ? "bg-red-950 text-red-400 border border-red-800 animate-pulse"
-                    : "bg-cyan-950 text-cyan-300 border border-cyan-800"
-                }`}>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${activeItem.data.tidalSurgeRisk === "EXTREME"
+                  ? "bg-red-950 text-red-400 border border-red-800 animate-pulse"
+                  : "bg-cyan-950 text-cyan-300 border border-cyan-800"
+                  }`}>
                   {activeItem.data.tidalSurgeRisk}
                 </span>
               </div>
@@ -735,9 +775,8 @@ export default function InteractiveMap({
               <div className="font-bold text-white text-sm">{activeItem.data.name}</div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Hazard Classification:</span>
-                <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
-                  activeItem.data.severity === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
-                }`}>
+                <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${activeItem.data.severity === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
+                  }`}>
                   {activeItem.data.severity} ({activeItem.data.hazardType})
                 </span>
               </div>
@@ -774,9 +813,8 @@ export default function InteractiveMap({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">AI Urgency Score:</span>
-                <span className={`px-2 py-0.5 rounded font-black ${
-                  activeItem.data.urgency_score >= 80 ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
-                }`}>
+                <span className={`px-2 py-0.5 rounded font-black ${activeItem.data.urgency_score >= 80 ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
+                  }`}>
                   {activeItem.data.urgency_score} / 100 ({activeItem.data.urgency_level})
                 </span>
               </div>
@@ -800,7 +838,7 @@ export default function InteractiveMap({
                 <span className="font-bold">{activeItem.data.current_occupancy} / {activeItem.data.capacity_people}</span>
               </div>
               <div className="text-slate-400 text-[11px] font-mono">
-                GPS: {Number(activeItem.data.latitude || 13.0837).toFixed(4)}, {Number(activeItem.data.longitude || 80.2785).toFixed(4)}
+                GPS: {Number(activeItem.data.latitude || 17.3850).toFixed(4)}, {Number(activeItem.data.longitude || 78.4867).toFixed(4)}
               </div>
             </div>
           )}

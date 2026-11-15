@@ -65,7 +65,7 @@ export default function DisasterDashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -110,7 +110,7 @@ export default function DisasterDashboardPage() {
       {/* Active Disaster Events List */}
       <div className="space-y-4">
         <h2 className="text-base font-bold text-white">Declared Disaster Incidents Table</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {disasters.map((d) => (
             <div key={d.id} className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
@@ -119,9 +119,8 @@ export default function DisasterDashboardPage() {
                   <span className="text-[10px] font-mono font-bold text-slate-400">{d.id} • {d.type}</span>
                   <h3 className="font-bold text-white text-base">{d.name}</h3>
                 </div>
-                <span className={`px-2.5 py-1 rounded-lg text-xs font-black font-mono ${
-                  d.severity === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
-                }`}>
+                <span className={`px-2.5 py-1 rounded-lg text-xs font-black font-mono ${d.severity === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
+                  }`}>
                   {d.severity}
                 </span>
               </div>

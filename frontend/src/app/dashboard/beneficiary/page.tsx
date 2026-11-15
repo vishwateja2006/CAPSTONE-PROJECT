@@ -141,7 +141,7 @@ export default function BeneficiaryDashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -288,22 +288,20 @@ export default function BeneficiaryDashboardPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className={`px-2 py-0.5 rounded font-black font-mono ${
-                      b.urgency === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded font-black font-mono ${b.urgency === "CRITICAL" ? "bg-red-950 text-red-400 border border-red-800" : "bg-amber-950 text-amber-400"
+                      }`}>
                       {b.urgency_score} ({b.urgency})
                     </span>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold ${
-                      b.status === "DELIVERED"
-                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                        : b.status === "DISPATCHED"
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold ${b.status === "DELIVERED"
+                      ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                      : b.status === "DISPATCHED"
                         ? "bg-cyan-950 text-cyan-400 border border-cyan-800"
                         : b.status === "ALLOCATED"
-                        ? "bg-blue-950 text-blue-400 border border-blue-800"
-                        : "bg-amber-950 text-amber-400 border border-amber-800"
-                    }`}>
+                          ? "bg-blue-950 text-blue-400 border border-blue-800"
+                          : "bg-amber-950 text-amber-400 border border-amber-800"
+                      }`}>
                       {b.status}
                     </span>
                   </td>
@@ -384,11 +382,10 @@ export default function BeneficiaryDashboardPage() {
                   key={v}
                   type="button"
                   onClick={() => toggleVulnerability(v)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    selectedVulnerabilities.includes(v)
-                      ? "bg-red-600 text-white shadow-md shadow-red-600/30"
-                      : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedVulnerabilities.includes(v)
+                    ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                    : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
+                    }`}
                 >
                   {selectedVulnerabilities.includes(v) ? "✓ " : "+ "} {v}
                 </button>
@@ -405,11 +402,10 @@ export default function BeneficiaryDashboardPage() {
                   key={need}
                   type="button"
                   onClick={() => toggleNeed(need)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    selectedNeeds.includes(need)
-                      ? "bg-amber-500 text-slate-950 font-bold"
-                      : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedNeeds.includes(need)
+                    ? "bg-amber-500 text-slate-950 font-bold"
+                    : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
+                    }`}
                 >
                   {need}
                 </button>

@@ -69,7 +69,7 @@ export default function SOSPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-2">
-      
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-950/80 border border-red-700/80 text-red-400 text-xs font-bold uppercase tracking-wider">
@@ -78,7 +78,7 @@ export default function SOSPage() {
         </div>
         <h1 className="text-3xl font-black text-white">Emergency Relief SOS Beacon</h1>
         <p className="text-sm text-slate-400 max-w-xl mx-auto">
-          Broadcast your location and survival needs directly to the Central Operations Command. 
+          Broadcast your location and survival needs directly to the Central Operations Command.
           Our AI model triages incoming reports in real-time.
         </p>
       </div>
@@ -123,10 +123,10 @@ export default function SOSPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Main Form (2 cols) */}
           <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-5 bg-slate-900/70 border border-slate-800 p-6 rounded-2xl">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Contact Name / Group</label>
@@ -205,11 +205,10 @@ export default function SOSPage() {
                     key={sn}
                     type="button"
                     onClick={() => handleToggleSpecialNeed(sn)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                      specialNeeds.includes(sn)
-                        ? "bg-red-600 text-white shadow-md shadow-red-600/30"
-                        : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${specialNeeds.includes(sn)
+                      ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                      : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
+                      }`}
                   >
                     + {sn}
                   </button>
@@ -226,11 +225,10 @@ export default function SOSPage() {
                     key={cat}
                     type="button"
                     onClick={() => handleToggleCategory(cat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                      categoryNeeds.includes(cat)
-                        ? "bg-amber-500 text-slate-950 font-bold"
-                        : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${categoryNeeds.includes(cat)
+                      ? "bg-amber-500 text-slate-950 font-bold"
+                      : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -273,9 +271,8 @@ export default function SOSPage() {
 
               <div className="text-center p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
                 <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Predicted Priority</div>
-                <div className={`text-2xl font-black ${
-                  preview.level === "CRITICAL" ? "text-red-500" : preview.level === "HIGH" ? "text-amber-400" : "text-yellow-400"
-                }`}>
+                <div className={`text-2xl font-black ${preview.level === "CRITICAL" ? "text-red-500" : preview.level === "HIGH" ? "text-amber-400" : "text-yellow-400"
+                  }`}>
                   {preview.level}
                 </div>
                 <div className="text-xs font-mono text-slate-400">

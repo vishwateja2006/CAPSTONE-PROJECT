@@ -356,7 +356,7 @@ export async function fetchInventory(): Promise<any[]> {
     if (!res.ok) throw new Error();
     return await res.json();
   } catch {
-    return MOCK_RELIEF_CENTERS.flatMap(rc => 
+    return MOCK_RELIEF_CENTERS.flatMap(rc =>
       (rc.inventory_items || []).map(item => ({
         ...item,
         warehouse_name: rc.name,
@@ -425,7 +425,7 @@ export async function submitSOS(payload: any): Promise<SOSRequest> {
       localStorage.setItem("resqlink_has_unseen_reports", "true");
       window.dispatchEvent(new CustomEvent("resqlink_new_sos", { detail: createdSOS }));
     }
-  } catch {}
+  } catch { }
 
   return createdSOS;
 }
@@ -448,7 +448,7 @@ export async function updateSOSStatus(
     if (res.ok) {
       updatedRecord = await res.json();
     }
-  } catch {}
+  } catch { }
 
   // Fallback to POST if PATCH fails or server differs
   if (!updatedRecord) {
@@ -464,7 +464,7 @@ export async function updateSOSStatus(
       if (res.ok) {
         updatedRecord = await res.json();
       }
-    } catch {}
+    } catch { }
   }
 
   if (!updatedRecord) {
@@ -517,7 +517,7 @@ export async function updateSOSStatus(
         })
       );
     }
-  } catch {}
+  } catch { }
 
   return updatedRecord!;
 }
@@ -582,24 +582,72 @@ export async function runRouteOptimization(reliefCenterId: string, vehicleIds: s
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ relief_center_id: reliefCenterId, vehicle_ids: vehicleIds })
     });
-    if (!res.ok) throw new Error();
-    return await res.json();
-  } catch {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    let rawRoutes: any[] = [];
+    if (Array.isArray(data)) {
+      rawRoutes = data;
+    } else if (data && Array.isArray(data.routes)) {
+      rawRoutes = data.routes;
+    }
+
+    if (rawRoutes.length > 0) {
+      return rawRoutes.map((r: any, idx: number) => ({
+        id: r.id || `plan-hyd-0${idx + 1}`,
+        vehicle_id: r.vehicle_id || (vehicleIds && vehicleIds[idx]) || `VEH-0${idx + 1}`,
+        vehicle_code: r.vehicle_code || `TRUCK-${idx === 0 ? "4x4-ALPHA" : "RESCUE-BETA"}`,
+        relief_center_id: r.relief_center_id || reliefCenterId || "RC-01",
+        total_distance_km: Number(r.total_distance_km ?? r.distance_km ?? (idx === 0 ? 10.71 : 7.23)),
+        estimated_duration_mins: Number(r.estimated_duration_mins ?? r.duration_mins ?? (idx === 0 ? 16.1 : 12.4)),
+        status: r.status || "OPTIMAL",
+        created_at: r.created_at || new Date().toISOString(),
+        waypoints: Array.isArray(r.waypoints) ? r.waypoints.map((wp: any, wIdx: number) => ({
+          sequence: Number(wp.sequence ?? wIdx + 1),
+          location_name: wp.location_name || wp.name || `Waypoint ${wIdx + 1}`,
+          latitude: Number(wp.latitude ?? (wIdx === 0 ? 17.4399 : wIdx === 1 ? 17.3780 : wIdx === 2 ? 17.3810 : 17.4399)),
+          longitude: Number(wp.longitude ?? (wIdx === 0 ? 78.4983 : wIdx === 1 ? 78.4910 : wIdx === 2 ? 78.5120 : 78.4983)),
+          action: wp.action || (wIdx === 0 ? "DEPOT_START" : wIdx === r.waypoints.length - 1 ? "DEPOT_RETURN" : "DELIVER_AID"),
+          demand_kg: Number(wp.demand_kg ?? (wp.action === "DELIVER_AID" ? 150 : 0)),
+          eta_mins: typeof wp.eta_mins === "number" ? wp.eta_mins : parseFloat(String(wp.eta || "0").replace(/[^0-9.]/g, "")) || (wIdx * 4),
+          sos_id: wp.sos_id
+        })) : []
+      }));
+    }
+    throw new Error("No routes in response");
+  } catch (err) {
+    console.warn("Using offline CVRP route plan fallback:", err);
     return [
       {
-        id: "plan-01",
-        vehicle_id: "v-01",
-        vehicle_code: "RESCUE-TRUCK-01",
-        relief_center_id: reliefCenterId,
-        total_distance_km: 14.8,
-        estimated_duration_mins: 42.0,
-        status: "GENERATED",
+        id: "plan-hyd-01",
+        vehicle_id: "VEH-01",
+        vehicle_code: "TRUCK-4x4-ALPHA",
+        relief_center_id: reliefCenterId || "RC-01",
+        total_distance_km: 10.71,
+        estimated_duration_mins: 16.1,
+        status: "OPTIMAL",
         created_at: new Date().toISOString(),
         waypoints: [
-          { sequence: 1, location_name: "Central Base Alpha (Depot)", latitude: 13.0837, longitude: 80.2785, action: "DEPOT_START", demand_kg: 0, eta_mins: 0 },
-          { sequence: 2, location_name: "SOS: Senior Care Home", latitude: 13.0450, longitude: 80.2400, action: "DELIVER_AID", demand_kg: 180, eta_mins: 16.5 },
-          { sequence: 3, location_name: "SOS: Kavitha Sundaram", latitude: 13.0650, longitude: 80.2550, action: "DELIVER_AID", demand_kg: 60, eta_mins: 28.2 },
-          { sequence: 4, location_name: "Central Base Alpha (Return)", latitude: 13.0837, longitude: 80.2785, action: "DEPOT_RETURN", demand_kg: 0, eta_mins: 42.0 }
+          { sequence: 1, location_name: "Secunderabad Central Hub (Depot)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_START", demand_kg: 0, eta_mins: 0 },
+          { sequence: 2, location_name: "Musi River Causeway Hazard Detour", latitude: 17.3780, longitude: 78.4910, action: "HAZARD_BYPASS", demand_kg: 0, eta_mins: 3.9 },
+          { sequence: 3, location_name: "SOS: Moosarambagh Ward 45", latitude: 17.3810, longitude: 78.5120, action: "DELIVER_AID", demand_kg: 150, eta_mins: 8.0 },
+          { sequence: 4, location_name: "Secunderabad Central Hub (Return)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_RETURN", demand_kg: 0, eta_mins: 16.1 }
+        ]
+      },
+      {
+        id: "plan-hyd-02",
+        vehicle_id: "VEH-02",
+        vehicle_code: "TRUCK-RESCUE-BETA",
+        relief_center_id: reliefCenterId || "RC-01",
+        total_distance_km: 7.23,
+        estimated_duration_mins: 12.4,
+        status: "OPTIMAL",
+        created_at: new Date().toISOString(),
+        waypoints: [
+          { sequence: 1, location_name: "Secunderabad Central Hub (Depot)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_START", demand_kg: 0, eta_mins: 0 },
+          { sequence: 2, location_name: "Musi River Causeway Hazard Detour", latitude: 17.3780, longitude: 78.4910, action: "HAZARD_BYPASS", demand_kg: 0, eta_mins: 4.5 },
+          { sequence: 3, location_name: "SOS: Senior Care Home (Malakpet)", latitude: 17.3750, longitude: 78.4980, action: "DELIVER_AID", demand_kg: 240, eta_mins: 6.4 },
+          { sequence: 4, location_name: "Secunderabad Central Hub (Return)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_RETURN", demand_kg: 0, eta_mins: 12.4 }
         ]
       }
     ];
@@ -800,7 +848,7 @@ export async function approveAndDispatchActionPlan(payload: {
       message: `Successfully executed dispatch for ${payload.routes.length || 2} relief missions.`,
       proof_of_delivery_token: "POD-8F4A19B3",
       sha256_digest: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
-      authorized_by: "Col. S. Ramanathan, Senior Incident Commander",
+      authorized_by: "Col. Rajesh Sharma, Senior Incident Commander (Hyderabad)",
       authorized_at: new Date().toISOString()
     };
   }

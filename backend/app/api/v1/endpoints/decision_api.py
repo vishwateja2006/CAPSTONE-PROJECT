@@ -183,7 +183,7 @@ async def approve_and_dispatch_action_plan(
         "message": f"Successfully executed dispatch for {len(created_deliveries)} relief missions.",
         "sha256_digest": sha256_digest,
         "proof_of_delivery_token": pod_token,
-        "authorized_by": getattr(current_user, "full_name", "Incident Commander Col. S. Ramanathan"),
+        "authorized_by": getattr(current_user, "full_name", "Incident Commander Col. Rajesh Sharma"),
         "authorized_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
     }
 

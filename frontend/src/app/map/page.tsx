@@ -164,14 +164,21 @@ export default function MapPage() {
 
   // Compute Optimized CVRP Routes
   const handleComputeRoutes = async () => {
-    if (reliefCenters.length === 0 || vehicles.length === 0) return;
     setIsGeneratingRoutes(true);
-    const plans = await runRouteOptimization(
-      reliefCenters[0].id,
-      vehicles.map((v) => v.id)
-    );
-    setRoutePlans(plans);
-    setIsGeneratingRoutes(false);
+    try {
+      const centerId = reliefCenters.length > 0 ? reliefCenters[0].id : "RC-01";
+      const vehicleIds = vehicles.length > 0 ? vehicles.map((v) => v.id) : ["VEH-01", "VEH-02"];
+      const plans = await runRouteOptimization(centerId, vehicleIds);
+      if (Array.isArray(plans)) {
+        setRoutePlans(plans);
+      } else if (plans && (plans as any).routes && Array.isArray((plans as any).routes)) {
+        setRoutePlans((plans as any).routes);
+      }
+    } catch (err) {
+      console.error("Error computing CVRP routes:", err);
+    } finally {
+      setIsGeneratingRoutes(false);
+    }
   };
 
   // Location Presets
@@ -195,7 +202,7 @@ export default function MapPage() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Real-time Disaster Status Header */}
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-blue-950/40 border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
         <div className="space-y-2">
@@ -266,7 +273,7 @@ export default function MapPage() {
       {/* Real-Time Environmental Telemetry Strip */}
       {environmentalData && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
+
           {/* Card 1: Air Quality Index (AQI) */}
           <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 relative overflow-hidden group hover:border-slate-700 transition-all">
             <div className="flex justify-between items-center">
@@ -333,11 +340,10 @@ export default function MapPage() {
                 <Waves className="w-4 h-4 text-cyan-400" />
                 <span>Natural Wave & Swell</span>
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                environmentalData.marine.tidalSurgeRisk === "EXTREME"
-                  ? "bg-red-950 border border-red-800 text-red-400 animate-pulse"
-                  : "bg-cyan-950 border border-cyan-800 text-cyan-300"
-              }`}>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${environmentalData.marine.tidalSurgeRisk === "EXTREME"
+                ? "bg-red-950 border border-red-800 text-red-400 animate-pulse"
+                : "bg-cyan-950 border border-cyan-800 text-cyan-300"
+                }`}>
                 {environmentalData.marine.tidalSurgeRisk} RISK
               </span>
             </div>

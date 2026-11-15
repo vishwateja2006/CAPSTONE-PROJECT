@@ -261,7 +261,7 @@ export default function UserPortalPage() {
           setUserRequests(merged);
         }
       }
-    } catch {}
+    } catch { }
 
     const handleStatusUpdate = (e: any) => {
       const { sosId, status, assignedVehicleId } = e.detail || {};
@@ -297,7 +297,7 @@ export default function UserPortalPage() {
             setUserRequests(parsed);
           }
         }
-      } catch {}
+      } catch { }
     }, 4000);
 
     return () => {
@@ -461,7 +461,7 @@ export default function UserPortalPage() {
     setUserRequests(updatedRequests);
     try {
       localStorage.setItem("resqlink_user_requests", JSON.stringify(updatedRequests));
-    } catch {}
+    } catch { }
     setSubmittedSignal(res);
     setIsSubmitting(false);
   };
@@ -477,7 +477,7 @@ export default function UserPortalPage() {
 
   return (
     <div className="space-y-8 py-2">
-      
+
       {/* Header Banner */}
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-blue-950/40 border border-slate-800 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
         <div className="space-y-2">
@@ -516,9 +516,8 @@ export default function UserPortalPage() {
       <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-bold">
         <button
           onClick={() => setActiveTab("SOS")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "SOS" ? "bg-red-600 text-white shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "SOS" ? "bg-red-600 text-white shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Radio className="w-4 h-4" />
           <span>1. Broadcast SOS Report</span>
@@ -526,9 +525,8 @@ export default function UserPortalPage() {
 
         <button
           onClick={() => setActiveTab("MY_REQUESTS")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "MY_REQUESTS" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "MY_REQUESTS" ? "bg-amber-500 text-slate-950 shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <Truck className="w-4 h-4" />
           <span>2. Track My Aid Deliveries ({userRequests.length})</span>
@@ -536,9 +534,8 @@ export default function UserPortalPage() {
 
         <button
           onClick={() => setActiveTab("RELIEF_CAMPS")}
-          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${
-            activeTab === "RELIEF_CAMPS" ? "bg-blue-600 text-white shadow-md font-black" : "text-slate-400 hover:text-white"
-          }`}
+          className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-xl transition-all ${activeTab === "RELIEF_CAMPS" ? "bg-blue-600 text-white shadow-md font-black" : "text-slate-400 hover:text-white"
+            }`}
         >
           <MapPin className="w-4 h-4" />
           <span>3. Nearby Safe Shelters ({reliefCamps.length})</span>
@@ -548,7 +545,7 @@ export default function UserPortalPage() {
       {/* TAB 1: SOS REPORT FORM */}
       {activeTab === "SOS" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in">
-          
+
           {/* Left 2 Cols: The SOS Broadcast Form */}
           <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
@@ -717,11 +714,10 @@ export default function UserPortalPage() {
                           key={vuln.id}
                           type="button"
                           onClick={() => toggleVulnerability(vuln.id)}
-                          className={`p-2.5 rounded-xl text-left border transition-all ${
-                            isSelected
-                              ? "bg-red-950/80 border-red-500 text-red-200 shadow-md shadow-red-900/30"
-                              : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                          }`}
+                          className={`p-2.5 rounded-xl text-left border transition-all ${isSelected
+                            ? "bg-red-950/80 border-red-500 text-red-200 shadow-md shadow-red-900/30"
+                            : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                            }`}
                         >
                           <div className="text-xs font-bold leading-tight">{vuln.label}</div>
                           <div className={`text-[10px] mt-0.5 ${isSelected ? "text-red-300 font-semibold" : "text-slate-500"}`}>
@@ -745,17 +741,15 @@ export default function UserPortalPage() {
                           key={item.id}
                           type="button"
                           onClick={() => toggleNeed(item.id)}
-                          className={`p-2.5 rounded-xl text-left border transition-all flex flex-col justify-between space-y-1.5 ${
-                            isSelected
-                              ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
-                              : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                          }`}
+                          className={`p-2.5 rounded-xl text-left border transition-all flex flex-col justify-between space-y-1.5 ${isSelected
+                            ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
+                            : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                            }`}
                         >
                           <div className="flex items-center justify-between">
                             <Icon className={`w-4 h-4 ${isSelected ? "text-amber-400" : "text-slate-500"}`} />
-                            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                              isSelected ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400"
-                            }`}>
+                            <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isSelected ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400"
+                              }`}>
                               {item.badge}
                             </span>
                           </div>
@@ -797,7 +791,7 @@ export default function UserPortalPage() {
                 <span>How ResQLink Prioritizes Aid</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Unlike traditional First-Come First-Served systems, ResQLink uses <b>Max-Min Mathematical Fairness</b>. 
+                Unlike traditional First-Come First-Served systems, ResQLink uses <b>Max-Min Mathematical Fairness</b>.
                 Every family is guaranteed hydration and calories, while urgent life-support items (insulin, infant milk, oxygen) are dispatched first.
               </p>
 
@@ -855,24 +849,22 @@ export default function UserPortalPage() {
               return (
                 <div
                   key={req.id}
-                  className={`p-5 rounded-2xl border transition-all ${
-                    isDelivered
-                      ? "bg-emerald-950/20 border-emerald-900/80"
-                      : isDispatched
+                  className={`p-5 rounded-2xl border transition-all ${isDelivered
+                    ? "bg-emerald-950/20 border-emerald-900/80"
+                    : isDispatched
                       ? "bg-cyan-950/20 border-cyan-800/80 shadow-md"
                       : "bg-slate-950 border-slate-800"
-                  }`}
+                    }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                     <div className="flex items-center space-x-3">
                       <span className="font-mono font-black text-white text-base">{req.id}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black ${
-                        isDelivered
-                          ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                          : isDispatched
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black ${isDelivered
+                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                        : isDispatched
                           ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
                           : "bg-amber-950 text-amber-400 border border-amber-800"
-                      }`}>
+                        }`}>
                         STATUS: {req.status}
                       </span>
                     </div>
@@ -994,41 +986,37 @@ export default function UserPortalPage() {
                         {req.status === "DELIVERED"
                           ? "✓ Delivered & Confirmed"
                           : req.status === "DISPATCHED"
-                          ? "🚚 Fleet In Transit (ETA ~12 mins)"
-                          : req.status === "ASSIGNED"
-                          ? "⚓ Vehicle Staged at Depot"
-                          : "📡 Intake Scored & In Queue"}
+                            ? "🚚 Fleet In Transit (ETA ~12 mins)"
+                            : req.status === "ASSIGNED"
+                              ? "⚓ Vehicle Staged at Depot"
+                              : "📡 Intake Scored & In Queue"}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[10px]">
-                      <div className={`p-2 rounded-xl text-center border ${
-                        (req.status === "PENDING" || req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
-                          ? "bg-emerald-950 text-emerald-400 border-emerald-800"
-                          : "bg-slate-900 text-slate-500 border-slate-800"
-                      }`}>
+                      <div className={`p-2 rounded-xl text-center border ${(req.status === "PENDING" || req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
+                        ? "bg-emerald-950 text-emerald-400 border-emerald-800"
+                        : "bg-slate-900 text-slate-500 border-slate-800"
+                        }`}>
                         1. Intake Logged ✓
                       </div>
-                      <div className={`p-2 rounded-xl text-center border ${
-                        (req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
-                          ? "bg-blue-950 text-blue-400 border-blue-800 font-bold"
-                          : "bg-slate-900 text-slate-500 border-slate-800"
-                      }`}>
+                      <div className={`p-2 rounded-xl text-center border ${(req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
+                        ? "bg-blue-950 text-blue-400 border-blue-800 font-bold"
+                        : "bg-slate-900 text-slate-500 border-slate-800"
+                        }`}>
                         2. Fleet Assigned
                       </div>
-                      <div className={`p-2 rounded-xl text-center border ${
-                        (req.status === "DISPATCHED" || req.status === "DELIVERED")
-                          ? req.status === "DISPATCHED"
-                            ? "bg-cyan-950 text-cyan-400 border-cyan-800 animate-pulse font-bold"
-                            : "bg-cyan-950 text-cyan-400 border-cyan-800"
-                          : "bg-slate-900 text-slate-500 border-slate-800"
-                      }`}>
+                      <div className={`p-2 rounded-xl text-center border ${(req.status === "DISPATCHED" || req.status === "DELIVERED")
+                        ? req.status === "DISPATCHED"
+                          ? "bg-cyan-950 text-cyan-400 border-cyan-800 animate-pulse font-bold"
+                          : "bg-cyan-950 text-cyan-400 border-cyan-800"
+                        : "bg-slate-900 text-slate-500 border-slate-800"
+                        }`}>
                         3. Dispatched (En Route)
                       </div>
-                      <div className={`p-2 rounded-xl text-center border ${
-                        req.status === "DELIVERED"
-                          ? "bg-emerald-950 text-emerald-400 border-emerald-800 font-bold"
-                          : "bg-slate-900 text-slate-500 border-slate-800"
-                      }`}>
+                      <div className={`p-2 rounded-xl text-center border ${req.status === "DELIVERED"
+                        ? "bg-emerald-950 text-emerald-400 border-emerald-800 font-bold"
+                        : "bg-slate-900 text-slate-500 border-slate-800"
+                        }`}>
                         4. Aid Delivered
                       </div>
                     </div>
@@ -1070,9 +1058,8 @@ export default function UserPortalPage() {
                     <h3 className="font-bold text-white text-base mt-0.5">{camp.name}</h3>
                     <div className="text-xs text-slate-400 mt-0.5">{camp.location}</div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                    camp.status === "OPEN" ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-amber-950 text-amber-400"
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${camp.status === "OPEN" ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-amber-950 text-amber-400"
+                    }`}>
                     {camp.status}
                   </span>
                 </div>

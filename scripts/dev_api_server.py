@@ -349,36 +349,133 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
 
         # 4. Model 4: CVRP Routes
         if path in ("/api/v1/routes/optimize", "/api/v1/predictions/cvrp"):
+            cvrp_routes = [
+                {
+                    "id": "plan-hyd-01",
+                    "vehicle_id": "VEH-01",
+                    "vehicle_code": "TRUCK-4x4-ALPHA",
+                    "relief_center_id": "RC-01",
+                    "total_distance_km": 10.71,
+                    "estimated_duration_mins": 16.1,
+                    "distance_km": 10.71,
+                    "duration_mins": 16.1,
+                    "status": "OPTIMAL",
+                    "created_at": datetime.now().isoformat(),
+                    "waypoints": [
+                        {
+                            "sequence": 1,
+                            "location_name": "Secunderabad Central Hub (Depot)",
+                            "name": "Secunderabad Central Hub",
+                            "latitude": 17.4399,
+                            "longitude": 78.4983,
+                            "action": "DEPOT_START",
+                            "demand_kg": 0,
+                            "eta_mins": 0.0,
+                            "eta": "+0.0m"
+                        },
+                        {
+                            "sequence": 2,
+                            "location_name": "Musi River Causeway Hazard Detour",
+                            "name": "Musi River Causeway Hazard Detour",
+                            "latitude": 17.3780,
+                            "longitude": 78.4910,
+                            "action": "HAZARD_BYPASS",
+                            "demand_kg": 0,
+                            "eta_mins": 3.9,
+                            "eta": "+3.9m"
+                        },
+                        {
+                            "sequence": 3,
+                            "location_name": "SOS: Moosarambagh Ward 45",
+                            "name": "SOS: Moosarambagh Ward 45",
+                            "latitude": 17.3810,
+                            "longitude": 78.5120,
+                            "action": "DELIVER_AID",
+                            "demand_kg": 150,
+                            "eta_mins": 8.0,
+                            "eta": "+8.0m"
+                        },
+                        {
+                            "sequence": 4,
+                            "location_name": "Secunderabad Central Hub (Return)",
+                            "name": "Secunderabad Central Hub",
+                            "latitude": 17.4399,
+                            "longitude": 78.4983,
+                            "action": "DEPOT_RETURN",
+                            "demand_kg": 0,
+                            "eta_mins": 16.1,
+                            "eta": "+16.1m"
+                        }
+                    ]
+                },
+                {
+                    "id": "plan-hyd-02",
+                    "vehicle_id": "VEH-02",
+                    "vehicle_code": "TRUCK-RESCUE-BETA",
+                    "relief_center_id": "RC-01",
+                    "total_distance_km": 7.23,
+                    "estimated_duration_mins": 12.4,
+                    "distance_km": 7.23,
+                    "duration_mins": 12.4,
+                    "status": "OPTIMAL",
+                    "created_at": datetime.now().isoformat(),
+                    "waypoints": [
+                        {
+                            "sequence": 1,
+                            "location_name": "Secunderabad Central Hub (Depot)",
+                            "name": "Secunderabad Central Hub",
+                            "latitude": 17.4399,
+                            "longitude": 78.4983,
+                            "action": "DEPOT_START",
+                            "demand_kg": 0,
+                            "eta_mins": 0.0,
+                            "eta": "+0.0m"
+                        },
+                        {
+                            "sequence": 2,
+                            "location_name": "Musi River Causeway Hazard Detour",
+                            "name": "Musi River Causeway Hazard Detour",
+                            "latitude": 17.3780,
+                            "longitude": 78.4910,
+                            "action": "HAZARD_BYPASS",
+                            "demand_kg": 0,
+                            "eta_mins": 4.5,
+                            "eta": "+4.5m"
+                        },
+                        {
+                            "sequence": 3,
+                            "location_name": "SOS: Senior Care Home (Malakpet)",
+                            "name": "SOS: Senior Care Home",
+                            "latitude": 17.3750,
+                            "longitude": 78.4980,
+                            "action": "DELIVER_AID",
+                            "demand_kg": 240,
+                            "eta_mins": 6.4,
+                            "eta": "+6.4m"
+                        },
+                        {
+                            "sequence": 4,
+                            "location_name": "Secunderabad Central Hub (Return)",
+                            "name": "Secunderabad Central Hub",
+                            "latitude": 17.4399,
+                            "longitude": 78.4983,
+                            "action": "DEPOT_RETURN",
+                            "demand_kg": 0,
+                            "eta_mins": 12.4,
+                            "eta": "+12.4m"
+                        }
+                    ]
+                }
+            ]
+            if path == "/api/v1/routes/optimize":
+                return self._json(cvrp_routes)
             return self._json({
                 "status": "OPTIMAL",
                 "total_distance_km": 17.94,
                 "estimated_duration_mins": 28.5,
                 "vehicles_used": 2,
-                "hazard_detours_inserted": 1,
-                "routes": [
-                    {
-                        "vehicle_code": "TRUCK-4x4-ALPHA",
-                        "distance_km": 10.71,
-                        "duration_mins": 16.1,
-                        "waypoints": [
-                            {"name": "Secunderabad Central Hub", "action": "DEPOT_START", "eta": "+0.0m"},
-                            {"name": "Musi River Causeway Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+3.9m"},
-                            {"name": "SOS: Moosarambagh Ward 45", "action": "DELIVER_AID", "eta": "+8.0m"},
-                            {"name": "Secunderabad Central Hub", "action": "DEPOT_RETURN", "eta": "+16.1m"}
-                        ]
-                    },
-                    {
-                        "vehicle_code": "TRUCK-RESCUE-BETA",
-                        "distance_km": 7.23,
-                        "duration_mins": 12.4,
-                        "waypoints": [
-                            {"name": "Secunderabad Central Hub", "action": "DEPOT_START", "eta": "+0.0m"},
-                            {"name": "Musi River Causeway Hazard Detour", "action": "HAZARD_BYPASS", "eta": "+4.5m"},
-                            {"name": "SOS: Senior Care Home", "action": "DELIVER_AID", "eta": "+6.4m"},
-                            {"name": "Secunderabad Central Hub", "action": "DEPOT_RETURN", "eta": "+12.4m"}
-                        ]
-                    }
-                ]
+                "hazard_detours_inserted": 2,
+                "routes": cvrp_routes
             })
 
         # 5. Model 5: Fair Allocation
@@ -441,7 +538,7 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 "sha256_digest": digest,
                 "action_plan_id": plan_id,
                 "missions_created": 2,
-                "authorized_by": "Col. S. Ramanathan, Senior Incident Commander",
+                "authorized_by": "Col. Rajesh Sharma, Senior Incident Commander (Hyderabad)",
                 "authorized_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
             })
 

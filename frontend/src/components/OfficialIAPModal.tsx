@@ -45,15 +45,15 @@ export default function OfficialIAPModal({
   const podToken = unifiedPlan?.proof_of_delivery_token || "POD-8F4A19B3";
   const authorizedAt = unifiedPlan?.authorized_at
     ? new Date(unifiedPlan.authorized_at).toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        dateStyle: "medium",
-        timeStyle: "short"
-      })
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+      timeStyle: "short"
+    })
     : new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        dateStyle: "medium",
-        timeStyle: "short"
-      });
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
 
   const handleCopyHash = () => {
     navigator.clipboard.writeText(sha256Digest);
@@ -67,10 +67,10 @@ export default function OfficialIAPModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 lg:p-6 animate-in fade-in">
-      
+
       {/* Modal Dialog Container */}
       <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl flex flex-col max-h-[94vh] overflow-hidden">
-        
+
         {/* Top Control Bar (Screen Only - Hidden in Print) */}
         <div className="print-hide flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:px-6 bg-slate-950 border-b border-slate-800">
           <div className="flex items-center space-x-3">
@@ -123,7 +123,7 @@ export default function OfficialIAPModal({
 
         {/* Scrollable Document Container */}
         <div className="overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-950 flex justify-center">
-          
+
           {/* ========================================================================= */}
           {/* PRINTABLE OFFICIAL BRIEFING DOCUMENT (#official-iap-manifest) */}
           {/* ========================================================================= */}
@@ -131,7 +131,7 @@ export default function OfficialIAPModal({
             id="official-iap-manifest"
             className="w-full max-w-4xl bg-white text-slate-900 rounded-xl p-6 sm:p-10 shadow-2xl space-y-8 font-sans border-2 border-slate-300 print:border-none print:shadow-none print:p-0 print:m-0"
           >
-            
+
             {/* 1. INSTITUTIONAL HEADER & CLASSIFICATION STRIP */}
             <div className="border-b-2 border-slate-900 pb-5 space-y-3">
               <div className="flex items-start justify-between gap-4">
@@ -246,14 +246,14 @@ export default function OfficialIAPModal({
 
                 {/* Dual Signature & Stamp Block */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-300">
-                  
+
                   {/* Left Signature: Incident Commander */}
                   <div className="border border-slate-400 rounded-lg p-3 bg-white relative">
                     <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded border border-emerald-600 bg-emerald-50 text-emerald-800 text-[9px] font-mono font-bold">
                       ✓ DSC e-SIGNED
                     </div>
                     <div className="text-[10px] font-bold text-slate-700 uppercase">Authorized By (Incident Commander)</div>
-                    <div className="font-mono text-sm font-black text-slate-950 mt-1">Col. S. Ramanathan</div>
+                    <div className="font-mono text-sm font-black text-slate-950 mt-1">Col. Rajesh Sharma</div>
                     <div className="text-[10px] text-slate-700">Senior Incident Commander (NDMA / SDMA Operations)</div>
                     <div className="text-[9px] font-mono text-slate-600">ID: IC-NDMA-OPS-4409-CLEARANCE-ALPHA</div>
                     <div className="mt-3 pt-2 border-t border-dashed border-slate-400 flex justify-between items-end text-[9px] text-slate-600">
@@ -299,15 +299,15 @@ export default function OfficialIAPModal({
                       {/* Top-Left Finder Pattern */}
                       <rect x="5" y="5" width="28" height="28" rx="2" fill="none" stroke="currentColor" strokeWidth="6" />
                       <rect x="13" y="13" width="12" height="12" />
-                      
+
                       {/* Top-Right Finder Pattern */}
                       <rect x="67" y="5" width="28" height="28" rx="2" fill="none" stroke="currentColor" strokeWidth="6" />
                       <rect x="75" y="13" width="12" height="12" />
-                      
+
                       {/* Bottom-Left Finder Pattern */}
                       <rect x="5" y="67" width="28" height="28" rx="2" fill="none" stroke="currentColor" strokeWidth="6" />
                       <rect x="13" y="75" width="12" height="12" />
-                      
+
                       {/* Timing Lines */}
                       <rect x="36" y="18" width="6" height="6" />
                       <rect x="46" y="18" width="6" height="6" />

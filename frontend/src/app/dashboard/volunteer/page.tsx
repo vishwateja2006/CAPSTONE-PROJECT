@@ -90,7 +90,7 @@ export default function VolunteerDashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -108,11 +108,10 @@ export default function VolunteerDashboardPage() {
         <div className="flex items-center space-x-3 text-xs font-mono">
           <button
             onClick={() => setIsOffline(!isOffline)}
-            className={`px-3 py-1.5 rounded-xl border flex items-center space-x-1.5 transition-all ${
-              isOffline
-                ? "bg-amber-950/80 border-amber-600 text-amber-300"
-                : "bg-emerald-950/80 border-emerald-800 text-emerald-400"
-            }`}
+            className={`px-3 py-1.5 rounded-xl border flex items-center space-x-1.5 transition-all ${isOffline
+              ? "bg-amber-950/80 border-amber-600 text-amber-300"
+              : "bg-emerald-950/80 border-emerald-800 text-emerald-400"
+              }`}
           >
             {isOffline ? <WifiOff className="w-3.5 h-3.5" /> : <Wifi className="w-3.5 h-3.5" />}
             <span>{isOffline ? "OFFLINE BUFFER (5 QUEUED)" : "SYNCED TO SUPABASE"}</span>
@@ -132,7 +131,7 @@ export default function VolunteerDashboardPage() {
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Left Column (2 Cols): Assigned Waypoint Route Checklist */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
@@ -149,17 +148,15 @@ export default function VolunteerDashboardPage() {
               return (
                 <div
                   key={stop.sequence}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    isDone
-                      ? "bg-slate-900/40 border-slate-800/60 opacity-80"
-                      : "bg-slate-900/90 border-slate-800 hover:border-amber-500/50"
-                  }`}
+                  className={`p-4 rounded-2xl border transition-all ${isDone
+                    ? "bg-slate-900/40 border-slate-800/60 opacity-80"
+                    : "bg-slate-900/90 border-slate-800 hover:border-amber-500/50"
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start space-x-3">
-                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${
-                        isDone ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-blue-950 text-blue-400 border border-blue-800"
-                      }`}>
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${isDone ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-blue-950 text-blue-400 border border-blue-800"
+                        }`}>
                         {isDone ? "✓" : stop.sequence}
                       </span>
                       <div>

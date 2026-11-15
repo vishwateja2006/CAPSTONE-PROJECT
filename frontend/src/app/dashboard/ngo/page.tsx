@@ -90,7 +90,7 @@ export default function NGODashboardPage() {
 
   return (
     <div className="space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
@@ -195,11 +195,10 @@ export default function NGODashboardPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                      d.status === "DISTRIBUTED"
-                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                        : "bg-blue-950 text-blue-400 border border-blue-800"
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${d.status === "DISTRIBUTED"
+                      ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                      : "bg-blue-950 text-blue-400 border border-blue-800"
+                      }`}>
                       {d.status}
                     </span>
                   </td>
