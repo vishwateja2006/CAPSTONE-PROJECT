@@ -5,6 +5,7 @@ export type UserRole = "USER" | "ADMIN";
 export interface AuthSession {
   role: UserRole;
   email: string;
+  username?: string;
   name: string;
   loginTime: string;
 }
@@ -62,11 +63,35 @@ export function subscribeToAuth(callback: (session: AuthSession | null) => void)
   };
 }
 
-export function loginAsRole(role: UserRole, email?: string, name?: string): AuthSession {
+export function loginAsRole(
+  role: UserRole,
+  emailOrUsername?: string,
+  name?: string,
+  customUsername?: string
+): AuthSession {
+  const raw = (emailOrUsername || "").trim();
+  const isEmail = raw.includes("@");
+  const derivedUsername =
+    customUsername ||
+    (isEmail ? raw.split("@")[0] : raw) ||
+    (role === "ADMIN" ? "admin" : "citizen");
+  const derivedEmail = isEmail
+    ? raw
+    : `${derivedUsername}@resqlink.org`;
+
+  const displayName =
+    name ||
+    (derivedUsername
+      ? derivedUsername.charAt(0).toUpperCase() + derivedUsername.slice(1)
+      : role === "ADMIN"
+      ? "Administrator"
+      : "Citizen User");
+
   const session: AuthSession = {
     role,
-    email: email || (role === "ADMIN" ? "admin@resqlink.org" : "citizen@resqlink.org"),
-    name: name || (role === "ADMIN" ? "Administrator" : "Citizen User"),
+    email: derivedEmail,
+    username: derivedUsername,
+    name: displayName,
     loginTime: new Date().toISOString()
   };
   setAuthSession(session);
