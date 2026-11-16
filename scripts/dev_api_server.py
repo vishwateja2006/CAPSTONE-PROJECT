@@ -64,6 +64,11 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
         self._send_cors()
         self.end_headers()
 
+    def do_HEAD(self):
+        self.send_response(200)
+        self._send_cors()
+        self.end_headers()
+
     def _json(self, data, status=200):
         body = json.dumps(data, indent=2).encode("utf-8")
         self.send_response(status)
