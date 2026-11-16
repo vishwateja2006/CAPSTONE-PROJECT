@@ -2745,46 +2745,6 @@ export default function AdminCommandCenterPage() {
                 )}
               </div>
             </div>
-
-            {/* Quick Fleet Presets */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-0.5">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-mono text-slate-500 font-semibold mr-1">Quick Presets:</span>
-                {[
-                  { label: "🚤 Rescue Boats", term: "Boat" },
-                  { label: "🛸 Aerial Drones", term: "Drone" },
-                  { label: "🚑 ICU Mobile Ambulances", term: "Ambulance" },
-                  { label: "🚛 4x4 Heavy Trucks", term: "Truck" },
-                  { label: "🌊 Amphibious Crafts", term: "Amphibian" },
-                  { label: "⚓ Maritime Base", term: "Maritime" },
-                  { label: "🚁 Helipad Base", term: "Helipad" }
-                ].map((preset) => {
-                  const isActive = fleetSearchTerm.toLowerCase() === preset.term.toLowerCase();
-                  return (
-                    <button
-                      key={preset.term}
-                      onClick={() => setFleetSearchTerm(isActive ? "" : preset.term)}
-                      className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
-                        isActive
-                          ? "bg-emerald-500 text-slate-950 font-black shadow-sm"
-                          : "bg-slate-950/80 border border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white"
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
-                {fleetSearchTerm && (
-                  <button
-                    onClick={() => setFleetSearchTerm("")}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-mono underline ml-1.5 flex items-center space-x-1"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Reset</span>
-                  </button>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Fleet Grid */}
