@@ -12,6 +12,9 @@ import os
 import json
 import sqlite3
 import hashlib
+import hmac
+import base64
+import time
 import uuid
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -21,12 +24,70 @@ PORT = 8000
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 DB_FILE = os.path.join(PROJECT_ROOT, "backend", "disaster_platform.db")
+JWT_SECRET = b"super_secret_jwt_key_disaster_relief_capstone_2026"
+
+def b64url_encode(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).decode('utf-8').rstrip('=')
+
+def b64url_decode(s: str) -> bytes:
+    padding = '=' * (-len(s) % 4)
+    return base64.urlsafe_b64decode(s + padding)
+
+def create_jwt_token(payload: dict) -> str:
+    header = {'alg': 'HS256', 'typ': 'JWT'}
+    h_b64 = b64url_encode(json.dumps(header, separators=(',', ':')).encode('utf-8'))
+    p_b64 = b64url_encode(json.dumps(payload, separators=(',', ':')).encode('utf-8'))
+    signing_input = f'{h_b64}.{p_b64}'.encode('utf-8')
+    sig = hmac.new(JWT_SECRET, signing_input, hashlib.sha256).digest()
+    sig_b64 = b64url_encode(sig)
+    return f'{h_b64}.{p_b64}.{sig_b64}'
+
+def decode_and_verify_jwt(token: str) -> dict:
+    parts = token.strip().split('.')
+    if len(parts) != 3:
+        raise ValueError('Invalid token format')
+    h_b64, p_b64, sig_b64 = parts
+    signing_input = f'{h_b64}.{p_b64}'.encode('utf-8')
+    expected_sig = hmac.new(JWT_SECRET, signing_input, hashlib.sha256).digest()
+    if not hmac.compare_digest(b64url_encode(expected_sig), sig_b64):
+        raise ValueError('Cryptographic signature verification failed')
+    payload = json.loads(b64url_decode(p_b64).decode('utf-8'))
+    if 'exp' in payload and payload['exp'] < time.time():
+        raise ValueError('Authentication token has expired')
+    return payload
+
+def verify_password_secure(plain_password: str, hashed_password: str) -> bool:
+    if not plain_password or not hashed_password:
+        return False
+    # 1. Constant-time SHA-256 check
+    sha_hash = hashlib.sha256(plain_password.encode('utf-8')).hexdigest()
+    if hmac.compare_digest(sha_hash, hashed_password):
+        return True
+    # 2. Bcrypt check if passlib/bcrypt format
+    try:
+        import bcrypt
+        if bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8')):
+            return True
+    except Exception:
+        pass
+    return False
 
 class ResQLinkAPIHandler(BaseHTTPRequestHandler):
     def _send_cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
         self.send_header("Access-Control-Allow-Headers", "*")
+
+    def _authenticate_bearer(self):
+        auth_header = self.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return None, 401, "Authorization Bearer token required."
+        token = auth_header[7:].strip()
+        try:
+            payload = decode_and_verify_jwt(token)
+            return payload, 200, None
+        except Exception as e:
+            return None, 401, str(e)
 
     def _handle_sos_update(self, sos_id, data):
         new_status = data.get("status", "ASSIGNED").upper()
@@ -103,6 +164,37 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
 
         if path == "/api/v1/health":
             return self._json({"status": "healthy", "database": "connected"})
+
+        # Session Verification & User Profile
+        if path in ("/api/v1/auth/verify", "/api/v1/auth/me"):
+            payload, code, err = self._authenticate_bearer()
+            if err:
+                return self._json({"valid": False, "error": err}, status=code)
+            
+            try:
+                conn = sqlite3.connect(DB_FILE)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute("SELECT id, username, email, full_name, role, is_active FROM profiles WHERE id = ?", (payload.get("id"),))
+                row = c.fetchone()
+                conn.close()
+                if not row or row["is_active"] == 0:
+                    return self._json({"valid": False, "error": "Account inactive or unauthorized."}, status=403)
+                
+                is_admin = row["role"].upper() in ("ADMIN", "DISASTER_AUTHORITY")
+                return self._json({
+                    "valid": True,
+                    "user": {
+                        "id": row["id"],
+                        "username": row["username"],
+                        "email": row["email"],
+                        "full_name": row["full_name"],
+                        "role": "ADMIN" if is_admin else "USER",
+                        "db_role": row["role"]
+                    }
+                }, status=200)
+            except Exception as e:
+                return self._json({"valid": False, "error": str(e)}, status=500)
 
         # Disasters with Live Hazard Zones (Live from DB)
         if path in ("/api/v1/disasters", "/api/v1/disaster"):
@@ -251,19 +343,59 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
         except Exception:
             data = {}
 
-        # 0. User / Admin Authentication - Dual Username/Email Login
+        # Verify Token via POST
+        if path == "/api/v1/auth/verify":
+            token = data.get("token")
+            if not token:
+                auth_header = self.headers.get("Authorization", "")
+                if auth_header.startswith("Bearer "):
+                    token = auth_header[7:].strip()
+            if not token:
+                return self._json({"valid": False, "error": "Token required for verification"}, status=401)
+            try:
+                payload = decode_and_verify_jwt(token)
+                conn = sqlite3.connect(DB_FILE)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute("SELECT id, username, email, full_name, role, is_active FROM profiles WHERE id = ?", (payload.get("id"),))
+                row = c.fetchone()
+                conn.close()
+                if not row or row["is_active"] == 0:
+                    return self._json({"valid": False, "error": "Account inactive or unauthorized."}, status=403)
+                
+                is_admin = row["role"].upper() in ("ADMIN", "DISASTER_AUTHORITY")
+                return self._json({
+                    "valid": True,
+                    "user": {
+                        "id": row["id"],
+                        "username": row["username"],
+                        "email": row["email"],
+                        "full_name": row["full_name"],
+                        "role": "ADMIN" if is_admin else "USER",
+                        "db_role": row["role"]
+                    }
+                }, status=200)
+            except Exception as e:
+                return self._json({"valid": False, "error": str(e)}, status=401)
+
+        # 0. User / Admin Authentication - Secure Database Credential Validation
         if path == "/api/v1/auth/login":
             identifier = (data.get("username") or data.get("email") or data.get("identifier") or "").strip()
-            password = data.get("password", "")
+            password = (data.get("password") or "").strip()
+            portal = (data.get("portal") or "").strip().upper()  # "USER" or "ADMIN"
+
+            # 1. Mandatory input validation
             if not identifier:
-                return self._json({"error": "Username or email is required."}, status=400)
+                return self._json({"error": "Validation error: Username or email is required."}, status=400)
+            if not password:
+                return self._json({"error": "Validation error: Password is required."}, status=400)
             
             try:
                 conn = sqlite3.connect(DB_FILE)
                 conn.row_factory = sqlite3.Row
                 c = conn.cursor()
                 c.execute("""
-                    SELECT id, username, email, full_name, role, hashed_password
+                    SELECT id, username, email, full_name, role, hashed_password, is_active
                     FROM profiles
                     WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)
                     LIMIT 1
@@ -271,32 +403,62 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 row = c.fetchone()
                 conn.close()
 
-                if row:
-                    user_dict = dict(row)
-                    del user_dict["hashed_password"]
+                # 2. Strict Account Existence Check (NO MOCK / NO FALLBACK)
+                if not row:
+                    return self._json({"error": "Invalid username/email or password."}, status=401)
+
+                # 3. Active Account Status Check
+                if row["is_active"] == 0:
+                    return self._json({"error": "Your account is inactive. Please contact the administrator."}, status=403)
+
+                # 4. Cryptographic Password Hash Verification
+                if not verify_password_secure(password, row["hashed_password"]):
+                    return self._json({"error": "Invalid username/email or password."}, status=401)
+
+                # 5. Role and Portal Authorization Enforcement
+                user_db_role = (row["role"] or "").upper()
+                is_admin_user = user_db_role in ("ADMIN", "DISASTER_AUTHORITY")
+
+                if portal == "ADMIN" and not is_admin_user:
                     return self._json({
-                        "access_token": f"jwt-{str(uuid.uuid4())}",
-                        "token_type": "bearer",
-                        "user": user_dict,
-                        "message": f"Successfully authenticated as {user_dict.get('full_name')} ({user_dict.get('role')})"
-                    }, status=200)
-                else:
-                    # Fallback dynamic simulation
-                    role = "ADMIN" if any(k in identifier.lower() for k in ["admin", "commander", "authority"]) else "USER"
+                        "error": "Access denied. Normal user accounts are not authorized to log in through the Admin Portal."
+                    }, status=403)
+                
+                if portal == "USER" and is_admin_user:
                     return self._json({
-                        "access_token": f"jwt-{str(uuid.uuid4())}",
-                        "token_type": "bearer",
-                        "user": {
-                            "id": f"usr-{str(uuid.uuid4())[:8]}",
-                            "username": identifier.split("@")[0] if "@" in identifier else identifier,
-                            "email": identifier if "@" in identifier else f"{identifier}@resqlink.org",
-                            "full_name": "Authenticated User",
-                            "role": role
-                        },
-                        "message": "Authenticated via local fallback handler."
-                    }, status=200)
+                        "error": "Access denied. Admin credentials cannot be used in User Portal. Please use the Admin Portal."
+                    }, status=403)
+
+                # 6. Generate RFC 7519 Cryptographically Signed JWT Token
+                effective_role = "ADMIN" if is_admin_user else "USER"
+                payload = {
+                    "sub": row["email"],
+                    "id": row["id"],
+                    "username": row["username"],
+                    "email": row["email"],
+                    "role": effective_role,
+                    "db_role": row["role"],
+                    "name": row["full_name"],
+                    "exp": int(time.time()) + 86400  # 24-hour validity
+                }
+                token = create_jwt_token(payload)
+
+                return self._json({
+                    "access_token": token,
+                    "token_type": "bearer",
+                    "user": {
+                        "id": row["id"],
+                        "username": row["username"],
+                        "email": row["email"],
+                        "full_name": row["full_name"],
+                        "role": effective_role,
+                        "db_role": row["role"]
+                    },
+                    "message": "Login successful"
+                }, status=200)
+
             except Exception as e:
-                return self._json({"error": "Authentication failed", "details": str(e)}, status=500)
+                return self._json({"error": "Authentication processing error", "details": str(e)}, status=500)
 
         # 1. SOS Submission - Real-Time Insertion into Database
         if path == "/api/v1/sos":

@@ -15,9 +15,11 @@ import {
   Loader2,
   ShieldCheck,
   Users,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from "lucide-react";
-import { loginAsRole, getAuthSession } from "../../lib/auth";
+import { loginWithVerifiedCredentials, getAuthSession } from "../../lib/auth";
+import { loginUser } from "../../lib/api";
 import {
   getStoredLanguage,
   subscribeToLanguage,
@@ -33,10 +35,11 @@ export default function LoginPage() {
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [lockedRole, setLockedRole] = useState<"USER" | "ADMIN" | null>(null);
   const [identifier, setIdentifier] = useState("citizen");
-  const [password, setPassword] = useState("••••••••");
+  const [password, setPassword] = useState("citizen123");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [redirectNotice, setRedirectNotice] = useState<string | null>(null);
 
   // Two canonical roles only with dual username/email defaults
@@ -47,6 +50,7 @@ export default function LoginPage() {
       target: "/dashboard/user",
       defaultUsername: "citizen",
       defaultEmail: "citizen@resqlink.org",
+      defaultPassword: "citizen123",
       defaultName: "Citizen User",
       description: "Request emergency aid, track relief delivery, and find safe camps."
     },
@@ -56,6 +60,7 @@ export default function LoginPage() {
       target: "/dashboard/admin",
       defaultUsername: "admin",
       defaultEmail: "admin@resqlink.org",
+      defaultPassword: "admin123",
       defaultName: "Commander Sharma",
       description: "Incident command, 5 AI prediction models, warehouse stocks, and fleet CVRP dispatch."
     }
@@ -70,6 +75,7 @@ export default function LoginPage() {
         setRole(roleParam);
         setLockedRole(roleParam);
         setIdentifier(roleConfigs[roleParam].defaultUsername);
+        setPassword(roleConfigs[roleParam].defaultPassword);
       }
 
       const redirectTarget = params.get("redirect");
@@ -79,15 +85,17 @@ export default function LoginPage() {
           if (redirectTarget.includes("admin")) {
             setRole("ADMIN");
             setIdentifier(roleConfigs.ADMIN.defaultUsername);
+            setPassword(roleConfigs.ADMIN.defaultPassword);
           } else if (redirectTarget.includes("user")) {
             setRole("USER");
             setIdentifier(roleConfigs.USER.defaultUsername);
+            setPassword(roleConfigs.USER.defaultPassword);
           }
         }
       }
-      // If already logged in, redirect directly
+      // If already logged in with verified token, redirect directly
       const session = getAuthSession();
-      if (session) {
+      if (session && session.token) {
         if (redirectTarget) {
           router.push(redirectTarget);
         } else {
@@ -115,57 +123,57 @@ export default function LoginPage() {
   const handleSelectRole = (selectedRole: "USER" | "ADMIN") => {
     setRole(selectedRole);
     setIdentifier(roleConfigs[selectedRole].defaultUsername);
+    setPassword(roleConfigs[selectedRole].defaultPassword);
+    setErrorMessage(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
+    const trimmedIdentifier = identifier.trim();
+    const trimmedPassword = password.trim();
+
+    // 1. Mandatory Input Validation
+    if (!trimmedIdentifier) {
+      setErrorMessage("Validation error: Username or email is required.");
+      return;
+    }
+    if (!trimmedPassword) {
+      setErrorMessage("Validation error: Password is required.");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const raw = identifier.trim();
-    const isEmail = raw.includes("@");
-    const lower = raw.toLowerCase();
+    try {
+      // 2. Real Backend Credential Verification against Database
+      const loginResult = await loginUser({
+        identifier: trimmedIdentifier,
+        password: trimmedPassword,
+        portal: role // Strict Portal Segregation: "USER" or "ADMIN"
+      });
 
-    // Auto-detect role if user typed standard administrative or citizen identifiers
-    let targetRole = role;
-    if (
-      lower === "admin" ||
-      lower.startsWith("admin@") ||
-      lower === "commander" ||
-      lower === "authority" ||
-      lower === "ndma" ||
-      lower.includes("officer")
-    ) {
-      targetRole = "ADMIN";
-    } else if (
-      lower === "citizen" ||
-      lower.startsWith("citizen@") ||
-      lower === "user" ||
-      lower === "victim" ||
-      lower === "public"
-    ) {
-      targetRole = "USER";
-    }
+      // 3. Save confirmed verified session with cryptographic JWT token
+      loginWithVerifiedCredentials(loginResult);
 
-    const username = isEmail ? raw.split("@")[0] : raw;
-    const userEmail = isEmail ? raw : `${username}@resqlink.org`;
-    const defaultName = targetRole === "ADMIN" ? "Commander Sharma" : "Citizen User";
-    const userName = fullName.trim() || (username ? username.charAt(0).toUpperCase() + username.slice(1) : defaultName);
-
-    loginAsRole(targetRole, userEmail, userName, username);
-
-    // If there is a redirect parameter matching permitted role, go there, else go to role default
-    let destination = roleConfigs[targetRole].target;
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const redirectTarget = params.get("redirect");
-      if (redirectTarget) {
-        destination = redirectTarget;
+      // 4. Determine destination
+      let destination = roleConfigs[loginResult.user.role].target;
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const redirectTarget = params.get("redirect");
+        if (redirectTarget) {
+          destination = redirectTarget;
+        }
       }
-    }
 
-    setTimeout(() => {
       router.push(destination);
-    }, 300);
+    } catch (err: any) {
+      console.error("Authentication failed:", err);
+      const msg = err.message || "Invalid username/email or password. Access denied.";
+      setErrorMessage(msg);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -284,6 +292,18 @@ export default function LoginPage() {
 
         {/* Login / Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* Error Alert Banner */}
+          {errorMessage && (
+            <div className="flex items-start space-x-3 p-4 rounded-2xl bg-red-950/90 border border-red-500/80 text-red-200 text-xs shadow-xl animate-in fade-in">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" />
+              <div className="space-y-0.5">
+                <div className="font-bold text-red-300">Authentication Failed</div>
+                <div className="text-red-200 leading-relaxed">{errorMessage}</div>
+              </div>
+            </div>
+          )}
+
           {!isLogin && (
             <>
               <div className="space-y-1.5">
@@ -293,10 +313,11 @@ export default function LoginPage() {
                   <input
                     type="text"
                     required
+                    disabled={isSubmitting}
                     placeholder="e.g. Kavitha Sundaram"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -307,10 +328,11 @@ export default function LoginPage() {
                   <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                   <input
                     type="tel"
+                    disabled={isSubmitting}
                     placeholder="+91-9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -335,11 +357,15 @@ export default function LoginPage() {
               <input
                 type="text"
                 required
+                disabled={isSubmitting}
                 autoComplete="username"
                 placeholder={role === "ADMIN" ? "e.g. admin or admin@resqlink.org" : "e.g. citizen or citizen@resqlink.org"}
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full pl-14 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-amber-500 focus:outline-none"
+                onChange={(e) => {
+                  setIdentifier(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                }}
+                className="w-full pl-14 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono focus:border-amber-500 focus:outline-none disabled:opacity-50"
               />
             </div>
 
@@ -348,7 +374,12 @@ export default function LoginPage() {
               <span className="text-[10px] text-slate-400 font-semibold">Quick Fill:</span>
               <button
                 type="button"
-                onClick={() => setIdentifier(roleConfigs[role].defaultUsername)}
+                disabled={isSubmitting}
+                onClick={() => {
+                  setIdentifier(roleConfigs[role].defaultUsername);
+                  setPassword(roleConfigs[role].defaultPassword);
+                  setErrorMessage(null);
+                }}
                 className={`px-2 py-0.5 rounded-lg font-mono text-[10px] transition-all border flex items-center space-x-1 ${
                   identifier === roleConfigs[role].defaultUsername
                     ? "bg-amber-950 text-amber-300 border-amber-600 font-bold shadow-sm"
@@ -361,7 +392,12 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setIdentifier(roleConfigs[role].defaultEmail)}
+                disabled={isSubmitting}
+                onClick={() => {
+                  setIdentifier(roleConfigs[role].defaultEmail);
+                  setPassword(roleConfigs[role].defaultPassword);
+                  setErrorMessage(null);
+                }}
                 className={`px-2 py-0.5 rounded-lg font-mono text-[10px] transition-all border flex items-center space-x-1 ${
                   identifier === roleConfigs[role].defaultEmail
                     ? "bg-cyan-950 text-cyan-300 border-cyan-600 font-bold shadow-sm"
@@ -385,9 +421,13 @@ export default function LoginPage() {
               <input
                 type="password"
                 required
+                disabled={isSubmitting}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                }}
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-amber-500 focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>

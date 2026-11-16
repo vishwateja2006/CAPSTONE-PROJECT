@@ -39,9 +39,10 @@ import {
   enqueueOfflineSOS,
   removeOfflineSOS,
   flushOfflineSOSQueue,
-  QueuedSOSBeacon
+  QueuedSOSBeacon,
+  verifyAuthToken
 } from "../../../lib/api";
-import { getAuthSession, AuthSession } from "../../../lib/auth";
+import { getAuthSession, clearAuthSession, AuthSession } from "../../../lib/auth";
 import MiniRadarMap from "../../../components/MiniRadarMap";
 import AudioMuteToggle from "../../../components/AudioMuteToggle";
 import { playBeaconChirp, playSonarPing, playGpsLockChime } from "../../../lib/audioTelemetry";
@@ -298,10 +299,20 @@ export default function UserPortalPage() {
   // Route protection
   useEffect(() => {
     const session = getAuthSession();
-    if (!session) {
-      router.replace("/login?redirect=/dashboard/user");
+    if (!session || session.role !== "USER" || !session.token) {
+      clearAuthSession();
+      router.replace("/login?role=USER&redirect=/dashboard/user");
       return;
     }
+
+    // Verify cryptographic token with backend independently
+    verifyAuthToken(session.token).then((res) => {
+      if (!res.valid) {
+        clearAuthSession();
+        router.replace("/login?role=USER&redirect=/dashboard/user");
+      }
+    });
+
     setAuth(session);
     setIsCheckingAuth(false);
 

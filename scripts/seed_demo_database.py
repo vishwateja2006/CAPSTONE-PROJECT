@@ -254,15 +254,17 @@ def main():
 
     # 1. Profiles & Users (Admin & Citizen Roles with Username/Email Dual Access)
     profiles = [
-        ("USR-01", "admin", "admin@resqlink.org", hash_pw("admin123"), "Root Administrator", "ADMIN", "+91-9840011111"),
-        ("USR-02", "authority", "authority@ndma.gov", hash_pw("auth123"), "Dr. Rajesh Sharma (NDMA Authority)", "DISASTER_AUTHORITY", "+91-9840022222"),
-        ("USR-03", "donor", "donor@redcross.org", hash_pw("donor123"), "Red Cross Humanitarian Fund", "NGO_DONOR", "+91-9840033333"),
-        ("USR-04", "depot.alpha", "depot.alpha@resqlink.org", hash_pw("depot123"), "Vikram Singh (Warehouse Manager)", "WAREHOUSE_MANAGER", "+91-9840044444"),
-        ("USR-05", "volunteer.priya", "volunteer.priya@resqlink.org", hash_pw("vol123"), "Lt. Priya Nair (Field Agent)", "VOLUNTEER", "+91-9840055555"),
-        ("USR-06", "citizen", "citizen@resqlink.org", hash_pw("citizen123"), "Citizen / Community User", "CITIZEN", "+91-9840066666")
+        ("USR-01", "admin", "admin@resqlink.org", hash_pw("admin123"), "Root Administrator", "ADMIN", "+91-9840011111", 1),
+        ("USR-02", "authority", "authority@ndma.gov", hash_pw("auth123"), "Dr. Rajesh Sharma (NDMA Authority)", "DISASTER_AUTHORITY", "+91-9840022222", 1),
+        ("USR-03", "donor", "donor@redcross.org", hash_pw("donor123"), "Red Cross Humanitarian Fund", "NGO_DONOR", "+91-9840033333", 1),
+        ("USR-04", "depot.alpha", "depot.alpha@resqlink.org", hash_pw("depot123"), "Vikram Singh (Warehouse Manager)", "WAREHOUSE_MANAGER", "+91-9840044444", 1),
+        ("USR-05", "volunteer.priya", "volunteer.priya@resqlink.org", hash_pw("vol123"), "Lt. Priya Nair (Field Agent)", "VOLUNTEER", "+91-9840055555", 1),
+        ("USR-06", "citizen", "citizen@resqlink.org", hash_pw("citizen123"), "Citizen / Community User", "CITIZEN", "+91-9840066666", 1),
+        ("USR-07", "inactive.user", "inactive@resqlink.org", hash_pw("inactive123"), "Inactive Account", "CITIZEN", "+91-9840077777", 0),
+        ("USR-08", "blocked.admin", "blocked.admin@resqlink.org", hash_pw("blocked123"), "Suspended Administrator", "ADMIN", "+91-9840088888", 0)
     ]
-    cursor.executemany("INSERT INTO profiles (id, username, email, hashed_password, full_name, role, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)", profiles)
-    cursor.executemany("INSERT INTO users (id, username, email, hashed_password, full_name, role, phone) VALUES (?, ?, ?, ?, ?, ?, ?)", profiles)
+    cursor.executemany("INSERT INTO profiles (id, username, email, hashed_password, full_name, role, phone_number, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", profiles)
+    cursor.executemany("INSERT INTO users (id, username, email, hashed_password, full_name, role, phone, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", profiles)
 
     # 2. Active Disaster
     cursor.execute("""

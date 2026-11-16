@@ -14,7 +14,7 @@ import {
   EnvironmentalData,
   getAQICategory
 } from "../../lib/environmentalTelemetry";
-import { getAuthSession, AuthSession } from "../../lib/auth";
+import { getAuthSession, clearAuthSession, AuthSession } from "../../lib/auth";
 import {
   getStoredLanguage,
   subscribeToLanguage,
@@ -93,7 +93,8 @@ export default function MapPage() {
   // Check authentication & load operational relief data
   useEffect(() => {
     const session = getAuthSession();
-    if (!session) {
+    if (!session || !session.token) {
+      clearAuthSession();
       router.replace("/login?redirect=/map");
       return;
     }

@@ -24,6 +24,13 @@ from datetime import datetime
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
+class LoginRequest(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    identifier: Optional[str] = None
+    password: str
+    portal: Optional[str] = None
+
 class ProfileCreate(BaseModel):
     email: EmailStr
     password: str
@@ -104,22 +111,68 @@ def register(profile_in: ProfileCreate, db: Session = Depends(get_db)):
     return profile
 
 @router.post("/login", response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    identifier = form_data.username.strip()
+def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+    ident = (login_data.identifier or login_data.username or login_data.email or "").strip()
+    pwd = (login_data.password or "").strip()
+    portal = (login_data.portal or "").strip().upper()
+
+    if not ident:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Validation error: Username or email is required.")
+    if not pwd:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Validation error: Password is required.")
+
     user = db.query(Profile).filter(
         or_(
-            Profile.email.ilike(identifier),
-            Profile.username.ilike(identifier)
+            Profile.email.ilike(ident),
+            Profile.username.ilike(ident)
         )
     ).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username/email or password.")
-    
-    token = create_access_token({"sub": user.email, "role": user.role, "id": user.id})
+
+    if hasattr(user, "is_active") and user.is_active is not None and not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your account is inactive. Please contact the administrator.")
+
+    if not verify_password(pwd, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username/email or password.")
+
+    is_admin_user = (user.role or "").upper() in ("ADMIN", "DISASTER_AUTHORITY")
+    if portal == "ADMIN" and not is_admin_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Normal user accounts are not authorized to log in through the Admin Portal."
+        )
+    if portal == "USER" and is_admin_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Admin credentials cannot be used in User Portal. Please use the Admin Portal."
+        )
+
+    effective_role = "ADMIN" if is_admin_user else "USER"
+    token = create_access_token({"sub": user.email, "role": effective_role, "id": user.id})
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": user
+    }
+
+@router.post("/token", response_model=TokenResponse)
+def login_oauth2(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    return login(LoginRequest(identifier=form_data.username, password=form_data.password), db=db)
+
+@router.get("/verify")
+def verify_token(current_user: Profile = Depends(get_current_user)):
+    is_admin_user = (current_user.role or "").upper() in ("ADMIN", "DISASTER_AUTHORITY")
+    return {
+        "valid": True,
+        "user": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "role": "ADMIN" if is_admin_user else "USER",
+            "db_role": current_user.role
+        }
     }
 
 @router.get("/me", response_model=ProfileOut)

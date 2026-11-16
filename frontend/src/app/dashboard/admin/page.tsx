@@ -72,10 +72,11 @@ import {
   approveAndDispatchActionPlan,
   updateSOSStatus,
   submitSOS,
+  verifyAuthToken,
   MOCK_RELIEF_CENTERS,
   MOCK_VEHICLES
 } from "../../../lib/api";
-import { getAuthSession, AuthSession } from "../../../lib/auth";
+import { getAuthSession, clearAuthSession, AuthSession } from "../../../lib/auth";
 import {
   getStoredLanguage,
   subscribeToLanguage,
@@ -403,10 +404,20 @@ export default function AdminCommandCenterPage() {
   // Initial Load, Route Protection, Citizen Report Detection & Live Polling
   useEffect(() => {
     const session = getAuthSession();
-    if (!session || session.role !== "ADMIN") {
-      router.replace("/login?redirect=/dashboard/admin");
+    if (!session || session.role !== "ADMIN" || !session.token) {
+      clearAuthSession();
+      router.replace("/login?role=ADMIN&redirect=/dashboard/admin");
       return;
     }
+
+    // Verify cryptographic token with backend independently
+    verifyAuthToken(session.token).then((res) => {
+      if (!res.valid) {
+        clearAuthSession();
+        router.replace("/login?role=ADMIN&redirect=/dashboard/admin");
+      }
+    });
+
     setAuth(session);
     setIsCheckingAuth(false);
 

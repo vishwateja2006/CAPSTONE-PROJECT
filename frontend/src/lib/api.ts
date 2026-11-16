@@ -14,6 +14,72 @@ const getApiBase = () => {
 };
 const API_BASE = getApiBase();
 
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    full_name: string;
+    role: "ADMIN" | "USER";
+    db_role: string;
+  };
+  message?: string;
+}
+
+export async function loginUser(credentials: {
+  username?: string;
+  email?: string;
+  identifier?: string;
+  password: string;
+  portal?: "ADMIN" | "USER";
+}): Promise<LoginResponse> {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(credentials)
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errorMsg =
+      data.error ||
+      data.detail ||
+      (res.status === 401
+        ? "Invalid username/email or password."
+        : res.status === 403
+        ? "Access denied. Account inactive or unauthorized for this portal."
+        : "Authentication failed");
+    const err = new Error(errorMsg);
+    (err as any).status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+export async function verifyAuthToken(token: string): Promise<{ valid: boolean; user?: any; error?: string }> {
+  if (!token) return { valid: false, error: "No token provided" };
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { valid: false, error: data.error || "Session invalid or expired" };
+    }
+    const data = await res.json();
+    return { valid: true, user: data.user };
+  } catch (e: any) {
+    return { valid: false, error: e.message };
+  }
+}
+
 // Mock Fallback Data in case the backend server is not active during frontend preview
 export const MOCK_DISASTER: Disaster = {
   id: "DIS-HYD-FLOOD-2026",

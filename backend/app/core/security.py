@@ -25,14 +25,20 @@ ALL_ROLES = [
 ]
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if not plain_password or not hashed_password:
+        return False
+    # 1. Constant-time SHA-256 check
+    import hashlib
+    import hmac
+    sha_hash = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+    if hmac.compare_digest(sha_hash, hashed_password):
+        return True
+    # 2. Bcrypt check
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        import hashlib
-        return (
-            hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
-            or plain_password == hashed_password
-        )
+        pass
+    return False
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
@@ -61,20 +67,68 @@ def verify_role_permission(user_role: str, allowed_roles: List[str]) -> bool:
         return True
     return user_role in allowed_roles
 
-def get_current_user():
-    return {"id": "USR-01", "role": "ADMIN", "email": "admin@resqlink.org"}
+from fastapi import Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-def require_admin():
-    return {"id": "USR-01", "role": "ADMIN", "email": "admin@resqlink.org"}
+security_bearer = HTTPBearer(auto_error=False)
 
-def require_authority():
-    return {"id": "USR-02", "role": "DISASTER_AUTHORITY", "email": "authority@ndma.gov"}
+def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Security(security_bearer)):
+    if not credentials or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Missing Bearer token.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired or invalid token.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return payload
 
-def require_volunteer():
-    return {"id": "USR-05", "role": "VOLUNTEER", "email": "volunteer.priya@resqlink.org"}
+def require_admin(current_user: dict = Depends(get_current_user)):
+    role = (current_user.get("role") or "").upper()
+    if role not in (ROLE_ADMIN, ROLE_DISASTER_AUTHORITY):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Administrator privileges required."
+        )
+    return current_user
 
-def require_warehouse_manager():
-    return {"id": "USR-04", "role": "WAREHOUSE_MANAGER", "email": "depot.alpha@resqlink.org"}
+def require_authority(current_user: dict = Depends(get_current_user)):
+    role = (current_user.get("role") or "").upper()
+    if role not in (ROLE_ADMIN, ROLE_DISASTER_AUTHORITY):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Disaster Authority privileges required."
+        )
+    return current_user
 
-def require_ngo():
-    return {"id": "USR-03", "role": "NGO_DONOR", "email": "donor@redcross.org"}
+def require_volunteer(current_user: dict = Depends(get_current_user)):
+    role = (current_user.get("role") or "").upper()
+    if role not in (ROLE_ADMIN, ROLE_VOLUNTEER, ROLE_DISASTER_AUTHORITY):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Volunteer privileges required."
+        )
+    return current_user
+
+def require_warehouse_manager(current_user: dict = Depends(get_current_user)):
+    role = (current_user.get("role") or "").upper()
+    if role not in (ROLE_ADMIN, ROLE_WAREHOUSE_MANAGER):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Warehouse Manager privileges required."
+        )
+    return current_user
+
+def require_ngo(current_user: dict = Depends(get_current_user)):
+    role = (current_user.get("role") or "").upper()
+    if role not in (ROLE_ADMIN, ROLE_NGO_DONOR):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. NGO Donor privileges required."
+        )
+    return current_user
