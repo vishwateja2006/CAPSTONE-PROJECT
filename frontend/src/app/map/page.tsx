@@ -42,7 +42,9 @@ import {
   Compass,
   MapPin,
   Sparkles,
-  Info
+  Info,
+  Droplets,
+  Sliders
 } from "lucide-react";
 
 export default function MapPage() {
@@ -58,6 +60,15 @@ export default function MapPage() {
   const [routePlans, setRoutePlans] = useState<RoutePlan[]>([]);
   const [selectedSosId, setSelectedSosId] = useState<string | undefined>();
   const [isGeneratingRoutes, setIsGeneratingRoutes] = useState(false);
+
+  // Simulated Musi River Flood Depth (1.0 ft to 6.0 ft)
+  const [floodDepth, setFloodDepth] = useState<number>(3.5);
+
+  const handleFloodDepthChange = (newVal: number) => {
+    const clamped = Math.max(1.0, Math.min(6.0, Number(newVal.toFixed(1))));
+    setFloodDepth(clamped);
+    playSonarPing();
+  };
 
   // User Real-Time Location State
   const [userCoords, setUserCoords] = useState<{
@@ -95,14 +106,18 @@ export default function MapPage() {
     });
 
     async function initReliefData() {
-      const [c, v, s] = await Promise.all([
+      const [c, v, s, r] = await Promise.all([
         fetchReliefCenters(),
         fetchVehicles(),
-        fetchSOSRequests()
+        fetchSOSRequests(),
+        runRouteOptimization("WH-HYD-CENTRAL", ["VEH-01", "VEH-02"]).catch(() => [])
       ]);
       setReliefCenters(c || []);
       setVehicles(v || []);
       setSosRequests(s || []);
+      if (Array.isArray(r) && r.length > 0) {
+        setRoutePlans(r);
+      }
     }
     initReliefData();
 
@@ -448,6 +463,233 @@ export default function MapPage() {
         </div>
       </div>
 
+      {/* Musi River Hydration & Flood Depth Simulation Control Panel */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/95 to-blue-950/40 border border-slate-800 shadow-xl space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-300 font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5">
+                <Droplets className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                <span>Hydration & Flood Hazard Simulator</span>
+              </span>
+              <span className={`px-2.5 py-1 rounded-full font-mono text-xs font-bold flex items-center space-x-1 border ${
+                floodDepth >= 3.5
+                  ? "bg-red-950 text-red-300 border-red-800 animate-pulse"
+                  : floodDepth >= 2.5
+                  ? "bg-amber-950 text-amber-300 border-amber-800"
+                  : "bg-emerald-950 text-emerald-300 border-emerald-800"
+              }`}>
+                <span>{floodDepth >= 3.5 ? t.statusCritical : floodDepth >= 2.5 ? t.statusModerate : t.statusLow}</span>
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center space-x-2">
+              <span>{t.floodSliderTitle}</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              {t.floodSliderSubtitle}
+            </p>
+          </div>
+
+          {/* Depth Gauge Metric Display */}
+          <div className="flex items-center space-x-4 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 self-start md:self-auto">
+            <div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">{t.floodDepth}</div>
+              <div
+                className="text-3xl sm:text-4xl font-black font-mono"
+                style={{
+                  color: floodDepth >= 3.5 ? "#ef4444" : floodDepth >= 2.5 ? "#f59e0b" : "#10b981"
+                }}
+              >
+                {floodDepth.toFixed(1)} <span className="text-base font-sans text-slate-400 font-normal">ft</span>
+              </div>
+            </div>
+            <div className="h-10 w-px bg-slate-800" />
+            <div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Musi Causeway</div>
+              <div className={`text-xs font-bold font-mono ${floodDepth >= 3.0 ? "text-red-400 animate-pulse" : "text-emerald-400"}`}>
+                {floodDepth >= 3.0 ? "⛔ SUBMERGED" : "✓ OPEN (CLEAR)"}
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                Crest: 3.0 ft (Clear: {(3.0 - floodDepth).toFixed(1)}ft)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Range Slider with Gradient Track */}
+        <div className="space-y-2 pt-2">
+          <div className="flex justify-between items-center text-xs font-mono">
+            <span className="text-cyan-400 font-bold flex items-center space-x-1">
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Simulate Musi River Surge Level (1.0 ft – 6.0 ft):</span>
+            </span>
+            <span className="text-slate-400">
+              {floodDepth >= 3.0 ? "⚠ Collision Avoidance Active: Detouring via Flyover" : "✓ Direct Passage Viable"}
+            </span>
+          </div>
+
+          <div className="relative flex items-center">
+            <input
+              type="range"
+              min="1.0"
+              max="6.0"
+              step="0.1"
+              value={floodDepth}
+              onChange={(e) => handleFloodDepthChange(parseFloat(e.target.value))}
+              className="w-full h-3 rounded-lg appearance-none cursor-pointer bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 shadow-inner"
+            />
+          </div>
+
+          {/* Scale Markings */}
+          <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 px-1 pt-1">
+            <span>1.0 ft (Normal Flow)</span>
+            <span>2.0 ft</span>
+            <span className="text-amber-400 font-bold">▲ 3.0 ft (Causeway Crest Breach)</span>
+            <span>4.0 ft</span>
+            <span>5.0 ft</span>
+            <span className="text-red-400 font-bold">6.0 ft (DEFCON-1 Max)</span>
+          </div>
+        </div>
+
+        {/* Quick Flood Depth Presets */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <span className="text-slate-400 text-xs font-semibold">Quick Depth Scenarios:</span>
+          <button
+            onClick={() => handleFloodDepthChange(1.5)}
+            className={`px-3 py-1.5 rounded-xl font-mono transition-all border ${
+              floodDepth === 1.5
+                ? "bg-emerald-950 text-emerald-300 border-emerald-700 shadow-md shadow-emerald-950/40"
+                : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+          >
+            🌊 1.5 ft (Dry / Passable)
+          </button>
+          <button
+            onClick={() => handleFloodDepthChange(2.5)}
+            className={`px-3 py-1.5 rounded-xl font-mono transition-all border ${
+              floodDepth === 2.5
+                ? "bg-amber-950 text-amber-300 border-amber-700 shadow-md shadow-amber-950/40"
+                : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+          >
+            ⚠️ 2.5 ft (Elevated Swell)
+          </button>
+          <button
+            onClick={() => handleFloodDepthChange(3.5)}
+            className={`px-3 py-1.5 rounded-xl font-mono transition-all border ${
+              floodDepth === 3.5
+                ? "bg-red-950 text-red-300 border-red-700 shadow-md shadow-red-950/40"
+                : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+          >
+            ⛔ 3.5 ft (Causeway Submergence)
+          </button>
+          <button
+            onClick={() => handleFloodDepthChange(5.0)}
+            className={`px-3 py-1.5 rounded-xl font-mono transition-all border ${
+              floodDepth === 5.0
+                ? "bg-red-950 text-red-300 border-red-700 shadow-md shadow-red-950/40"
+                : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+          >
+            🚨 5.0 ft (Severe Inundation)
+          </button>
+          <button
+            onClick={() => handleFloodDepthChange(6.0)}
+            className={`px-3 py-1.5 rounded-xl font-mono transition-all border ${
+              floodDepth === 6.0
+                ? "bg-rose-950 text-rose-300 border-rose-700 shadow-md shadow-rose-950/40 animate-pulse"
+                : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+          >
+            🔴 6.0 ft (Catastrophic Breach)
+          </button>
+        </div>
+
+        {/* Real-time Telemetry Impact Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 text-xs">
+          {/* Card 1: Causeway Status */}
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-semibold flex items-center space-x-1.5">
+                <AlertTriangle className={`w-3.5 h-3.5 ${floodDepth >= 3.0 ? "text-red-400" : "text-emerald-400"}`} />
+                <span>Musi Causeway</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold ${
+                floodDepth >= 3.0 ? "bg-red-950 text-red-400 border border-red-800 animate-pulse" : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+              }`}>
+                {floodDepth >= 3.0 ? "SUBMERGED" : "OPEN"}
+              </span>
+            </div>
+            <div className="text-white font-bold font-mono">
+              {floodDepth >= 3.0 ? t.causewaySubmerged : t.causewayOpen}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              {floodDepth >= 3.0 ? `Submerged by +${(floodDepth - 3.0).toFixed(1)} ft • IMPASSABLE` : `Clearance: ${(3.0 - floodDepth).toFixed(1)} ft • Safe`}
+            </div>
+          </div>
+
+          {/* Card 2: Flyover Status */}
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-semibold flex items-center space-x-1.5">
+                <Navigation className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Chaderghat Flyover</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono text-[10px] font-bold">
+                ALL-WEATHER
+              </span>
+            </div>
+            <div className="text-cyan-300 font-bold font-mono">
+              {t.flyoverDetour}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              Clearance: 22.0 ft • 100% Inundation Immune
+            </div>
+          </div>
+
+          {/* Card 3: Ray-Casting Avoidance */}
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-semibold flex items-center space-x-1.5">
+                <Radio className={`w-3.5 h-3.5 ${floodDepth >= 3.0 ? "text-amber-400 animate-pulse" : "text-emerald-400"}`} />
+                <span>{t.rayCastingStatus}</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold ${
+                floodDepth >= 3.0 ? "bg-amber-950 text-amber-300 border border-amber-800" : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+              }`}>
+                {floodDepth >= 3.0 ? "DETOUR ACTIVE" : "DIRECT"}
+              </span>
+            </div>
+            <div className={`font-bold font-mono text-[11px] ${floodDepth >= 3.0 ? "text-amber-300" : "text-emerald-300"}`}>
+              {floodDepth >= 3.0 ? t.rayCastingEngaged : t.rayCastingDirect}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              {floodDepth >= 3.0 ? "Rerouting via elevated flyover (+3.2 km)" : "Shortest route through causeway active (7.4 km)"}
+            </div>
+          </div>
+
+          {/* Card 4: Inundation Area */}
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-semibold flex items-center space-x-1.5">
+                <Waves className="w-3.5 h-3.5 text-blue-400" />
+                <span>Inundation Footprint</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800 font-mono text-[10px] font-bold">
+                BASIN SPREAD
+              </span>
+            </div>
+            <div className="text-blue-300 font-bold font-mono">
+              {(floodDepth * 2.8).toFixed(1)} km² Inundated
+            </div>
+            <div className="text-[11px] text-slate-400">
+              {Math.round(floodDepth * 1850).toLocaleString()} citizens in flood basin
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Interactive Vector GIS Map Component */}
       {environmentalData && (
         <InteractiveMap
@@ -460,6 +702,8 @@ export default function MapPage() {
           environmentalData={environmentalData}
           userCoords={userCoords}
           onRecenterGPS={requestLiveGPS}
+          floodDepth={floodDepth}
+          onFloodDepthChange={handleFloodDepthChange}
         />
       )}
 

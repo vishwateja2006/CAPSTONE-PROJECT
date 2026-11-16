@@ -19,8 +19,10 @@ import {
   Sliders,
   Layers,
   Sparkles,
-  Info
+  Info,
+  Droplets
 } from "lucide-react";
+import { playSonarPing } from "../lib/audioTelemetry";
 
 interface InteractiveMapProps {
   reliefCenters: ReliefCenter[];
@@ -32,6 +34,8 @@ interface InteractiveMapProps {
   environmentalData?: EnvironmentalData;
   userCoords?: { lat: number; lon: number; accuracy?: number; isLive: boolean };
   onRecenterGPS?: () => void;
+  floodDepth?: number;
+  onFloodDepthChange?: (depth: number) => void;
 }
 
 const DEFAULT_USER_COORDS = { lat: 17.3850, lon: 78.4867, isLive: false };
@@ -53,12 +57,33 @@ export default function InteractiveMap({
   onSelectSos,
   environmentalData = DEFAULT_ENV_DATA,
   userCoords = DEFAULT_USER_COORDS,
-  onRecenterGPS
+  onRecenterGPS,
+  floodDepth = 3.5,
+  onFloodDepthChange
 }: InteractiveMapProps) {
   const [activeItem, setActiveItem] = useState<{
-    type: "USER" | "CYCLONE" | "WAVE" | "AQI" | "HAZARD_ZONE" | "SOS" | "DEPOT" | "VEHICLE";
+    type: "USER" | "CYCLONE" | "WAVE" | "AQI" | "HAZARD_ZONE" | "SOS" | "DEPOT" | "VEHICLE" | "CAUSEWAY_BRIDGE" | "FLYOVER_BRIDGE" | "MUSI_RIVER";
     data: any;
   } | null>(null);
+
+  // Synchronized Flood Depth State (1.0 ft to 6.0 ft)
+  const [localFloodDepth, setLocalFloodDepth] = useState<number>(floodDepth);
+
+  useEffect(() => {
+    setLocalFloodDepth(floodDepth);
+  }, [floodDepth]);
+
+  const currentDepth = floodDepth !== undefined ? floodDepth : localFloodDepth;
+  const isCausewaySubmerged = currentDepth >= 3.0;
+
+  const handleSliderChange = (newVal: number) => {
+    const clamped = Math.max(1.0, Math.min(6.0, Number(newVal.toFixed(1))));
+    setLocalFloodDepth(clamped);
+    if (onFloodDepthChange) {
+      onFloodDepthChange(clamped);
+    }
+    playSonarPing();
+  };
 
   // Active Map Layers Toggles
   const [showGPS, setShowGPS] = useState(true);
@@ -95,6 +120,9 @@ export default function InteractiveMap({
 
   const userPt = project(userCoords.lat, userCoords.lon);
   const cyclonePt = project(environmentalData.cyclone.eyeLat, environmentalData.cyclone.eyeLon);
+  const causewayPt = project(17.3680, 78.4900);
+  const flyoverPt = project(17.3880, 78.4820);
+  const depotPt = project(17.4399, 78.4983);
 
   return (
     <div className="relative w-full h-[680px] rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none group">
@@ -150,55 +178,85 @@ export default function InteractiveMap({
           </button>
         </div>
 
-        {/* Right: Layer Switches & Recenter GPS */}
-        <div className="flex items-center space-x-2 pointer-events-auto bg-slate-900/90 backdrop-blur-md p-1 rounded-2xl border border-slate-800 text-xs">
-          {onRecenterGPS && (
-            <button
-              onClick={onRecenterGPS}
-              title="Center on My Real-Time GPS Location"
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-md shadow-blue-600/30"
+        {/* Right: Layer Switches, Live Flood Depth Slider & Recenter GPS */}
+        <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
+
+          {/* Floating Mini Flood Depth Slider */}
+          <div className="flex items-center space-x-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-700 text-xs shadow-lg">
+            <span className="text-cyan-400 font-bold flex items-center space-x-1">
+              <Droplets className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span className="hidden sm:inline font-mono">Depth:</span>
+            </span>
+            <span
+              className={`font-mono font-black text-xs px-2 py-0.5 rounded-full ${
+                isCausewaySubmerged
+                  ? "bg-red-950 text-red-300 border border-red-700 animate-pulse"
+                  : "bg-emerald-950 text-emerald-300 border border-emerald-700"
+              }`}
             >
-              <Crosshair className="w-3.5 h-3.5" />
-              <span>Locate Me</span>
+              {currentDepth.toFixed(1)} ft
+            </span>
+            <input
+              type="range"
+              min="1.0"
+              max="6.0"
+              step="0.1"
+              value={currentDepth}
+              onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
+              className="w-16 sm:w-24 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+              title={`Simulated Flood Depth: ${currentDepth.toFixed(1)} ft`}
+            />
+          </div>
+
+          <div className="flex items-center space-x-1.5 bg-slate-900/90 backdrop-blur-md p-1 rounded-2xl border border-slate-800 text-xs">
+            {onRecenterGPS && (
+              <button
+                onClick={onRecenterGPS}
+                title="Center on My Real-Time GPS Location"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-md shadow-blue-600/30"
+              >
+                <Crosshair className="w-3.5 h-3.5" />
+                <span>Locate Me</span>
+              </button>
+            )}
+
+            {/* Quick Layer Filter Buttons */}
+            <button
+              onClick={() => setShowCyclone(!showCyclone)}
+              title="Toggle Cyclone Vortex"
+              className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showCyclone ? "bg-amber-500/20 text-amber-300 border border-amber-500/50" : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              🌪️ Storm
             </button>
-          )}
 
-          {/* Quick Layer Filter Buttons */}
-          <button
-            onClick={() => setShowCyclone(!showCyclone)}
-            title="Toggle Cyclone Vortex"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showCyclone ? "bg-amber-500/20 text-amber-300 border border-amber-500/50" : "text-slate-500 hover:text-slate-300"
-              }`}
-          >
-            🌪️ Storm
-          </button>
+            <button
+              onClick={() => setShowWaves(!showWaves)}
+              title="Toggle Coastal Waves & Ocean Surge"
+              className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showWaves ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50" : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              🌊 Waves
+            </button>
 
-          <button
-            onClick={() => setShowWaves(!showWaves)}
-            title="Toggle Coastal Waves & Ocean Surge"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showWaves ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50" : "text-slate-500 hover:text-slate-300"
-              }`}
-          >
-            🌊 Waves
-          </button>
+            <button
+              onClick={() => setShowAQI(!showAQI)}
+              title="Toggle Air Quality Index (AQI)"
+              className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showAQI ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50" : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              🌫️ AQI
+            </button>
 
-          <button
-            onClick={() => setShowAQI(!showAQI)}
-            title="Toggle Air Quality Index (AQI)"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showAQI ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50" : "text-slate-500 hover:text-slate-300"
-              }`}
-          >
-            🌫️ AQI
-          </button>
-
-          <button
-            onClick={() => setShowHazards(!showHazards)}
-            title="Toggle DEFCON Hazard Zones"
-            className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showHazards ? "bg-red-500/20 text-red-300 border border-red-500/50" : "text-slate-500 hover:text-slate-300"
-              }`}
-          >
-            ⚠️ Hazard
-          </button>
+            <button
+              onClick={() => setShowHazards(!showHazards)}
+              title="Toggle DEFCON Hazard Zones"
+              className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${showHazards ? "bg-red-500/20 text-red-300 border border-red-500/50" : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              ⚠️ Hazard
+            </button>
+          </div>
         </div>
       </div>
 
@@ -256,17 +314,198 @@ export default function InteractiveMap({
           HUSSAIN SAGAR / URBAN WATER CORRIDOR
         </text>
 
-        {/* River Canal Network (Musi River Inundation Corridor) */}
+        {/* Musi River Basin Flood Inundation Floodplain (Dynamic Hazard Polygon) */}
+        {currentDepth >= 2.0 && (
+          <g>
+            <path
+              d="M 40 545 Q 380 435 620 460 T 870 480 L 870 550 Q 620 540 380 510 T 40 565 Z"
+              fill="url(#floodStripes)"
+              stroke="#ef4444"
+              strokeWidth="2"
+              opacity={0.25 + (currentDepth / 6) * 0.45}
+              className={isCausewaySubmerged ? "animate-pulse" : ""}
+            />
+          </g>
+        )}
+
+        {/* Dynamic River Canal Network (Musi River Inundation Channel) */}
         <path
           d="M 60 520 Q 380 470 620 500 T 850 515"
           fill="none"
-          stroke="#0284c7"
-          strokeWidth="28"
-          opacity="0.45"
+          stroke={currentDepth < 2.5 ? "#0284c7" : currentDepth < 3.5 ? "#f59e0b" : "#dc2626"}
+          strokeWidth={Math.round(22 + (currentDepth - 1.0) * 11)}
+          opacity={Math.min(0.85, 0.45 + (currentDepth - 1.0) * 0.08)}
+          filter="url(#mapGlow)"
         />
-        <text x="360" y="505" fill="#38bdf8" fontSize="10" opacity="0.7" fontFamily="monospace" fontWeight="bold">
-          MUSI RIVER BASIN CORRIDOR (SURGING OVERFLOW)
-        </text>
+
+        {/* River Water Dynamic Flow Ripples */}
+        <path
+          d="M 60 520 Q 380 470 620 500 T 850 515"
+          fill="none"
+          stroke={isCausewaySubmerged ? "#fca5a5" : "#67e8f9"}
+          strokeWidth="3"
+          strokeDasharray="14,10"
+          opacity={isCausewaySubmerged ? 0.8 : 0.6}
+        >
+          <animate attributeName="stroke-dashoffset" from="120" to="0" dur="3s" repeatCount="indefinite" />
+        </path>
+
+        {/* Musi River Corridor Interactive Tag & Breach Indicator */}
+        <g
+          className="cursor-pointer"
+          onClick={() => setActiveItem({
+            type: "MUSI_RIVER",
+            data: {
+              depth: currentDepth,
+              isSubmerged: isCausewaySubmerged,
+              inundatedAreaKm2: (currentDepth * 2.8).toFixed(1),
+              populationAtRisk: Math.round(currentDepth * 1850)
+            }
+          })}
+        >
+          <rect
+            x="320"
+            y="492"
+            width="380"
+            height="26"
+            rx="6"
+            fill="#090e1a"
+            opacity="0.92"
+            stroke={isCausewaySubmerged ? "#ef4444" : "#0284c7"}
+            strokeWidth="1.5"
+          />
+          <circle
+            cx="336"
+            cy="505"
+            r="5"
+            fill={isCausewaySubmerged ? "#ef4444" : "#38bdf8"}
+            className={isCausewaySubmerged ? "animate-ping" : ""}
+          />
+          <circle cx="336" cy="505" r="3.5" fill={isCausewaySubmerged ? "#ef4444" : "#38bdf8"} />
+          <text
+            x="350"
+            y="509"
+            fill={isCausewaySubmerged ? "#fca5a5" : "#38bdf8"}
+            fontSize="9.5"
+            opacity="0.95"
+            fontFamily="monospace"
+            fontWeight="bold"
+          >
+            {isCausewaySubmerged
+              ? `⚠ MUSI RIVER BASIN • CRITICAL INUNDATION: ${currentDepth.toFixed(1)} FT (SUBMERGED)`
+              : `🌊 MUSI RIVER BASIN • WATER DEPTH: ${currentDepth.toFixed(1)} FT (FLOW NORMAL)`}
+          </text>
+        </g>
+
+        {/* STRATEGIC BRIDGE 1: MUSI LOW-LEVEL CAUSEWAY BRIDGE */}
+        <g
+          transform={`translate(${causewayPt.x}, ${causewayPt.y})`}
+          className="cursor-pointer"
+          onClick={() => setActiveItem({
+            type: "CAUSEWAY_BRIDGE",
+            data: {
+              name: "Musi River Low-Level Causeway Bridge",
+              depth: currentDepth,
+              threshold: 3.0,
+              isSubmerged: isCausewaySubmerged,
+              elevationClearance: (3.0 - currentDepth).toFixed(1),
+              status: isCausewaySubmerged ? "SUBMERGED & IMPASSABLE" : "OPEN & NAVIGABLE"
+            }
+          })}
+        >
+          {isCausewaySubmerged ? (
+            <>
+              <circle cx="0" cy="0" r="26" fill="#ef4444" opacity="0.3" className="animate-ping" />
+              <circle cx="0" cy="0" r="16" fill="#7f1d1d" stroke="#ef4444" strokeWidth="2.5" />
+              <text x="0" y="5" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="bold">⛔</text>
+              <rect x="-95" y="22" width="190" height="24" rx="5" fill="#450a0a" opacity="0.95" stroke="#ef4444" strokeWidth="1.2" />
+              <text x="0" y="37" textAnchor="middle" fill="#fca5a5" fontSize="8.5" fontWeight="bold" fontFamily="monospace">
+                ⛔ CAUSEWAY SUBMERGED ({currentDepth.toFixed(1)}ft)
+              </text>
+            </>
+          ) : (
+            <>
+              <circle cx="0" cy="0" r="20" fill="#065f46" opacity="0.25" />
+              <circle cx="0" cy="0" r="14" fill="#047857" stroke="#34d399" strokeWidth="2" />
+              <text x="0" y="4" textAnchor="middle" fill="#ffffff" fontSize="11">🌉</text>
+              <rect x="-85" y="18" width="170" height="22" rx="5" fill="#064e3b" opacity="0.95" stroke="#10b981" strokeWidth="1" />
+              <text x="0" y="32" textAnchor="middle" fill="#a7f3d0" fontSize="8.5" fontWeight="bold" fontFamily="monospace">
+                ✓ MUSI CAUSEWAY: OPEN ({currentDepth.toFixed(1)}ft)
+              </text>
+            </>
+          )}
+        </g>
+
+        {/* STRATEGIC BRIDGE 2: CHADERGHAT ELEVATED FLYOVER (SAFE HIGH-LEVEL DETOUR) */}
+        <g
+          transform={`translate(${flyoverPt.x}, ${flyoverPt.y})`}
+          className="cursor-pointer"
+          onClick={() => setActiveItem({
+            type: "FLYOVER_BRIDGE",
+            data: {
+              name: "Chaderghat Elevated Flyover / Expressway",
+              clearanceMeters: 6.7,
+              status: "ALL-WEATHER SAFE DETOUR (OPEN)",
+              inundationImmune: true
+            }
+          })}
+        >
+          <circle cx="0" cy="0" r="18" fill="#0e7490" opacity="0.3" />
+          <circle cx="0" cy="0" r="13" fill="#0891b2" stroke="#67e8f9" strokeWidth="2" />
+          <text x="0" y="4" textAnchor="middle" fill="#ffffff" fontSize="10">🛡️</text>
+          <rect x="-95" y="-28" width="190" height="22" rx="5" fill="#082f49" opacity="0.95" stroke="#06b6d4" strokeWidth="1" />
+          <text x="0" y="-14" textAnchor="middle" fill="#67e8f9" fontSize="8.5" fontWeight="bold" fontFamily="monospace">
+            🛡️ CHADERGHAT FLYOVER: SAFE DETOUR
+          </text>
+        </g>
+
+        {/* HAZARD RAY-CASTING COLLISION SENSOR SYSTEM (DEMONSTRATES AUTONOMOUS AVOIDANCE) */}
+        {isCausewaySubmerged && (
+          <g>
+            {/* Ray 1: Sensor Collision Vector aimed at Submerged Musi Sector */}
+            <line
+              x1={flyoverPt.x + 10}
+              y1={flyoverPt.y + 20}
+              x2={causewayPt.x - 12}
+              y2={causewayPt.y - 15}
+              stroke="#ef4444"
+              strokeWidth="2.5"
+              strokeDasharray="6,4"
+              opacity="0.85"
+            >
+              <animate attributeName="stroke-dashoffset" from="40" to="0" dur="1.2s" repeatCount="indefinite" />
+            </line>
+
+            {/* Impact Collision Point on Hazard Perimeter */}
+            <g transform={`translate(${causewayPt.x - 12}, ${causewayPt.y - 15})`}>
+              <circle cx="0" cy="0" r="10" fill="#ef4444" opacity="0.35" className="animate-ping" />
+              <circle cx="0" cy="0" r="6" fill="#dc2626" stroke="#fca5a5" strokeWidth="1.5" />
+              <text x="0" y="3" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✕</text>
+              <rect x="-70" y="-22" width="140" height="18" rx="4" fill="#450a0a" opacity="0.95" stroke="#ef4444" strokeWidth="1" />
+              <text x="0" y="-10" textAnchor="middle" fill="#fca5a5" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                RAY COLLISION DETECTED
+              </text>
+            </g>
+
+            {/* Ray 2: Detour Deflection Vector Curving to Elevated Flyover */}
+            <path
+              d={`M ${causewayPt.x - 12} ${causewayPt.y - 15} Q ${causewayPt.x - 45} ${causewayPt.y - 50} ${flyoverPt.x + 15} ${flyoverPt.y + 10}`}
+              fill="none"
+              stroke="#f59e0b"
+              strokeWidth="3"
+              strokeDasharray="8,5"
+              opacity="0.9"
+            >
+              <animate attributeName="stroke-dashoffset" from="60" to="0" dur="1.8s" repeatCount="indefinite" />
+            </path>
+
+            {/* Detour Label Pill */}
+            <rect x={flyoverPt.x - 20} y={flyoverPt.y + 26} width="165" height="20" rx="4" fill="#451a03" opacity="0.95" stroke="#f59e0b" strokeWidth="1" />
+            <text x={flyoverPt.x + 62} y={flyoverPt.y + 39} textAnchor="middle" fill="#fde68a" fontSize="8" fontWeight="bold" fontFamily="monospace">
+              ⚡ RAY-CASTING DETOUR VECTOR
+            </text>
+          </g>
+        )}
 
         {/* Layer 3: AIR QUALITY DISPERSION HEATMAP (AQI) */}
         {showAQI && (
@@ -406,13 +645,88 @@ export default function InteractiveMap({
           </g>
         )}
 
-        {/* Layer 7: OPTIMIZED FLEET ROUTE TRAJECTORIES (CVRP) */}
+        {/* Layer 7: OPTIMIZED FLEET ROUTE TRAJECTORIES (CVRP & RAY-CASTING DETOURS) */}
         {showRoutes && (() => {
-          const validRoutes: RoutePlan[] = Array.isArray(routePlans)
+          const rawRoutes: RoutePlan[] = Array.isArray(routePlans)
             ? routePlans
             : (routePlans as any)?.routes && Array.isArray((routePlans as any).routes)
             ? (routePlans as any).routes
             : [];
+
+          // Dynamically recalculate route waypoints based on Musi River flood depth
+          const validRoutes: RoutePlan[] = rawRoutes.length > 0 ? rawRoutes.map((r, rIdx) => {
+            if (isCausewaySubmerged) {
+              return {
+                ...r,
+                total_distance_km: Number((r.total_distance_km + 3.2).toFixed(2)),
+                estimated_duration_mins: Number((r.estimated_duration_mins + 5.5).toFixed(1)),
+                waypoints: r.waypoints.map((wp, wIdx) => {
+                  if (wIdx === 1 || wp.action === "HAZARD_BYPASS" || (wp.latitude < 17.38 && wp.latitude > 17.36)) {
+                    return {
+                      ...wp,
+                      location_name: `DETOUR: Chaderghat Flyover (Avoiding Flood @ ${currentDepth.toFixed(1)}ft)`,
+                      latitude: 17.3880,
+                      longitude: 78.4820,
+                      action: "HAZARD_BYPASS"
+                    };
+                  }
+                  return wp;
+                })
+              };
+            } else {
+              return {
+                ...r,
+                total_distance_km: Number(Math.max(6.5, r.total_distance_km - 1.5).toFixed(2)),
+                estimated_duration_mins: Number(Math.max(9.0, r.estimated_duration_mins - 3.2).toFixed(1)),
+                waypoints: r.waypoints.map((wp, wIdx) => {
+                  if (wIdx === 1 || wp.action === "HAZARD_BYPASS") {
+                    return {
+                      ...wp,
+                      location_name: `Musi Causeway (Direct Passage Open @ ${currentDepth.toFixed(1)}ft)`,
+                      latitude: 17.3680,
+                      longitude: 78.4900,
+                      action: "DIRECT_CROSSING"
+                    };
+                  }
+                  return wp;
+                })
+              };
+            }
+          }) : [
+            // Default active CVRP route when no external plan is passed
+            isCausewaySubmerged ? {
+              id: "plan-detour-01",
+              vehicle_id: "VEH-01",
+              vehicle_code: "TRUCK-4x4-ALPHA",
+              relief_center_id: "RC-01",
+              total_distance_km: 10.65,
+              estimated_duration_mins: 16.7,
+              status: "OPTIMAL",
+              created_at: new Date().toISOString(),
+              waypoints: [
+                { sequence: 1, location_name: "Secunderabad Central Hub (Depot)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_START", demand_kg: 0, eta_mins: 0 },
+                { sequence: 2, location_name: `DETOUR: Chaderghat Elevated Flyover (Bypassing Musi Causeway Submerged @ ${currentDepth.toFixed(1)}ft)`, latitude: 17.3880, longitude: 78.4820, action: "HAZARD_BYPASS", demand_kg: 0, eta_mins: 5.2 },
+                { sequence: 3, location_name: "Amberpet Ring Bypass", latitude: 17.3790, longitude: 78.5140, action: "SAFE_CORRIDOR", demand_kg: 0, eta_mins: 9.8 },
+                { sequence: 4, location_name: "SOS: Moosarambagh Ward 45", latitude: 17.3640, longitude: 78.5080, action: "DELIVER_AID", demand_kg: 150, eta_mins: 12.5 },
+                { sequence: 5, location_name: "Secunderabad Central Hub (Return)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_RETURN", demand_kg: 0, eta_mins: 16.7 }
+              ]
+            } : {
+              id: "plan-direct-01",
+              vehicle_id: "VEH-01",
+              vehicle_code: "TRUCK-4x4-ALPHA",
+              relief_center_id: "RC-01",
+              total_distance_km: 7.42,
+              estimated_duration_mins: 11.2,
+              status: "OPTIMAL",
+              created_at: new Date().toISOString(),
+              waypoints: [
+                { sequence: 1, location_name: "Secunderabad Central Hub (Depot)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_START", demand_kg: 0, eta_mins: 0 },
+                { sequence: 2, location_name: `Musi Causeway (Direct Passage Open @ ${currentDepth.toFixed(1)}ft)`, latitude: 17.3680, longitude: 78.4900, action: "DIRECT_CROSSING", demand_kg: 0, eta_mins: 3.5 },
+                { sequence: 3, location_name: "SOS: Moosarambagh Ward 45", latitude: 17.3640, longitude: 78.5080, action: "DELIVER_AID", demand_kg: 150, eta_mins: 7.0 },
+                { sequence: 4, location_name: "Secunderabad Central Hub (Return)", latitude: 17.4399, longitude: 78.4983, action: "DEPOT_RETURN", demand_kg: 0, eta_mins: 11.2 }
+              ]
+            }
+          ];
 
           return validRoutes.map((plan, idx) => {
             if (!plan || !Array.isArray(plan.waypoints) || plan.waypoints.length < 2) return null;
@@ -618,6 +932,9 @@ export default function InteractiveMap({
               {activeItem.type === "SOS" && <ShieldAlert className="w-4 h-4 text-red-500" />}
               {activeItem.type === "DEPOT" && <MapPin className="w-4 h-4 text-blue-500" />}
               {activeItem.type === "VEHICLE" && <Truck className="w-4 h-4 text-emerald-500" />}
+              {activeItem.type === "CAUSEWAY_BRIDGE" && <AlertTriangle className="w-4 h-4 text-red-400" />}
+              {activeItem.type === "FLYOVER_BRIDGE" && <Navigation className="w-4 h-4 text-cyan-400" />}
+              {activeItem.type === "MUSI_RIVER" && <Droplets className="w-4 h-4 text-blue-400" />}
 
               <span className="font-bold uppercase tracking-wider text-white text-xs">
                 {activeItem.type === "USER"
@@ -634,7 +951,13 @@ export default function InteractiveMap({
                             ? "Distress Incident"
                             : activeItem.type === "DEPOT"
                               ? "Relief Base Depot"
-                              : "Relief Fleet Unit"}
+                              : activeItem.type === "VEHICLE"
+                                ? "Relief Fleet Unit"
+                                : activeItem.type === "CAUSEWAY_BRIDGE"
+                                  ? "Musi Causeway Bridge Status"
+                                  : activeItem.type === "FLYOVER_BRIDGE"
+                                    ? "Elevated Flyover Detour Route"
+                                    : "Musi River Hydration Corridor"}
               </span>
             </div>
             <button
@@ -859,6 +1182,102 @@ export default function InteractiveMap({
               <div className="flex justify-between text-slate-300">
                 <span>Assigned Driver:</span>
                 <span>{activeItem.data.assigned_driver || "Active Pilot"}</span>
+              </div>
+            </div>
+          )}
+
+          {/* CAUSEWAY BRIDGE INSPECTOR */}
+          {activeItem.type === "CAUSEWAY_BRIDGE" && (
+            <div className="space-y-2">
+              <div className="font-bold text-white text-sm">{activeItem.data.name}</div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Operational Status:</span>
+                <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
+                  activeItem.data.isSubmerged
+                    ? "bg-red-950 text-red-400 border border-red-800 animate-pulse"
+                    : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                }`}>
+                  {activeItem.data.status}
+                </span>
+              </div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Current Flood Depth:</span>
+                <span className="text-cyan-400 font-bold">{activeItem.data.depth.toFixed(1)} feet</span>
+              </div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Crest Submergence Threshold:</span>
+                <span className="text-amber-400 font-bold">{activeItem.data.threshold.toFixed(1)} feet</span>
+              </div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Elevation Clearance:</span>
+                <span className={activeItem.data.isSubmerged ? "text-red-400 font-bold" : "text-emerald-400 font-bold"}>
+                  {activeItem.data.elevationClearance} feet
+                </span>
+              </div>
+              <div className={`p-2 rounded text-[11px] leading-snug border ${
+                activeItem.data.isSubmerged
+                  ? "bg-red-950/40 border-red-900/60 text-red-200"
+                  : "bg-emerald-950/40 border-emerald-900/60 text-emerald-200"
+              }`}>
+                {activeItem.data.isSubmerged
+                  ? "⛔ Ray-Casting Obstacle: Water has crested over the bridge deck. Autonomous fleet vehicles are automatically rerouted via the Chaderghat Elevated Flyover."
+                  : "✓ Safe Corridor: Water level is below the bridge deck. Direct transit permitted for all emergency response craft."}
+              </div>
+            </div>
+          )}
+
+          {/* FLYOVER BRIDGE INSPECTOR */}
+          {activeItem.type === "FLYOVER_BRIDGE" && (
+            <div className="space-y-2">
+              <div className="font-bold text-white text-sm">{activeItem.data.name}</div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Corridor Clearance:</span>
+                <span className="text-cyan-400 font-bold font-mono">22.0 ft (6.7m) High Clearance</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Flood Inundation Immunity:</span>
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                  100% ELEVATED SAFE HAVEN
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Autonomous Ray-Casting Status:</span>
+                <span className="text-emerald-400 font-mono text-[11px] font-bold">
+                  PRIMARY ALL-WEATHER DETOUR
+                </span>
+              </div>
+              <div className="p-2 rounded bg-cyan-950/40 border border-cyan-900/60 text-[11px] text-cyan-200 leading-snug">
+                🛡️ All-Weather Bypass: Elevated flyover structures remain completely operational during all cyclone & flood inundation levels up to 6.0 ft.
+              </div>
+            </div>
+          )}
+
+          {/* MUSI RIVER INSPECTOR */}
+          {activeItem.type === "MUSI_RIVER" && (
+            <div className="space-y-2">
+              <div className="font-bold text-white text-sm">Musi River Hydration & Surge Corridor</div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Simulated Surge Depth:</span>
+                <span className="text-red-400 font-black text-sm">{activeItem.data.depth.toFixed(1)} feet</span>
+              </div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Inundated Basin Area:</span>
+                <span className="text-amber-400 font-bold">{activeItem.data.inundatedAreaKm2} km²</span>
+              </div>
+              <div className="flex justify-between items-center font-mono">
+                <span className="text-slate-400">Population at Flood Risk:</span>
+                <span className="text-white font-bold">{activeItem.data.populationAtRisk.toLocaleString()} Citizens</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Low-Level Causeways Submerged:</span>
+                <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
+                  activeItem.data.isSubmerged ? "bg-red-950 text-red-400 border border-red-800 animate-pulse" : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                }`}>
+                  {activeItem.data.isSubmerged ? "1 / 1 SUBMERGED (BREACH)" : "0 / 1 SUBMERGED (CLEAR)"}
+                </span>
+              </div>
+              <div className="p-2 rounded bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 leading-snug">
+                🌊 Telemetry: Inundation spreads northward into lowlands as water depth rises from 1.0 ft to 6.0 ft. Use the slider to view ray-casting avoidance in action.
               </div>
             </div>
           )}
