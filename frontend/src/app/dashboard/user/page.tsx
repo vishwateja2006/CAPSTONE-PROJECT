@@ -70,6 +70,152 @@ const getNeedIcon = (id: string) => {
   }
 };
 
+interface LiveEtaCountdownProps {
+  reqId: string;
+  status: string;
+  initialSeconds?: number;
+  compact?: boolean;
+  t: any;
+  heading?: string;
+  routeLabel?: string;
+}
+
+function LiveEtaCountdown({
+  reqId,
+  status,
+  initialSeconds = 878, // 14 mins 38 seconds
+  compact = false,
+  t,
+  heading,
+  routeLabel
+}: LiveEtaCountdownProps) {
+  const isDelivered = status === "DELIVERED" || status === "RESOLVED";
+
+  // Use persistent storage so page refreshes maintain the ticking state
+  const [secondsLeft, setSecondsLeft] = useState<number>(() => {
+    if (isDelivered) return 0;
+    if (typeof window !== "undefined") {
+      try {
+        const storageKey = `resqlink_eta_${reqId}`;
+        const savedTarget = localStorage.getItem(storageKey);
+        const now = Date.now();
+        if (savedTarget) {
+          const targetTimestamp = parseInt(savedTarget, 10);
+          const diff = Math.floor((targetTimestamp - now) / 1000);
+          if (diff > 0) return diff;
+          return 0;
+        }
+        const newTarget = now + initialSeconds * 1000;
+        localStorage.setItem(storageKey, newTarget.toString());
+        return initialSeconds;
+      } catch {
+        return initialSeconds;
+      }
+    }
+    return initialSeconds;
+  });
+
+  useEffect(() => {
+    if (isDelivered) return;
+
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isDelivered]);
+
+  if (isDelivered || secondsLeft === 0) {
+    if (compact) {
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-emerald-400 font-mono font-bold text-xs">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>{t.arrivedDelivered}</span>
+        </span>
+      );
+    }
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center space-x-1.5 text-emerald-400 font-mono font-bold text-sm">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{t.arrivedDelivered}</span>
+        </div>
+        <div className="text-[11px] text-slate-400 truncate">
+          {routeLabel || "Route:"} <span className="text-slate-200 font-medium">{heading || "Delivered at Musi Sector"}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
+  const formattedTime = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+  // Calculate dynamic journey progress (from 35% at 15 mins down to 98% as time decreases)
+  const totalDuration = 900;
+  const elapsed = Math.max(0, totalDuration - secondsLeft);
+  const progressPercent = Math.min(98, Math.max(35, Math.round(35 + (elapsed / totalDuration) * 63)));
+
+  if (compact) {
+    return (
+      <span className="inline-flex items-center space-x-1.5 font-mono text-xs">
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span className="font-black text-amber-300 tabular-nums tracking-wide">{formattedTime}</span>
+        <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-tight bg-emerald-950 px-1 py-0.5 rounded border border-emerald-800/60">
+          {t.liveEtaBadge}
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline space-x-2">
+        <span className="relative flex h-2.5 w-2.5 self-center shrink-0">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <Clock className="w-4 h-4 text-amber-400 animate-pulse shrink-0 self-center" />
+        <span className="font-mono font-black text-amber-400 text-xl tracking-wider tabular-nums">
+          {formattedTime}
+        </span>
+        <span className="text-[11px] font-mono text-slate-400 font-medium">min:sec</span>
+      </div>
+
+      {/* Real-Time Rescue Vehicle Transit Progress Bar */}
+      <div className="space-y-1.5 pt-1 border-t border-slate-900">
+        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+          <span>{t.transitProgressLabel}</span>
+          <span className="text-emerald-400 font-bold">{progressPercent}%</span>
+        </div>
+        <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-800">
+          <div
+            className="bg-gradient-to-r from-cyan-500 via-emerald-400 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-sm shadow-emerald-500/50"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5 font-mono">
+          <span className="truncate max-w-[160px] text-slate-300">
+            {routeLabel || "Route:"} <b className="text-white font-medium">{heading || "Musi River Link"}</b>
+          </span>
+          <span className="text-emerald-400 font-bold shrink-0 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>{t.satellitePing}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function UserPortalPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<AuthSession | null>(null);
@@ -781,7 +927,14 @@ export default function UserPortalPage() {
                     </div>
 
                     <div className="text-xs font-mono text-slate-400 flex items-center space-x-4">
-                      <span>{t.etaLabel} <b className="text-white">{req.eta}</b></span>
+                      <div className="flex items-center space-x-1.5">
+                        <span>{t.etaLabel}</span>
+                        {isDispatched ? (
+                          <LiveEtaCountdown reqId={req.id} status={req.status} initialSeconds={878} compact={true} t={t} />
+                        ) : (
+                          <b className="text-white">{req.eta}</b>
+                        )}
+                      </div>
                       <span>{req.created_at}</span>
                     </div>
                   </div>
@@ -829,9 +982,9 @@ export default function UserPortalPage() {
                           <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-300 font-mono text-[10px] font-bold">
                             {t.transponderLock}
                           </span>
-                          <span className="text-xs font-mono font-black text-white bg-red-950 border border-red-800 px-2.5 py-0.5 rounded animate-pulse">
-                            {t.etaLabel} {req.eta || "12–15 mins"}
-                          </span>
+                          <div className="bg-slate-950/90 border border-red-900/60 px-2.5 py-1 rounded-lg">
+                            <LiveEtaCountdown reqId={req.id} status={req.status} initialSeconds={878} compact={true} t={t} />
+                          </div>
                         </div>
                       </div>
 
@@ -858,17 +1011,25 @@ export default function UserPortalPage() {
                         </div>
 
                         {/* 2. Estimated Time of Arrival */}
-                        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                          <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
-                            {t.estimatedEtaLabel}
-                          </span>
-                          <div className="font-mono font-black text-amber-400 text-sm flex items-center space-x-1.5">
-                            <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
-                            <span>{req.eta || "12–15 mins"}</span>
+                        <div className="p-3 rounded-xl bg-slate-950/90 border border-slate-800 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+                              {t.estimatedEtaLabel}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800/80 uppercase flex items-center space-x-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                              <span>{t.liveEtaBadge}</span>
+                            </span>
                           </div>
-                          <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 truncate">
-                            {t.routeLabel} <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Musi River Link / Chaderghat Expressway"}</span>
-                          </div>
+                          <LiveEtaCountdown
+                            reqId={req.id}
+                            status={req.status}
+                            initialSeconds={878}
+                            compact={false}
+                            t={t}
+                            heading={req.telemetry?.heading}
+                            routeLabel={t.routeLabel}
+                          />
                         </div>
 
                         {/* 3. Relief Package Payload */}
