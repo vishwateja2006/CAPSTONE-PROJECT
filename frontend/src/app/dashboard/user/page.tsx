@@ -27,9 +27,20 @@ import {
   Shield,
   Flame,
   Sparkles,
-  Activity
+  Activity,
+  Wifi,
+  WifiOff,
+  X,
+  RefreshCw
 } from "lucide-react";
-import { submitSOS } from "../../../lib/api";
+import {
+  submitSOS,
+  getOfflineSOSQueue,
+  enqueueOfflineSOS,
+  removeOfflineSOS,
+  flushOfflineSOSQueue,
+  QueuedSOSBeacon
+} from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
 import {
   getStoredLanguage,
@@ -226,6 +237,15 @@ export default function UserPortalPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
   const t = translations[selectedLanguage]?.citizen || translations.EN.citizen;
 
+  // Network Resilience & Offline SOS Beacon Queuing State
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [isSimulatedOffline, setIsSimulatedOffline] = useState<boolean>(false);
+  const [offlineQueue, setOfflineQueue] = useState<QueuedSOSBeacon[]>([]);
+  const [isSyncingOffline, setIsSyncingOffline] = useState<boolean>(false);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
+
+  const isEffectiveOnline = isOnline && !isSimulatedOffline;
+
   // GPS Auto-Detection State
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
   const [gpsLocked, setGpsLocked] = useState<{
@@ -339,6 +359,26 @@ export default function UserPortalPage() {
       }
     };
 
+    // Network listeners for offline detection & queue monitoring
+    if (typeof window !== "undefined") {
+      setIsOnline(navigator.onLine);
+      setOfflineQueue(getOfflineSOSQueue());
+    }
+
+    const handleOnline = () => {
+      setIsOnline(true);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+    const handleQueueChanged = (e: any) => {
+      setOfflineQueue(e.detail || getOfflineSOSQueue());
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("resqlink_offline_queue_changed", handleQueueChanged);
+
     window.addEventListener("resqlink_sos_status_updated", handleStatusUpdate);
 
     const interval = setInterval(() => {
@@ -354,11 +394,108 @@ export default function UserPortalPage() {
     }, 4000);
 
     return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("resqlink_offline_queue_changed", handleQueueChanged);
       window.removeEventListener("resqlink_sos_status_updated", handleStatusUpdate);
       clearInterval(interval);
       unsubLang();
     };
   }, [router]);
+
+  // Auto-transmit offline queued beacons as soon as network signal is restored
+  useEffect(() => {
+    if (!isEffectiveOnline) return;
+    const currentQueue = getOfflineSOSQueue();
+    if (currentQueue.length === 0) return;
+
+    let isCancelled = false;
+    const syncBeacons = async () => {
+      setIsSyncingOffline(true);
+      try {
+        const { syncedCount, syncedReports } = await flushOfflineSOSQueue();
+        if (!isCancelled && syncedCount > 0) {
+          setOfflineQueue(getOfflineSOSQueue());
+          setSyncSuccessMsg(
+            `${t.offlineSyncSuccess || "Signal Restored • Queued SOS Beacons Successfully Transmitted to Central Operations!"} (${syncedCount} Beacons Synced)`
+          );
+          // Update local userRequests matching the synced beacons
+          setUserRequests((prev) => {
+            const updated = prev.map((req) => {
+              const matchedReport = syncedReports.find(
+                (sr) => sr.originalQueueId === req.id || req.status === "OFFLINE_QUEUED"
+              );
+              if (matchedReport) {
+                return {
+                  ...req,
+                  id: matchedReport.id || req.id,
+                  status: "PENDING",
+                  urgency_score: matchedReport.urgency_score || 90.0,
+                  eta: "15–20 mins (CVRP Calculating)",
+                  assigned_vehicle: "Assigning tactical fleet...",
+                  created_at: "Transmitted Just now"
+                };
+              }
+              return req;
+            });
+            try {
+              localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
+            } catch { }
+            return updated;
+          });
+        }
+      } catch { } finally {
+        if (!isCancelled) setIsSyncingOffline(false);
+      }
+    };
+
+    const timer = setTimeout(syncBeacons, 1000);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isEffectiveOnline, offlineQueue.length, t.offlineSyncSuccess]);
+
+  const handleManualSync = async () => {
+    if (isSimulatedOffline) {
+      setIsSimulatedOffline(false);
+    }
+    setIsSyncingOffline(true);
+    try {
+      const { syncedCount, syncedReports } = await flushOfflineSOSQueue();
+      setOfflineQueue(getOfflineSOSQueue());
+      if (syncedCount > 0) {
+        setSyncSuccessMsg(
+          `${t.offlineSyncSuccess || "Signal Restored • Queued SOS Beacons Successfully Transmitted to Central Operations!"} (${syncedCount} Beacons Synced)`
+        );
+        setUserRequests((prev) => {
+          const updated = prev.map((req) => {
+            const matchedReport = syncedReports.find(
+              (sr) => sr.originalQueueId === req.id || req.status === "OFFLINE_QUEUED"
+            );
+            if (matchedReport) {
+              return {
+                ...req,
+                id: matchedReport.id || req.id,
+                status: "PENDING",
+                urgency_score: matchedReport.urgency_score || 90.0,
+                eta: "15–20 mins (CVRP Calculating)",
+                assigned_vehicle: "Assigning tactical fleet...",
+                created_at: "Transmitted Just now"
+              };
+            }
+            return req;
+          });
+          try {
+            localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
+          } catch { }
+          return updated;
+        });
+      }
+    } catch { } finally {
+      setIsSyncingOffline(false);
+    }
+  };
 
   // Citizen SOS Form State
   const [name, setName] = useState("");
@@ -425,18 +562,54 @@ export default function UserPortalPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    try {
-      const signalPayload = {
-        victim_name: name || "Anonymous Citizen",
-        contact_phone: phone || "+91-9840112233",
-        latitude: gpsLocked?.lat || 17.3780,
-        longitude: gpsLocked?.lon || 78.4910,
-        people_count: headcount,
-        description: description || "Severe flooding reached first floor, require immediate aid.",
+    const signalPayload = {
+      victim_name: name || "Anonymous Citizen",
+      contact_phone: phone || "+91-9840112233",
+      latitude: gpsLocked?.lat || 17.3780,
+      longitude: gpsLocked?.lon || 78.4910,
+      people_count: headcount,
+      description: description || "Severe flooding reached first floor, require immediate aid.",
+      needs: selectedNeeds,
+      vulnerabilities: selectedVulnerabilities
+    };
+
+    // OFFLINE QUEUING: If network dropped or simulated offline, save locally in browser storage
+    if (!isEffectiveOnline) {
+      const beacon = enqueueOfflineSOS(signalPayload);
+      const offlineRequest: UserRequest = {
+        id: beacon.queueId,
+        family_count: headcount,
         needs: selectedNeeds,
-        vulnerabilities: selectedVulnerabilities
+        vulnerabilities: selectedVulnerabilities.map(
+          (v) => t.vulns.find((item) => item.id === v)?.label || v
+        ),
+        address: address || "Hyderabad Musi River Sector (GPS Preserved)",
+        status: "OFFLINE_QUEUED",
+        urgency_score: 92.0,
+        eta: "Queued Locally • Auto-Transmits on Signal",
+        assigned_vehicle: "Pending Network Uplink...",
+        relief_package: selectedNeeds.join(" + ") || "Emergency Relief Kit",
+        created_at: `Offline Queued (${beacon.queuedAt})`
       };
 
+      const updated = [offlineRequest, ...userRequests];
+      setUserRequests(updated);
+      try {
+        localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
+      } catch { }
+
+      setSubmittedSignal(offlineRequest);
+      setOfflineQueue(getOfflineSOSQueue());
+      setName("");
+      setPhone("");
+      setAddress("");
+      setDescription("");
+      setSelectedVulnerabilities([]);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
       const result = await submitSOS(signalPayload);
 
       const newRequest: UserRequest = {
@@ -468,19 +641,20 @@ export default function UserPortalPage() {
       setDescription("");
       setSelectedVulnerabilities([]);
     } catch {
-      // Fallback local broadcast
+      // Fallback: network dropped mid-flight, queue offline
+      const beacon = enqueueOfflineSOS(signalPayload);
       const fallbackRequest: UserRequest = {
-        id: `SOS-${Math.floor(1000 + Math.random() * 9000)}`,
+        id: beacon.queueId,
         family_count: headcount,
         needs: selectedNeeds,
         vulnerabilities: selectedVulnerabilities,
         address: address || "Hyderabad Musi River Flood Sector",
-        status: "PENDING",
+        status: "OFFLINE_QUEUED",
         urgency_score: 90.0,
-        eta: "15–20 mins",
-        assigned_vehicle: "Auto-Allocating...",
+        eta: "Queued Locally • Awaiting Signal",
+        assigned_vehicle: "Auto-Allocates Upon Reconnect",
         relief_package: "Food + Water Pack",
-        created_at: "Just now"
+        created_at: `Offline Queued (${beacon.queuedAt})`
       };
       const updated = [fallbackRequest, ...userRequests];
       setUserRequests(updated);
@@ -488,6 +662,7 @@ export default function UserPortalPage() {
         localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
       } catch { }
       setSubmittedSignal(fallbackRequest);
+      setOfflineQueue(getOfflineSOSQueue());
     } finally {
       setIsSubmitting(false);
     }
@@ -553,6 +728,19 @@ export default function UserPortalPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsSimulatedOffline((prev) => !prev)}
+            className={`flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl border text-xs font-bold font-mono transition-all ${
+              isSimulatedOffline
+                ? "bg-amber-950/90 text-amber-300 border-amber-600 shadow-md shadow-amber-950/40 animate-pulse"
+                : "bg-slate-800/90 hover:bg-slate-700 text-slate-300 border-slate-700"
+            }`}
+            title="Toggle offline simulated mode to demonstrate beacon resilience"
+          >
+            {isSimulatedOffline ? <WifiOff className="w-4 h-4 text-amber-400" /> : <Wifi className="w-4 h-4 text-emerald-400" />}
+            <span>{isSimulatedOffline ? (t.offlineSimulateRestore || "Restore Signal") : (t.offlineSimulateDrop || "Simulate Signal Drop")}</span>
+          </button>
           <Link
             href="/map"
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
@@ -603,6 +791,92 @@ export default function UserPortalPage() {
         </button>
       </div>
 
+      {/* Offline Mode & Network Resilience Banner */}
+      {(!isEffectiveOnline || offlineQueue.length > 0) && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/70 border-2 border-amber-500/80 shadow-xl shadow-amber-950/50 space-y-3 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center space-x-3">
+              <span className="relative flex h-3.5 w-3.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-500"></span>
+              </span>
+              <div>
+                <div className="font-mono font-black text-amber-300 text-sm tracking-wide flex items-center space-x-2">
+                  <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>{t.offlineBannerTitle}</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  {t.offlineBannerSub}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 shrink-0 self-start sm:self-center">
+              {offlineQueue.length > 0 && (
+                <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-amber-500 text-slate-950 shadow-md">
+                  {offlineQueue.length} {offlineQueue.length === 1 ? "BEACON" : "BEACONS"} QUEUED
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsSimulatedOffline((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border ${
+                  isSimulatedOffline
+                    ? "bg-emerald-950 text-emerald-300 border-emerald-700 hover:bg-emerald-900"
+                    : "bg-slate-950 text-slate-300 border-slate-700 hover:border-amber-500 hover:text-white"
+                }`}
+              >
+                {isSimulatedOffline ? (
+                  <span className="flex items-center space-x-1">
+                    <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{t.offlineSimulateRestore}</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center space-x-1">
+                    <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{t.offlineSimulateDrop}</span>
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {offlineQueue.length > 0 && (
+            <div className="pt-2 border-t border-amber-900/60 flex flex-wrap items-center justify-between text-xs text-amber-300/90 font-mono gap-2">
+              <span className="flex items-center space-x-1.5">
+                <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400 shrink-0" />
+                <span>Beacon preserved locally in browser storage ({offlineQueue[0]?.queuedAt}) • Waiting for cell tower ping...</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleManualSync}
+                disabled={isSyncingOffline}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs inline-flex items-center space-x-1.5 transition-all shadow-md"
+              >
+                {isSyncingOffline ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                <span>{t.offlineRetryBtn}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Network Restored Flash Banner */}
+      {syncSuccessMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-950/90 border border-emerald-600/80 shadow-lg shadow-emerald-950/40 flex items-center justify-between gap-3 text-emerald-300 text-xs animate-in fade-in">
+          <div className="flex items-center space-x-2.5 font-mono font-bold">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span>{syncSuccessMsg}</span>
+          </div>
+          <button
+            onClick={() => setSyncSuccessMsg(null)}
+            className="text-emerald-400 hover:text-white p-1 rounded-lg hover:bg-emerald-900/50 transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* TAB 1: SOS REPORT FORM */}
       {activeTab === "SOS" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in">
@@ -631,12 +905,28 @@ export default function UserPortalPage() {
             </div>
 
             {submittedSignal ? (
-              <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800 space-y-4 text-center">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+              <div className={`p-6 rounded-2xl border space-y-4 text-center ${
+                submittedSignal.status === "OFFLINE_QUEUED"
+                  ? "bg-amber-950/40 border-amber-600/80 shadow-lg shadow-amber-950/40"
+                  : "bg-emerald-950/40 border-emerald-800"
+              }`}>
+                {submittedSignal.status === "OFFLINE_QUEUED" ? (
+                  <div className="w-12 h-12 rounded-full bg-amber-950 text-amber-400 border border-amber-600/80 flex items-center justify-center mx-auto animate-pulse">
+                    <WifiOff className="w-6 h-6" />
+                  </div>
+                ) : (
+                  <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+                )}
                 <div>
-                  <h3 className="text-lg font-black text-white">{t.signalLoggedTitle}</h3>
-                  <p className="text-xs text-emerald-300 mt-1">
-                    {t.signalLoggedDesc} (ID: <b>{submittedSignal.id || "SOS-PENDING"}</b>)
+                  <h3 className="text-lg font-black text-white">
+                    {submittedSignal.status === "OFFLINE_QUEUED"
+                      ? "SOS Distress Beacon Queued in Offline Storage"
+                      : t.signalLoggedTitle}
+                  </h3>
+                  <p className={`text-xs mt-1 ${submittedSignal.status === "OFFLINE_QUEUED" ? "text-amber-300" : "text-emerald-300"}`}>
+                    {submittedSignal.status === "OFFLINE_QUEUED"
+                      ? "Preserved locally in browser storage. It will automatically transmit to Central Operations the instant cellular or Wi-Fi signal reconnects."
+                      : `${t.signalLoggedDesc} (ID: ${submittedSignal.id || "SOS-PENDING"})`}
                   </p>
                 </div>
                 <div className="flex justify-center gap-3 pt-2">
@@ -835,10 +1125,24 @@ export default function UserPortalPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider shadow-xl shadow-red-600/30 flex items-center justify-center space-x-2 transition-all hover:scale-[1.01]"
+                  className={`w-full py-4 rounded-2xl disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider shadow-xl flex items-center justify-center space-x-2 transition-all hover:scale-[1.01] ${
+                    !isEffectiveOnline
+                      ? "bg-amber-600 hover:bg-amber-500 shadow-amber-600/30"
+                      : "bg-red-600 hover:bg-red-500 shadow-red-600/30"
+                  }`}
                 >
-                  <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? t.submittingBtn : t.submitBtn}</span>
+                  {!isEffectiveOnline ? (
+                    <WifiOff className="w-4 h-4 text-amber-200" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  <span>
+                    {isSubmitting
+                      ? t.submittingBtn
+                      : !isEffectiveOnline
+                        ? "Save & Queue SOS Offline (Auto-Transmit)"
+                        : t.submitBtn}
+                  </span>
                 </button>
               </form>
             )}
@@ -916,13 +1220,23 @@ export default function UserPortalPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                     <div className="flex items-center space-x-3">
                       <span className="font-mono font-black text-white text-base">{req.id}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black ${isDelivered
-                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                        : isDispatched
-                          ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
-                          : "bg-amber-950 text-amber-400 border border-amber-800"
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black ${
+                        req.status === "OFFLINE_QUEUED"
+                          ? "bg-amber-950 text-amber-300 border border-amber-600 animate-pulse flex items-center space-x-1"
+                          : isDelivered
+                            ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                            : isDispatched
+                              ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
+                              : "bg-amber-950 text-amber-400 border border-amber-800"
                         }`}>
-                        {t.statusLabel} {req.status}
+                        {req.status === "OFFLINE_QUEUED" ? (
+                          <>
+                            <WifiOff className="w-3 h-3 text-amber-400 inline shrink-0" />
+                            <span>{t.offlineQueuedBadge || "OFFLINE QUEUED"}</span>
+                          </>
+                        ) : (
+                          `${t.statusLabel} ${req.status}`
+                        )}
                       </span>
                     </div>
 

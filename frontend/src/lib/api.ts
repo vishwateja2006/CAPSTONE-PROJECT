@@ -430,6 +430,96 @@ export async function submitSOS(payload: any): Promise<SOSRequest> {
   return createdSOS;
 }
 
+export interface QueuedSOSBeacon {
+  queueId: string;
+  payload: any;
+  queuedAt: string;
+  timestamp: number;
+  retryCount: number;
+}
+
+export function getOfflineSOSQueue(): QueuedSOSBeacon[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("resqlink_offline_sos_queue") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function enqueueOfflineSOS(payload: any): QueuedSOSBeacon {
+  const queueId = `OFFLINE-BEACON-${Date.now().toString(36).toUpperCase()}`;
+  const beacon: QueuedSOSBeacon = {
+    queueId,
+    payload,
+    queuedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timestamp: Date.now(),
+    retryCount: 0
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      const existing = getOfflineSOSQueue();
+      existing.unshift(beacon);
+      localStorage.setItem("resqlink_offline_sos_queue", JSON.stringify(existing));
+      window.dispatchEvent(new CustomEvent("resqlink_offline_queue_changed", { detail: existing }));
+    } catch { }
+  }
+
+  return beacon;
+}
+
+export function removeOfflineSOS(queueId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = getOfflineSOSQueue().filter((item) => item.queueId !== queueId);
+    localStorage.setItem("resqlink_offline_sos_queue", JSON.stringify(existing));
+    window.dispatchEvent(new CustomEvent("resqlink_offline_queue_changed", { detail: existing }));
+  } catch { }
+}
+
+export async function flushOfflineSOSQueue(): Promise<{ syncedCount: number; syncedReports: any[] }> {
+  if (typeof window === "undefined") return { syncedCount: 0, syncedReports: [] };
+  const queue = getOfflineSOSQueue();
+  if (queue.length === 0) return { syncedCount: 0, syncedReports: [] };
+
+  const syncedReports: any[] = [];
+  const remaining: QueuedSOSBeacon[] = [];
+
+  for (const item of queue) {
+    try {
+      const res = await fetch(`${API_BASE}/sos/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item.payload)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        syncedReports.push({ ...created, originalQueueId: item.queueId });
+        // Also notify cross-tab admin
+        try {
+          const existing = JSON.parse(localStorage.getItem("resqlink_new_citizen_reports") || "[]");
+          existing.unshift(created);
+          localStorage.setItem("resqlink_new_citizen_reports", JSON.stringify(existing.slice(0, 30)));
+          localStorage.setItem("resqlink_has_unseen_reports", "true");
+          window.dispatchEvent(new CustomEvent("resqlink_new_sos", { detail: created }));
+        } catch { }
+      } else {
+        remaining.push({ ...item, retryCount: item.retryCount + 1 });
+      }
+    } catch {
+      remaining.push({ ...item, retryCount: item.retryCount + 1 });
+    }
+  }
+
+  try {
+    localStorage.setItem("resqlink_offline_sos_queue", JSON.stringify(remaining));
+    window.dispatchEvent(new CustomEvent("resqlink_offline_queue_changed", { detail: remaining }));
+  } catch { }
+
+  return { syncedCount: syncedReports.length, syncedReports };
+}
+
 export async function updateSOSStatus(
   sosId: string,
   newStatus: "PENDING" | "ASSIGNED" | "DISPATCHED" | "DELIVERED" | "RESOLVED",

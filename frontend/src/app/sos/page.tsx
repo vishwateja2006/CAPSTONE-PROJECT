@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { submitSOS } from "../../lib/api";
-import { Radio, ShieldAlert, CheckCircle, MapPin, Send, AlertTriangle } from "lucide-react";
+import { submitSOS, enqueueOfflineSOS } from "../../lib/api";
+import { Radio, ShieldAlert, CheckCircle, MapPin, Send, AlertTriangle, WifiOff } from "lucide-react";
 
 export default function SOSPage() {
   const [victimName, setVictimName] = useState("");
@@ -52,7 +52,8 @@ export default function SOSPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const result = await submitSOS({
+
+    const payload = {
       victim_name: victimName || "Citizen In Need",
       contact_phone: phone || "+91-9876500000",
       latitude: parseFloat(latitude) || 17.3780,
@@ -62,7 +63,28 @@ export default function SOSPage() {
       special_needs: specialNeeds,
       category_needs: categoryNeeds,
       description
-    });
+    };
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      const beacon = enqueueOfflineSOS(payload);
+      setSubmittedData({
+        id: beacon.queueId,
+        victim_name: payload.victim_name,
+        contact_phone: payload.contact_phone,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        address: payload.address,
+        people_count: payload.people_count,
+        urgency_level: "HIGH",
+        urgency_score: 92.0,
+        status: "OFFLINE_QUEUED",
+        requested_at: `Offline Queued (${beacon.queuedAt})`
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    const result = await submitSOS(payload);
     setSubmittedData(result);
     setIsSubmitting(false);
   };
