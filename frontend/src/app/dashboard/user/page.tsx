@@ -31,116 +31,12 @@ import {
 } from "lucide-react";
 import { submitSOS } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
-import { getStoredLanguage, subscribeToLanguage, AppLanguage } from "../../../components/LanguageDropdown";
-
-// Regional Bilingual & Trilingual Dictionary (English / தமிழ் Tamil / हिंदी Hindi)
-const translations = {
-  EN: {
-    formTitle: "Emergency Distress Intake Form",
-    formSubtitle: "Our AI model automatically scores medical and child vulnerability to ensure priority dispatch.",
-    nameLabel: "Your Name / Household Head",
-    namePlaceholder: "e.g. Kavitha Sundaram",
-    phoneLabel: "Contact Phone Number",
-    phonePlaceholder: "+91-9840112233",
-    locationLabel: "Detailed Location / Landmark",
-    locationPlaceholder: "e.g. 12 Musi Causeway Road, near Chaderghat Bridge, Hyderabad",
-    autoDetectGPS: "📍 Auto-Detect My Live Location",
-    headcountLabel: "People Trapped / With You",
-    vulnSectionTitle: "⚠ Flag Urgent Vulnerabilities (Increases Priority):",
-    needsSectionTitle: "Relief Aid Categories Required:",
-    descLabel: "Situation Description",
-    descPlaceholder: "e.g. Water reached 4 feet on ground floor. We are on the roof. Baby needs formula milk urgently.",
-    submitBtn: "Transmit Emergency SOS",
-    submittingBtn: "Transmitting Distress Signal...",
-    needs: [
-      { id: "WATER", label: "Drinking Water (20L Cans)", badge: "குடிநீர்", icon: Droplet },
-      { id: "FOOD", label: "Food Rations (MRE Packs)", badge: "உணவு", icon: Flame },
-      { id: "MEDICAL", label: "Medical & Trauma Aid", badge: "மருத்துவம்", icon: HeartPulse },
-      { id: "SHELTER", label: "Emergency Shelter / Tarps", badge: "கூடாரம்", icon: Shield },
-      { id: "EVACUATION", label: "Rescue Boat / Evacuation", badge: "மீட்புப் படகு", icon: Anchor }
-    ],
-    vulns: [
-      { id: "infant", label: "Infant / Baby (< 1yr)", sub: "கைக்குழந்தை" },
-      { id: "pregnant", label: "Pregnant Female", sub: "கர்ப்பிணி" },
-      { id: "elderly", label: "Elderly Citizen (65+)", sub: "முதியோர்" },
-      { id: "insulin", label: "Diabetic / Needs Insulin", sub: "இன்சுலின் தேவை" },
-      { id: "oxygen", label: "Needs Oxygen / Critical Care", sub: "ஆக்ஸிஜன் தேவை" },
-      { id: "injured", label: "Physical Trauma / Injured", sub: "காயமடைந்தவர்" },
-      { id: "wheelchair", label: "Disabled / Immobile", sub: "மாற்றுத்திறனாளி" },
-      { id: "trapped", label: "Rooftop / Water Rising", sub: "கூரைமேல் சிக்கியவர்" }
-    ]
-  },
-  TA: {
-    formTitle: "அவசர கால உதவி கோரிக்கை படிவம்",
-    formSubtitle: "குழந்தைகள் மற்றும் மருத்துவ அவசரங்களுக்கு தானியங்கி முன்னுரிமை அளிக்கப்படுகிறது.",
-    nameLabel: "உங்கள் பெயர் / குடும்பத் தலைவர்",
-    namePlaceholder: "எ.கா. கவிதா சுந்தரம்",
-    phoneLabel: "தொடர்பு தொலைபேசி எண்",
-    phonePlaceholder: "+91-9840112233",
-    locationLabel: "இடம் / அடையாளம் (Landmark)",
-    locationPlaceholder: "எ.கா. 12 மூசி காஸ்வே சாலை, சாதர்காட் பாலம் அருகே, ஹைதராபாத்",
-    autoDetectGPS: "📍 என் இருப்பிடத்தை தானாகக் கண்டறி (GPS)",
-    headcountLabel: "உங்களுடன் உள்ள நபர்கள்",
-    vulnSectionTitle: "⚠ அவசர முன்னுரிமை நிலைகள் (உடனடி உதவிக்கு):",
-    needsSectionTitle: "தேவையான நிவாரணப் பொருட்கள்:",
-    descLabel: "நிலைமை விளக்கம் (Situation Details)",
-    descPlaceholder: "எ.கா. தரைதளத்தில் 4 அடி நீர் புகுந்துவிட்டது. கூரையில் உள்ளோம். குழந்தைக்கு பால் தேவை.",
-    submitBtn: "அவசர SOS செய்தியை அனுப்புக",
-    submittingBtn: "அவசர செய்தி அனுப்பப்படுகிறது...",
-    needs: [
-      { id: "WATER", label: "குடிநீர் (Drinking Water)", badge: "20L கேன்", icon: Droplet },
-      { id: "FOOD", label: "உணவுப் பொட்டலங்கள் (Food Rations)", badge: "உணவு", icon: Flame },
-      { id: "MEDICAL", label: "மருத்துவ உதவி (Medical & Trauma)", badge: "மருத்துவம்", icon: HeartPulse },
-      { id: "SHELTER", label: "தற்காலிக கூடாரம் (Shelter / Tarps)", badge: "கூடாரம்", icon: Shield },
-      { id: "EVACUATION", label: "மீட்புப் படகு (Rescue Boat)", badge: "படகு", icon: Anchor }
-    ],
-    vulns: [
-      { id: "infant", label: "கைக்குழந்தை (< 1 வயது)", sub: "Infant / Baby" },
-      { id: "pregnant", label: "கர்ப்பிணிப் பெண் (Pregnant)", sub: "Pregnant Female" },
-      { id: "elderly", label: "முதியோர் (65+ வயது)", sub: "Elderly Citizen" },
-      { id: "insulin", label: "நீரிழிவு / இன்சுலின் தேவை", sub: "Needs Insulin" },
-      { id: "oxygen", label: "ஆக்ஸிஜன் / தீவிர சிகிச்சை", sub: "Needs Oxygen" },
-      { id: "injured", label: "காயமடைந்தவர் (Injured)", sub: "Physical Injury" },
-      { id: "wheelchair", label: "மாற்றுத்திறனாளி (Disabled)", sub: "Disabled / Immobile" },
-      { id: "trapped", label: "கூரைமேல் சிக்கியவர் / நீர் உயர்வு", sub: "Rooftop Trapped" }
-    ]
-  },
-  HI: {
-    formTitle: "आपातकालीन संकट सहायता फॉर्म",
-    formSubtitle: "हमारा AI मॉडल बच्चों और गंभीर मरीजों को स्वचालित प्राथमिकता देता है।",
-    nameLabel: "आपका नाम / परिवार के मुखिया",
-    namePlaceholder: "उदा. कविता सुंदरम",
-    phoneLabel: "संपर्क मोबाइल नंबर",
-    phonePlaceholder: "+91-9840112233",
-    locationLabel: "विस्तृत स्थान / लैंडमार्क",
-    locationPlaceholder: "उदा. 12 मूसी कॉजवे रोड, चादरघाट पुल के पास, हैदराबाद",
-    autoDetectGPS: "📍 मेरी लाइव लोकेशन ऑटो-डिटेक्ट करें (GPS)",
-    headcountLabel: "फंसे हुए लोगों की संख्या",
-    vulnSectionTitle: "⚠ गंभीर आवश्यकताएं (उच्च प्राथमिकता के लिए):",
-    needsSectionTitle: "आवश्यक राहत सामग्री:",
-    descLabel: "वर्तमान स्थिति का विवरण",
-    descPlaceholder: "उदा. ग्राउंड फ्लोर पर 4 फीट पानी भर गया है। हम छत पर हैं। शिशु के लिए दूध चाहिए।",
-    submitBtn: "आपातकालीन SOS भेजें",
-    submittingBtn: "संकट संदेश भेजा जा रहा है...",
-    needs: [
-      { id: "WATER", label: "पीने का पानी (Drinking Water)", badge: "20L कैन", icon: Droplet },
-      { id: "FOOD", label: "राशन / भोजन पैकेट (Food Rations)", badge: "राशन", icon: Flame },
-      { id: "MEDICAL", label: "चिकित्सा व दवाएं (Medical Aid)", badge: "दवाएं", icon: HeartPulse },
-      { id: "SHELTER", label: "तिरपाल / आश्रय (Shelter / Tarps)", badge: "तिरपाल", icon: Shield },
-      { id: "EVACUATION", label: "बचाव नाव / रेस्क्यू बोट (Evacuation)", badge: "नाव", icon: Anchor }
-    ],
-    vulns: [
-      { id: "infant", label: "शिशु / छोटा बच्चा (< 1 वर्ष)", sub: "Infant / Baby" },
-      { id: "pregnant", label: "गर्भवती महिला (Pregnant)", sub: "Pregnant Female" },
-      { id: "elderly", label: "वरिष्ठ नागरिक (65+ वर्ष)", sub: "Elderly Citizen" },
-      { id: "insulin", label: "मधुमेह / इंसुलिन की आवश्यकता", sub: "Needs Insulin" },
-      { id: "oxygen", label: "ऑक्सीजन / गंभीर देखभाल", sub: "Needs Oxygen" },
-      { id: "injured", label: "घायल / शारीरिक चोट (Injured)", sub: "Physical Injury" },
-      { id: "wheelchair", label: "दिव्यांग / चलने में असमर्थ", sub: "Disabled / Immobile" },
-      { id: "trapped", label: "छत पर फंसे / पानी का बढ़ता स्तर", sub: "Rooftop Trapped" }
-    ]
-  }
-};
+import {
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations,
+  AppLanguage
+} from "../../../lib/i18n";
 
 interface UserRequest {
   id: string;
@@ -163,15 +59,26 @@ interface UserRequest {
   created_at: string;
 }
 
+const getNeedIcon = (id: string) => {
+  switch (id) {
+    case "WATER": return Droplet;
+    case "FOOD": return Flame;
+    case "MEDICAL": return HeartPulse;
+    case "SHELTER": return Shield;
+    case "EVACUATION": return Anchor;
+    default: return Package;
+  }
+};
+
 export default function UserPortalPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"SOS" | "MY_REQUESTS" | "RELIEF_CAMPS">("SOS");
 
-  // Regional Language State (English / தமிழ் / हिंदी) - Synchronized with Navbar down slider
+  // Regional Language State (English / తెలుగు / தமிழ் / हिंदी) - Synchronized with Navbar down slider
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
-  const t = translations[selectedLanguage];
+  const t = translations[selectedLanguage]?.citizen || translations.EN.citizen;
 
   // GPS Auto-Detection State
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
@@ -336,7 +243,7 @@ export default function UserPortalPage() {
           setAddress(`GPS Sat-Fix: ${lat}° N, ${lon}° E (±${acc}m accuracy) • Musi River Chaderghat Lowlands, Hyderabad`);
           setIsDetectingGPS(false);
         },
-        (err) => {
+        () => {
           // Graceful fallback for mock/sandboxed environments without hardware sensors
           const mockLat = 17.3780;
           const mockLon = 78.4910;
@@ -352,52 +259,9 @@ export default function UserPortalPage() {
         { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
       );
     } else {
-      const mockLat = 17.3780;
-      const mockLon = 78.4910;
-      setGpsLocked({
-        lat: mockLat,
-        lon: mockLon,
-        accuracy: 5,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-      });
-      setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Musi River Sector 4 Lowlands, Hyderabad`);
       setIsDetectingGPS(false);
     }
   };
-
-  // Relief Camps list
-  const reliefCamps = [
-    {
-      name: "Secunderabad Central Relief Base Alpha",
-      location: "Gymkhana Grounds Complex, Secunderabad",
-      distance: "1.8 km away",
-      capacity: "2,500 people",
-      occupancy: "450 sheltered",
-      status: "OPEN",
-      available_items: ["Clean Water", "Food Packs", "First Aid", "Blankets"],
-      phone: "+91-9444012345"
-    },
-    {
-      name: "Rajendranagar Emergency Camp Beta",
-      location: "Rajendranagar PJTSAU Complex, Hyderabad",
-      distance: "3.2 km away",
-      capacity: "1,200 people",
-      occupancy: "310 sheltered",
-      status: "OPEN",
-      available_items: ["Water Cans", "Ration Packs", "Doctor on Duty"],
-      phone: "+91-9444056789"
-    },
-    {
-      name: "Amberpet Musi Basin Relief Camp",
-      location: "Amberpet / Moosarambagh Hall, Hyderabad",
-      distance: "4.5 km away",
-      capacity: "800 people",
-      occupancy: "620 sheltered",
-      status: "NEAR CAPACITY",
-      available_items: ["Dry Rations", "Chlorine Tablets"],
-      phone: "+91-9444098765"
-    }
-  ];
 
   const toggleNeed = (need: string) => {
     setSelectedNeeds((prev) =>
@@ -415,62 +279,113 @@ export default function UserPortalPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const lat = gpsLocked ? gpsLocked.lat : 13.0650;
-    const lon = gpsLocked ? gpsLocked.lon : 80.2550;
-
-    const res = await submitSOS({
-      victim_name: name || "Registered Citizen",
-      contact_phone: phone || "+91-9876500000",
-      latitude: lat,
-      longitude: lon,
-      address: address || "Residential Sector",
-      people_count: headcount,
-      special_needs: selectedVulnerabilities,
-      category_needs: selectedNeeds,
-      description
-    });
-
-    // Generate readable relief package summary
-    const packageItems = selectedNeeds.map((n) => {
-      if (n === "WATER") return "Water (5L Cans)";
-      if (n === "FOOD") return "Food Rations (MRE)";
-      if (n === "MEDICAL") return "Medical Aid Kit";
-      if (n === "SHELTER") return "Emergency Tarp";
-      if (n === "EVACUATION") return "Rescue Lifevests";
-      return n;
-    });
-    if (selectedVulnerabilities.some((v) => v.toLowerCase().includes("infant") || v.includes("குழந்தை") || v.includes("शिशु"))) {
-      packageItems.push("Infant Care Pack");
-    }
-
-    const newReq: UserRequest = {
-      id: res.id || `SOS-${Math.floor(1000 + Math.random() * 9000)}`,
-      family_count: headcount,
-      needs: selectedNeeds,
-      vulnerabilities: selectedVulnerabilities.length > 0 ? selectedVulnerabilities : ["None flagged"],
-      address: address || "Emergency Intake Sector",
-      status: "PENDING",
-      urgency_score: res.urgency_score || (selectedVulnerabilities.length > 0 ? 88.0 : 65.0),
-      eta: "Calculating ETA",
-      assigned_vehicle: "Assigning Fleet...",
-      relief_package: packageItems.join(" + ") || "Standard Relief Kit",
-      created_at: "Just now"
-    };
-
-    const updatedRequests = [newReq, ...userRequests];
-    setUserRequests(updatedRequests);
     try {
-      localStorage.setItem("resqlink_user_requests", JSON.stringify(updatedRequests));
-    } catch { }
-    setSubmittedSignal(res);
-    setIsSubmitting(false);
+      const signalPayload = {
+        victim_name: name || "Anonymous Citizen",
+        contact_phone: phone || "+91-9840112233",
+        latitude: gpsLocked?.lat || 17.3780,
+        longitude: gpsLocked?.lon || 78.4910,
+        people_count: headcount,
+        description: description || "Severe flooding reached first floor, require immediate aid.",
+        needs: selectedNeeds,
+        vulnerabilities: selectedVulnerabilities
+      };
+
+      const result = await submitSOS(signalPayload);
+
+      const newRequest: UserRequest = {
+        id: result?.id || `SOS-${Math.floor(1000 + Math.random() * 9000)}`,
+        family_count: headcount,
+        needs: selectedNeeds,
+        vulnerabilities: selectedVulnerabilities.map(
+          (v) => t.vulns.find((item) => item.id === v)?.label || v
+        ),
+        address: address || "Hyderabad Musi River Sector",
+        status: "PENDING",
+        urgency_score: result?.urgency_score || 88.0,
+        eta: "15–20 mins (Calculating CVRP Route)",
+        assigned_vehicle: "Assigning tactical fleet...",
+        relief_package: selectedNeeds.join(" + ") || "Standard Relief Kit",
+        created_at: "Just now"
+      };
+
+      const updated = [newRequest, ...userRequests];
+      setUserRequests(updated);
+      try {
+        localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
+      } catch { }
+
+      setSubmittedSignal(newRequest);
+      setName("");
+      setPhone("");
+      setAddress("");
+      setDescription("");
+      setSelectedVulnerabilities([]);
+    } catch {
+      // Fallback local broadcast
+      const fallbackRequest: UserRequest = {
+        id: `SOS-${Math.floor(1000 + Math.random() * 9000)}`,
+        family_count: headcount,
+        needs: selectedNeeds,
+        vulnerabilities: selectedVulnerabilities,
+        address: address || "Hyderabad Musi River Flood Sector",
+        status: "PENDING",
+        urgency_score: 90.0,
+        eta: "15–20 mins",
+        assigned_vehicle: "Auto-Allocating...",
+        relief_package: "Food + Water Pack",
+        created_at: "Just now"
+      };
+      const updated = [fallbackRequest, ...userRequests];
+      setUserRequests(updated);
+      try {
+        localStorage.setItem("resqlink_user_requests", JSON.stringify(updated));
+      } catch { }
+      setSubmittedSignal(fallbackRequest);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Nearby Verified Relief Camps
+  const reliefCamps = [
+    {
+      name: "Secunderabad Central Humanitarian Relief Hub",
+      location: "Near Railway Cantonment, Secunderabad",
+      distance: "2.4 km away",
+      capacity: 1200,
+      occupancy: 420,
+      status: "OPEN",
+      phone: "+91-40-27801234",
+      available_items: ["Water Tankers", "Medical Tents", "Dry Food Rations", "Bedding"]
+    },
+    {
+      name: "Moosarambagh Ward Community Camp",
+      location: "Moosarambagh High School Grounds, Hyderabad",
+      distance: "1.1 km away",
+      capacity: 450,
+      occupancy: 280,
+      status: "OPEN",
+      phone: "+91-40-24567890",
+      available_items: ["Hot Meals", "Purified Water", "Doctor on Site", "Children Supplies"]
+    },
+    {
+      name: "Malakpet Senior Relief & Care Depots",
+      location: "Government Primary Health Center, Malakpet",
+      distance: "3.2 km away",
+      capacity: 300,
+      occupancy: 190,
+      status: "OPEN",
+      phone: "+91-40-23456789",
+      available_items: ["Insulin Storage", "Oxygen Concentrators", "First Aid", "Blankets"]
+    }
+  ];
 
   if (isCheckingAuth) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
         <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm text-slate-400 font-mono">Verifying citizen access privileges...</p>
+        <p className="text-sm text-slate-400 font-mono">Verifying citizen portal clearance...</p>
       </div>
     );
   }
@@ -483,11 +398,11 @@ export default function UserPortalPage() {
         <div className="space-y-2">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-700/80 text-blue-400 text-xs font-bold uppercase tracking-wider">
             <Users className="w-3.5 h-3.5" />
-            <span>Citizen & Beneficiary Portal</span>
+            <span>{t.headerTag}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Emergency Relief & Aid Portal</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">{t.headerTitle}</h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-            Broadcast emergency SOS reports, track your relief delivery in real-time, and locate nearby safe shelter camps.
+            {t.headerSubtitle}
           </p>
         </div>
 
@@ -497,7 +412,7 @@ export default function UserPortalPage() {
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
           >
             <Map className="w-4 h-4 text-cyan-400" />
-            <span>View Safe Shelter Map</span>
+            <span>{t.viewShelterMap}</span>
           </Link>
           <button
             onClick={() => {
@@ -507,7 +422,7 @@ export default function UserPortalPage() {
             className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-red-600/30 transition-transform hover:scale-105"
           >
             <Radio className="w-4 h-4 animate-pulse" />
-            <span>Send SOS Beacon</span>
+            <span>{t.sendBeaconBtn}</span>
           </button>
         </div>
       </div>
@@ -520,7 +435,7 @@ export default function UserPortalPage() {
             }`}
         >
           <Radio className="w-4 h-4" />
-          <span>1. Broadcast SOS Report</span>
+          <span>{t.tab1Label}</span>
         </button>
 
         <button
@@ -529,7 +444,7 @@ export default function UserPortalPage() {
             }`}
         >
           <Truck className="w-4 h-4" />
-          <span>2. Track My Aid Deliveries ({userRequests.length})</span>
+          <span>{t.tab2Label} ({userRequests.length})</span>
         </button>
 
         <button
@@ -538,7 +453,7 @@ export default function UserPortalPage() {
             }`}
         >
           <MapPin className="w-4 h-4" />
-          <span>3. Nearby Safe Shelters ({reliefCamps.length})</span>
+          <span>{t.tab3Label} ({reliefCamps.length})</span>
         </button>
       </div>
 
@@ -562,9 +477,9 @@ export default function UserPortalPage() {
               {/* Active Global Language Badge (Managed by Navbar dropdown) */}
               <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 self-start sm:self-auto shrink-0 shadow-inner">
                 <Languages className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-[11px] font-mono text-slate-400">Language:</span>
+                <span className="text-[11px] font-mono text-slate-400">{t.activeLanguageLabel}:</span>
                 <span className="font-bold font-mono text-cyan-300">
-                  {selectedLanguage === "TA" ? "தமிழ் (Tamil)" : selectedLanguage === "HI" ? "हिंदी (Hindi)" : "English (EN)"}
+                  {selectedLanguage === "TE" ? "తెలుగు (Telugu)" : selectedLanguage === "TA" ? "தமிழ் (Tamil)" : selectedLanguage === "HI" ? "हिंदी (Hindi)" : "English (EN)"}
                 </span>
               </div>
             </div>
@@ -573,9 +488,9 @@ export default function UserPortalPage() {
               <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-800 space-y-4 text-center">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
                 <div>
-                  <h3 className="text-lg font-black text-white">Emergency Signal Logged with Command Center</h3>
+                  <h3 className="text-lg font-black text-white">{t.signalLoggedTitle}</h3>
                   <p className="text-xs text-emerald-300 mt-1">
-                    Your request ID is <b>{submittedSignal.id || "SOS-PENDING"}</b>. Relief units have been notified.
+                    {t.signalLoggedDesc} (ID: <b>{submittedSignal.id || "SOS-PENDING"}</b>)
                   </p>
                 </div>
                 <div className="flex justify-center gap-3 pt-2">
@@ -583,13 +498,13 @@ export default function UserPortalPage() {
                     onClick={() => setActiveTab("MY_REQUESTS")}
                     className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
                   >
-                    Track Delivery Status
+                    {t.trackDeliveryBtn}
                   </button>
                   <button
                     onClick={() => setSubmittedSignal(null)}
                     className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs"
                   >
-                    Send Another Report
+                    {t.sendAnotherBtn}
                   </button>
                 </div>
               </div>
@@ -634,7 +549,7 @@ export default function UserPortalPage() {
                       {isDetectingGPS ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                          <span>Acquiring Sat-Fix...</span>
+                          <span>{t.gpsAcquiring}</span>
                         </>
                       ) : (
                         <>
@@ -689,7 +604,7 @@ export default function UserPortalPage() {
                             </span>
                           </div>
                           <div className="text-[11px] text-cyan-300/80 font-mono mt-0.5">
-                            Sat-Fix Lock Confirmed • Sector: Musi River Lowlands, Hyderabad • Locked at {gpsLocked.timestamp}
+                            {t.gpsLockedNotice} • Musi River Lowlands, Hyderabad • {gpsLocked.timestamp}
                           </div>
                         </div>
                       </div>
@@ -734,7 +649,7 @@ export default function UserPortalPage() {
                   <label className="text-xs font-semibold text-slate-300">{t.needsSectionTitle}</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                     {t.needs.map((item) => {
-                      const Icon = item.icon;
+                      const Icon = getNeedIcon(item.id);
                       const isSelected = selectedNeeds.includes(item.id);
                       return (
                         <button
@@ -788,35 +703,31 @@ export default function UserPortalPage() {
             <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
               <div className="flex items-center space-x-2 text-amber-400 font-bold text-sm">
                 <ShieldCheck className="w-5 h-5" />
-                <span>How ResQLink Prioritizes Aid</span>
+                <span>{t.howPrioritizesTitle}</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Unlike traditional First-Come First-Served systems, ResQLink uses <b>Max-Min Mathematical Fairness</b>.
-                Every family is guaranteed hydration and calories, while urgent life-support items (insulin, infant milk, oxygen) are dispatched first.
+                {t.howPrioritizesDesc}
               </p>
 
               <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs font-mono">
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>Critical Urgency (80-100):</span>
-                  <span className="text-red-400 font-bold">&lt; 30 min dispatch</span>
+                  <span className="text-red-400 font-bold">{t.criticalUrgency}</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>High Urgency (60-79):</span>
-                  <span className="text-amber-400 font-bold">&lt; 60 min dispatch</span>
+                  <span className="text-amber-400 font-bold">{t.highUrgency}</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>Standard Aid:</span>
-                  <span className="text-cyan-400 font-bold">Same day scheduled</span>
+                  <span className="text-cyan-400 font-bold">{t.standardAid}</span>
                 </div>
               </div>
             </div>
 
             <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Helpline Contacts</span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">{t.helplineContacts}</span>
               <div className="text-xs text-slate-400 space-y-1">
-                <div>State Disaster Control: <span className="font-mono text-cyan-400 font-bold">1070</span></div>
-                <div>District Helpline: <span className="font-mono text-cyan-400 font-bold">1077</span></div>
-                <div>Emergency Ambulance: <span className="font-mono text-cyan-400 font-bold">108</span></div>
+                <div>{t.stateControl}</div>
+                <div>{t.districtHelpline}</div>
+                <div>{t.ambulance}</div>
               </div>
             </div>
           </div>
@@ -831,14 +742,14 @@ export default function UserPortalPage() {
             <div>
               <h2 className="text-xl font-black text-white flex items-center space-x-2">
                 <Truck className="w-5 h-5 text-amber-400" />
-                <span>My Active Relief Requests & Delivery Tracking</span>
+                <span>{t.myRequestsHeader}</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Real-time tracking of assigned delivery vehicles, estimated time of arrival, and Proof-of-Delivery status.
+                {t.myRequestsSub}
               </p>
             </div>
             <span className="text-xs font-mono text-slate-400">
-              {userRequests.length} RECORDED SIGNALS
+              {userRequests.length} {t.recordedSignals}
             </span>
           </div>
 
@@ -865,25 +776,25 @@ export default function UserPortalPage() {
                           ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse"
                           : "bg-amber-950 text-amber-400 border border-amber-800"
                         }`}>
-                        STATUS: {req.status}
+                        {t.statusLabel} {req.status}
                       </span>
                     </div>
 
                     <div className="text-xs font-mono text-slate-400 flex items-center space-x-4">
-                      <span>ETA: <b className="text-white">{req.eta}</b></span>
+                      <span>{t.etaLabel} <b className="text-white">{req.eta}</b></span>
                       <span>{req.created_at}</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs">
                     <div>
-                      <span className="text-slate-500 font-semibold">Location / Address:</span>
+                      <span className="text-slate-500 font-semibold">{t.locationAddressLabel}</span>
                       <div className="font-medium text-slate-200 mt-0.5">{req.address}</div>
-                      <div className="text-slate-400 mt-0.5">{req.family_count} People</div>
+                      <div className="text-slate-400 mt-0.5">{req.family_count} {t.peopleCountLabel}</div>
                     </div>
 
                     <div>
-                      <span className="text-slate-500 font-semibold">Special Vulnerabilities:</span>
+                      <span className="text-slate-500 font-semibold">{t.vulnLabel}</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {req.vulnerabilities.map((v, i) => (
                           <span key={i} className="px-2 py-0.5 rounded bg-red-950 text-red-300 text-[10px] font-bold">
@@ -894,9 +805,9 @@ export default function UserPortalPage() {
                     </div>
 
                     <div>
-                      <span className="text-slate-500 font-semibold">Assigned Fleet Mission:</span>
+                      <span className="text-slate-500 font-semibold">{t.assignedMissionLabel}</span>
                       <div className="font-mono text-cyan-400 font-bold mt-0.5">{req.assigned_vehicle}</div>
-                      <div className="text-[11px] text-slate-500">Urgency Score: {req.urgency_score}/100</div>
+                      <div className="text-[11px] text-slate-500">{t.urgencyScoreLabel} {req.urgency_score}/100</div>
                     </div>
                   </div>
 
@@ -911,15 +822,15 @@ export default function UserPortalPage() {
                           </span>
                           <span className="text-xs font-black text-cyan-300 tracking-wider uppercase flex items-center space-x-1.5">
                             <Truck className="w-4 h-4 text-cyan-400" />
-                            <span>Live Aid Vehicle Telemetry</span>
+                            <span>{t.liveTelemetryTitle}</span>
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-300 font-mono text-[10px] font-bold">
-                            TRANS-PONDER LOCK ACTIVE
+                            {t.transponderLock}
                           </span>
                           <span className="text-xs font-mono font-black text-white bg-red-950 border border-red-800 px-2.5 py-0.5 rounded animate-pulse">
-                            ETA: {req.eta || "12–15 mins"}
+                            {t.etaLabel} {req.eta || "12–15 mins"}
                           </span>
                         </div>
                       </div>
@@ -928,20 +839,20 @@ export default function UserPortalPage() {
                         {/* 1. Assigned Unit & Pilot */}
                         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
                           <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
-                            Assigned Vehicle
+                            {t.assignedVehicleLabel}
                           </span>
                           <div className="font-mono font-black text-cyan-300 text-sm flex items-center space-x-1.5">
                             <Anchor className="w-4 h-4 text-cyan-400 shrink-0" />
                             <span className="truncate">{req.assigned_vehicle || "BOAT-AMPHIBIAN-02 (Capt. Murugan)"}</span>
                           </div>
                           <div className="text-[11px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-900">
-                            <span>Speed: <b className="text-white font-mono">{req.telemetry?.speed || "18 km/h"}</b></span>
+                            <span>{t.speedLabel} <b className="text-white font-mono">{req.telemetry?.speed || "18 km/h"}</b></span>
                             <a
                               href={`tel:${req.telemetry?.phone || "+919444088112"}`}
                               className="text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 font-mono font-bold"
                             >
                               <Phone className="w-3 h-3" />
-                              <span>Direct Hotline</span>
+                              <span>{t.directHotline}</span>
                             </a>
                           </div>
                         </div>
@@ -949,21 +860,21 @@ export default function UserPortalPage() {
                         {/* 2. Estimated Time of Arrival */}
                         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
                           <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
-                            Estimated ETA
+                            {t.estimatedEtaLabel}
                           </span>
                           <div className="font-mono font-black text-amber-400 text-sm flex items-center space-x-1.5">
                             <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
                             <span>{req.eta || "12–15 mins"}</span>
                           </div>
                           <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 truncate">
-                            Route: <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Musi River Link / Chaderghat Expressway"}</span>
+                            {t.routeLabel} <span className="text-slate-200 font-medium">{req.telemetry?.heading || "Musi River Link / Chaderghat Expressway"}</span>
                           </div>
                         </div>
 
                         {/* 3. Relief Package Payload */}
                         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
                           <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
-                            Relief Package
+                            {t.reliefPackageLabel}
                           </span>
                           <div className="font-bold text-emerald-400 text-xs flex items-center space-x-1.5">
                             <Package className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -971,7 +882,7 @@ export default function UserPortalPage() {
                           </div>
                           <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 flex items-center space-x-1">
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                            <span>Depot Sealed • Sterile Manifest</span>
+                            <span>{t.depotSealedLabel}</span>
                           </div>
                         </div>
                       </div>
@@ -981,15 +892,15 @@ export default function UserPortalPage() {
                   {/* Real-time Tracking Stepper */}
                   <div className="mt-4 pt-3.5 border-t border-slate-800/80">
                     <div className="flex items-center justify-between text-[11px] font-mono mb-2">
-                      <span className="text-slate-400 font-semibold uppercase">Live Delivery Lifecycle:</span>
+                      <span className="text-slate-400 font-semibold uppercase">{t.deliveryLifecycleLabel}</span>
                       <span className="text-cyan-400 font-bold">
                         {req.status === "DELIVERED"
-                          ? "✓ Delivered & Confirmed"
+                          ? t.lifecycleDelivered
                           : req.status === "DISPATCHED"
-                            ? "🚚 Fleet In Transit (ETA ~12 mins)"
+                            ? t.lifecycleDispatched
                             : req.status === "ASSIGNED"
-                              ? "⚓ Vehicle Staged at Depot"
-                              : "📡 Intake Scored & In Queue"}
+                              ? t.lifecycleAssigned
+                              : t.lifecycleIntake}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[10px]">
@@ -997,13 +908,13 @@ export default function UserPortalPage() {
                         ? "bg-emerald-950 text-emerald-400 border-emerald-800"
                         : "bg-slate-900 text-slate-500 border-slate-800"
                         }`}>
-                        1. Intake Logged ✓
+                        {t.step1}
                       </div>
                       <div className={`p-2 rounded-xl text-center border ${(req.status === "ASSIGNED" || req.status === "DISPATCHED" || req.status === "DELIVERED")
                         ? "bg-blue-950 text-blue-400 border-blue-800 font-bold"
                         : "bg-slate-900 text-slate-500 border-slate-800"
                         }`}>
-                        2. Fleet Assigned
+                        {t.step2}
                       </div>
                       <div className={`p-2 rounded-xl text-center border ${(req.status === "DISPATCHED" || req.status === "DELIVERED")
                         ? req.status === "DISPATCHED"
@@ -1011,13 +922,13 @@ export default function UserPortalPage() {
                           : "bg-cyan-950 text-cyan-400 border-cyan-800"
                         : "bg-slate-900 text-slate-500 border-slate-800"
                         }`}>
-                        3. Dispatched (En Route)
+                        {t.step3}
                       </div>
                       <div className={`p-2 rounded-xl text-center border ${req.status === "DELIVERED"
                         ? "bg-emerald-950 text-emerald-400 border-emerald-800 font-bold"
                         : "bg-slate-900 text-slate-500 border-slate-800"
                         }`}>
-                        4. Aid Delivered
+                        {t.step4}
                       </div>
                     </div>
                   </div>
@@ -1035,17 +946,17 @@ export default function UserPortalPage() {
             <div>
               <h2 className="text-xl font-black text-white flex items-center space-x-2">
                 <MapPin className="w-5 h-5 text-blue-400" />
-                <span>Verified Humanitarian Relief Depots & Shelters</span>
+                <span>{t.sheltersTitle}</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Official emergency bases offering hot meals, purified drinking water, medical tents, and dry shelter.
+                {t.sheltersSub}
               </p>
             </div>
             <Link
               href="/map"
               className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase"
             >
-              Open Interactive GIS Map
+              {t.openMapBtn}
             </Link>
           </div>
 
@@ -1066,17 +977,17 @@ export default function UserPortalPage() {
 
                 <div className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-slate-900">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Occupancy:</span>
+                    <span className="text-slate-500">{t.occupancyLabel}</span>
                     <span className="font-bold text-white">{camp.occupancy} / {camp.capacity}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Emergency Phone:</span>
+                    <span className="text-slate-500">{t.emergencyPhoneLabel}</span>
                     <span className="font-mono text-cyan-400">{camp.phone}</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-slate-900">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Stocked Supplies:</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold">{t.stockedSuppliesLabel}</span>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {camp.available_items.map((item, i) => (
                       <span key={i} className="px-2 py-0.5 rounded bg-slate-900 text-slate-300 text-[10px] font-medium">
@@ -1094,4 +1005,3 @@ export default function UserPortalPage() {
     </div>
   );
 }
-

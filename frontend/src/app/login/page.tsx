@@ -18,9 +18,17 @@ import {
   AlertCircle
 } from "lucide-react";
 import { loginAsRole, getAuthSession } from "../../lib/auth";
+import {
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations,
+  AppLanguage
+} from "../../lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
+  const t = translations[selectedLanguage]?.login || translations.EN.login;
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [lockedRole, setLockedRole] = useState<"USER" | "ADMIN" | null>(null);
@@ -86,11 +94,20 @@ export default function LoginPage() {
       }
     }
 
+    setSelectedLanguage(getStoredLanguage());
+    const unsubLang = subscribeToLanguage((newLang) => {
+      setSelectedLanguage(newLang);
+    });
+
     try {
       router.prefetch("/dashboard/user");
       router.prefetch("/dashboard/admin");
       router.prefetch("/map");
     } catch {}
+
+    return () => {
+      unsubLang();
+    };
   }, [router]);
 
   const handleSelectRole = (selectedRole: "USER" | "ADMIN") => {
@@ -130,17 +147,17 @@ export default function LoginPage() {
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-white">
           {lockedRole === "ADMIN"
-            ? "Administrator Command Access"
+            ? t.roleAdmin
             : lockedRole === "USER"
-            ? "Citizen / User Aid Portal"
-            : "ResQLink Access Portal"}
+            ? t.roleUser
+            : t.title}
         </h1>
         <p className="text-xs text-slate-400">
           {lockedRole === "ADMIN"
-            ? "Administrative command login. AI models and CVRP logistics unlock upon authentication."
+            ? t.roleAdminDesc
             : lockedRole === "USER"
-            ? "Citizen aid sign in. Submit assistance requests and track live relief dispatches."
-            : "Sign in as a Citizen or Administrator. Portal navigation & live GIS tools unlock upon login."}
+            ? t.roleUserDesc
+            : t.subtitle}
         </p>
       </div>
 
@@ -197,12 +214,12 @@ export default function LoginPage() {
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="font-black text-sm text-white">Citizen / User</div>
-                    <div className="text-[10px] text-blue-400 font-mono">Public Access</div>
+                    <div className="font-black text-sm text-white">{t.roleUser}</div>
+                    <div className="text-[10px] text-blue-400 font-mono">{t.roleUserBadge}</div>
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
-                  Assistance intake, delivery tracking & shelter locator.
+                  {t.roleUserDesc}
                 </p>
               </button>
 
@@ -221,12 +238,12 @@ export default function LoginPage() {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="font-black text-sm text-white">Administrator</div>
-                    <div className="text-[10px] text-amber-400 font-mono">Command Center</div>
+                    <div className="font-black text-sm text-white">{t.roleAdmin}</div>
+                    <div className="text-[10px] text-amber-400 font-mono">{t.roleAdminBadge}</div>
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-2.5 line-clamp-2">
-                  5 AI Models, CVRP fleet dispatch & stock control.
+                  {t.roleAdminDesc}
                 </p>
               </button>
 
@@ -271,7 +288,7 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-300">
-              {role === "USER" ? "Citizen Email" : "Admin Official Email"}
+              {role === "USER" ? t.emailLabel : `${t.roleAdmin} ${t.emailLabel}`}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -287,7 +304,7 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold text-slate-300">Password</label>
+              <label className="text-xs font-semibold text-slate-300">{t.passwordLabel}</label>
               {isLogin && <span className="text-[11px] text-amber-400 hover:underline cursor-pointer">Forgot?</span>}
             </div>
             <div className="relative">
@@ -314,11 +331,11 @@ export default function LoginPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Launching {role === "USER" ? "Citizen Portal" : "Admin Command"}...</span>
+                <span>{t.submittingBtn}</span>
               </>
             ) : (
               <>
-                <span>{isLogin ? `Sign In as ${role === "USER" ? "Citizen / User" : "Administrator"}` : "Create Account"}</span>
+                <span>{isLogin ? `${t.submitBtn} (${role === "USER" ? t.roleUser : t.roleAdmin})` : "Create Account"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

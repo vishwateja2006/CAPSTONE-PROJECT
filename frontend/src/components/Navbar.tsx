@@ -14,6 +14,12 @@ import {
   X
 } from "lucide-react";
 import { getAuthSession, clearAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
+import {
+  AppLanguage,
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations
+} from "../lib/i18n";
 import ThemeDropdown from "./ThemeDropdown";
 import LanguageDropdown from "./LanguageDropdown";
 
@@ -23,14 +29,27 @@ export default function Navbar() {
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [language, setLanguage] = useState<AppLanguage>("EN");
+
+  const t = translations[language]?.nav || translations.EN.nav;
 
   useEffect(() => {
     setIsMounted(true);
     setAuth(getAuthSession());
-    const unsubscribe = subscribeToAuth((newAuth) => {
+    setLanguage(getStoredLanguage());
+
+    const unsubscribeAuth = subscribeToAuth((newAuth) => {
       setAuth(newAuth);
     });
-    return () => unsubscribe();
+
+    const unsubscribeLang = subscribeToLanguage((newLang) => {
+      setLanguage(newLang);
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeLang();
+    };
   }, []);
 
   const handleLogout = () => {
@@ -54,14 +73,14 @@ export default function Navbar() {
     // Citizen / User Portal Login: User Portal
     if (auth.role === "USER") {
       return [
-        { href: "/dashboard/user", label: "User Portal", icon: Users }
+        { href: "/dashboard/user", label: t.userPortal, icon: Users }
       ];
     }
 
     // Admin Command Center Login: Admin Command
     if (auth.role === "ADMIN") {
       return [
-        { href: "/dashboard/admin", label: "Admin Command", icon: ShieldCheck }
+        { href: "/dashboard/admin", label: t.adminCommand, icon: ShieldCheck }
       ];
     }
 
@@ -144,7 +163,7 @@ export default function Navbar() {
                 />
                 <User className="w-3.5 h-3.5" />
                 <span className="font-bold tracking-tight">
-                  {auth.role === "ADMIN" ? "Admin" : "Citizen"}: {auth.name}
+                  {auth.role === "ADMIN" ? t.adminRole : t.citizenRole}: {auth.name}
                 </span>
               </div>
 
@@ -159,7 +178,7 @@ export default function Navbar() {
                 title="Log out of session"
               >
                 <LogOut className="w-3.5 h-3.5 text-red-400" />
-                <span>Logout</span>
+                <span>{t.logout}</span>
               </button>
             </div>
           ) : (
@@ -172,7 +191,7 @@ export default function Navbar() {
                 className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all hover:scale-105"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Login</span>
+                <span>{t.login}</span>
               </Link>
             </div>
           )}
@@ -221,7 +240,7 @@ export default function Navbar() {
             {isMounted && auth ? (
               <div className="space-y-2">
                 <div className="text-xs text-slate-400 font-mono px-1">
-                  Signed in as: <strong className="text-white">{auth.name}</strong> ({auth.role})
+                  Signed in as: <strong className="text-white">{auth.name}</strong> ({auth.role === "ADMIN" ? t.adminRole : t.citizenRole})
                 </div>
                 <button
                   type="button"
@@ -229,7 +248,7 @@ export default function Navbar() {
                   className="w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-red-950/70 border border-red-800 text-red-300 text-xs font-bold"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
+                  <span>{t.logout}</span>
                 </button>
               </div>
             ) : (
@@ -239,7 +258,7 @@ export default function Navbar() {
                 className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Login</span>
+                <span>{t.login}</span>
               </Link>
             )}
           </div>

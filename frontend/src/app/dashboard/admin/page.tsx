@@ -76,6 +76,12 @@ import {
   MOCK_VEHICLES
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
+import {
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations,
+  AppLanguage
+} from "../../../lib/i18n";
 import OfficialIAPModal from "../../../components/OfficialIAPModal";
 
 export default function AdminCommandCenterPage() {
@@ -83,6 +89,8 @@ export default function AdminCommandCenterPage() {
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "AI_MODELS" | "INVENTORY" | "FLEET" | "AUDIT">("AI_MODELS");
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
+  const t = translations[selectedLanguage]?.admin || translations.EN.admin;
 
   // Operational Data State
   const [sosList, setSosList] = useState<any[]>([]);
@@ -401,6 +409,11 @@ export default function AdminCommandCenterPage() {
     setAuth(session);
     setIsCheckingAuth(false);
 
+    setSelectedLanguage(getStoredLanguage());
+    const unsubLang = subscribeToLanguage((newLang) => {
+      setSelectedLanguage(newLang);
+    });
+
     async function init() {
       const [s, c, v] = await Promise.all([
         fetchSOSRequests(),
@@ -516,6 +529,7 @@ export default function AdminCommandCenterPage() {
       window.removeEventListener("resqlink_new_sos", handleNewSOS);
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(pollInterval);
+      unsubLang();
     };
   }, [router]);
 
@@ -701,11 +715,11 @@ export default function AdminCommandCenterPage() {
         <div className="space-y-2">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-700/80 text-amber-300 text-xs font-bold uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Administrator Command Center</span>
+            <span>{t.bannerTag}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Disaster Operations & Logistics Command</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">{t.bannerTitle}</h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-            Real-time incident response, 5 autonomous AI models, warehouse inventory control, and CVRP vehicle dispatch.
+            {t.bannerSubtitle}
           </p>
         </div>
 
@@ -726,7 +740,7 @@ export default function AdminCommandCenterPage() {
               ) : (
                 <Bell className="w-4 h-4 text-slate-400" />
               )}
-              <span>Alerts</span>
+              <span>{t.alertsBtn}</span>
               {unreadReports.length > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black animate-pulse">
                   {unreadReports.length}
@@ -741,7 +755,7 @@ export default function AdminCommandCenterPage() {
                   <div className="flex items-center space-x-2">
                     <Bell className="w-4 h-4 text-amber-400" />
                     <span className="text-xs font-bold text-white uppercase tracking-wider">
-                      Distress Notifications ({unreadReports.length})
+                      {t.alertsTitle} ({unreadReports.length})
                     </span>
                   </div>
                   {unreadReports.length > 0 && (
@@ -750,14 +764,14 @@ export default function AdminCommandCenterPage() {
                       onClick={handleAcknowledgeAll}
                       className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold"
                     >
-                      Clear All
+                      {t.clearAllBtn}
                     </button>
                   )}
                 </div>
 
                 <div className="max-h-72 overflow-y-auto space-y-2">
                   {unreadReports.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4">No unread distress alerts.</p>
+                    <p className="text-xs text-slate-400 text-center py-4">{t.noAlerts}</p>
                   ) : (
                     unreadReports.map((report) => (
                       <div
@@ -785,7 +799,7 @@ export default function AdminCommandCenterPage() {
                             }}
                             className="text-[10px] text-amber-400 hover:underline font-bold"
                           >
-                            View in Triage →
+                            {t.viewInTriage}
                           </button>
                         </div>
                       </div>
@@ -804,7 +818,7 @@ export default function AdminCommandCenterPage() {
             title="Simulate Inbound Citizen SOS Beacon (Viva Demo)"
           >
             <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
-            <span>⚡ Simulate SOS</span>
+            <span>{t.simulateSOS}</span>
           </button>
 
           <Link
@@ -812,11 +826,11 @@ export default function AdminCommandCenterPage() {
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
           >
             <MapPin className="w-4 h-4 text-cyan-400" />
-            <span>Live Geospatial Map</span>
+            <span>{t.viewMapBtn}</span>
           </Link>
           <div className="px-3.5 py-2 rounded-xl bg-red-950/80 border border-red-800 text-red-400 font-mono text-xs font-bold flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-            <span>DEFCON-1 ACTIVE</span>
+            <span>{t.defconActive}</span>
           </div>
         </div>
       </div>
@@ -832,7 +846,7 @@ export default function AdminCommandCenterPage() {
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider">
-                    🚨 NEW CITIZEN DISTRESS REPORT
+                    {t.newDistressBanner}
                   </span>
                   <span className="text-white font-black text-sm sm:text-base">
                     {unreadReports.length} Citizen Distress {unreadReports.length === 1 ? "Report" : "Reports"} Received
@@ -868,7 +882,7 @@ export default function AdminCommandCenterPage() {
                 className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center space-x-1.5 shadow-md shadow-amber-500/20 transition-all hover:scale-105"
               >
                 <Eye className="w-4 h-4" />
-                <span>Inspect in Triage Queue</span>
+                <span>{t.inspectTriageBtn}</span>
               </button>
               <button
                 type="button"
@@ -877,7 +891,7 @@ export default function AdminCommandCenterPage() {
                 title="Acknowledge and dismiss notification"
               >
                 <Check className="w-4 h-4 text-emerald-400 inline mr-1" />
-                <span>Acknowledge</span>
+                <span>{t.acknowledgeBtn}</span>
               </button>
             </div>
           </div>
@@ -926,42 +940,42 @@ export default function AdminCommandCenterPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Card 1: Distress Signals */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs font-semibold uppercase">Distress Signals</span>
+          <span className="text-slate-400 text-xs font-semibold uppercase">{t.kpiDistress}</span>
           <div className="text-3xl font-black text-white">{activeSOS.length}</div>
-          <div className="text-[11px] text-red-400 font-mono font-semibold">({criticalSOS.length} Critical Priority)</div>
+          <div className="text-[11px] text-red-400 font-mono font-semibold">({criticalSOS.length} {t.kpiCritical})</div>
         </div>
 
         {/* Card 2: Trapped Citizens */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs font-semibold uppercase">Trapped Citizens</span>
+          <span className="text-slate-400 text-xs font-semibold uppercase">{t.kpiTrapped}</span>
           <div className="text-3xl font-black text-amber-400">{activeVictims} People</div>
-          <div className="text-[11px] text-slate-500">Awaiting relief rescue</div>
+          <div className="text-[11px] text-slate-500">{t.kpiAwaiting}</div>
         </div>
 
         {/* Card 3: Reports Solved - Beside Active Fleet on the Left */}
         <div className="p-5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
           <span className="text-emerald-400 text-xs font-semibold uppercase flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            Reports Solved
+            {t.kpiSolved}
           </span>
           <div className="text-3xl font-black text-emerald-400">
-            {solvedSOS.length} <span className="text-xs font-normal text-slate-400 font-sans">Delivered</span>
+            {solvedSOS.length} <span className="text-xs font-normal text-slate-400 font-sans">{t.kpiDelivered}</span>
           </div>
-          <div className="text-[11px] text-emerald-400/80 font-mono font-semibold">{solvedVictims} Citizens Rescued</div>
+          <div className="text-[11px] text-emerald-400/80 font-mono font-semibold">{solvedVictims} {t.kpiRescued}</div>
         </div>
 
         {/* Card 4: Active Fleet */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs font-semibold uppercase">Active Fleet</span>
+          <span className="text-slate-400 text-xs font-semibold uppercase">{t.kpiFleet}</span>
           <div className="text-3xl font-black text-emerald-400">{effectiveVehicles.length} Units</div>
-          <div className="text-[11px] text-emerald-400/80">Boats, 4x4s, Rescue Trucks</div>
+          <div className="text-[11px] text-emerald-400/80">{t.kpiFleetSub}</div>
         </div>
 
         {/* Card 5: AI Decision Engine */}
         <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs font-semibold uppercase">AI Decision Engine</span>
+          <span className="text-slate-400 text-xs font-semibold uppercase">{t.kpiEngine}</span>
           <div className="text-3xl font-black text-cyan-400 font-mono">ONLINE</div>
-          <div className="text-[11px] text-slate-500">5 Models & UDAP Solver</div>
+          <div className="text-[11px] text-slate-500">{t.kpiEngineSub}</div>
         </div>
       </div>
 
@@ -973,7 +987,7 @@ export default function AdminCommandCenterPage() {
             }`}
         >
           <Radio className="w-4 h-4" />
-          <span className="truncate">1. Live Triage Queue</span>
+          <span className="truncate">{t.tab1}</span>
         </button>
 
         <button
@@ -982,7 +996,7 @@ export default function AdminCommandCenterPage() {
             }`}
         >
           <Cpu className="w-4 h-4" />
-          <span className="truncate">2. AI Models & UDAP</span>
+          <span className="truncate">{t.tab2}</span>
         </button>
 
         <button
@@ -991,7 +1005,7 @@ export default function AdminCommandCenterPage() {
             }`}
         >
           <Package className="w-4 h-4" />
-          <span className="truncate">3. Warehouses & Stock</span>
+          <span className="truncate">{t.tab3}</span>
         </button>
 
         <button
@@ -1000,7 +1014,7 @@ export default function AdminCommandCenterPage() {
             }`}
         >
           <Truck className="w-4 h-4" />
-          <span className="truncate">4. Fleet & Logistics</span>
+          <span className="truncate">{t.tab4}</span>
         </button>
 
         <button
@@ -1009,7 +1023,7 @@ export default function AdminCommandCenterPage() {
             }`}
         >
           <FileText className="w-4 h-4" />
-          <span className="truncate">5. Audit Ledger</span>
+          <span className="truncate">{t.tab5}</span>
         </button>
       </div>
 
@@ -1020,10 +1034,10 @@ export default function AdminCommandCenterPage() {
             <div>
               <h2 className="text-xl font-black text-white flex items-center space-x-2">
                 <Radio className="w-5 h-5 text-red-500" />
-                <span>Live Emergency Distress Stream (Ranked by AI Urgency)</span>
+                <span>{t.streamTitle}</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Incoming citizen SOS signals prioritized automatically by the DistilBERT Natural Language Processing model.
+                {t.streamSub}
               </p>
             </div>
 
@@ -1031,7 +1045,7 @@ export default function AdminCommandCenterPage() {
             <div className="flex flex-wrap items-center gap-2.5 self-start md:self-center">
               <span className="text-xs font-mono text-slate-400 font-bold uppercase flex items-center space-x-1.5">
                 <Filter className="w-3.5 h-3.5 text-amber-400" />
-                <span>Filter Queue:</span>
+                <span>{t.filterLabel}</span>
               </span>
 
               {/* Native Dropdown / Slide-Down Select Bar */}
@@ -1042,9 +1056,9 @@ export default function AdminCommandCenterPage() {
                   className="appearance-none bg-slate-950 border border-slate-700 hover:border-amber-500 text-white text-xs font-bold font-mono py-2 pl-3.5 pr-8 rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500/40 cursor-pointer transition-all"
                   aria-label="Filter distress queue status"
                 >
-                  <option value="ALL">⚡ All Reports ({(sosList || []).length})</option>
-                  <option value="RUNNING">🚨 Running / Active ({activeSOS.length})</option>
-                  <option value="COMPLETED">✅ Completed / Solved ({solvedSOS.length})</option>
+                  <option value="ALL">{t.filterAll} ({(sosList || []).length})</option>
+                  <option value="RUNNING">{t.filterRunning} ({activeSOS.length})</option>
+                  <option value="COMPLETED">{t.filterCompleted} ({solvedSOS.length})</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
                   <ChevronDown className="w-4 h-4" />
@@ -1061,7 +1075,7 @@ export default function AdminCommandCenterPage() {
                     : "text-slate-400 hover:text-white"
                     }`}
                 >
-                  All ({(sosList || []).length})
+                  {t.quickAll} ({(sosList || []).length})
                 </button>
                 <button
                   type="button"
@@ -1072,7 +1086,7 @@ export default function AdminCommandCenterPage() {
                     }`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${triageFilter === "RUNNING" ? "bg-slate-950" : "bg-amber-400 animate-ping"}`}></span>
-                  <span>Running ({activeSOS.length})</span>
+                  <span>{t.quickRunning} ({activeSOS.length})</span>
                 </button>
                 <button
                   type="button"
@@ -1083,7 +1097,7 @@ export default function AdminCommandCenterPage() {
                     }`}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Completed ({solvedSOS.length})</span>
+                  <span>{t.quickCompleted} ({solvedSOS.length})</span>
                 </button>
               </div>
             </div>
@@ -1095,22 +1109,24 @@ export default function AdminCommandCenterPage() {
                 <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto opacity-70" />
                 <div className="text-sm font-bold text-white">
                   {triageFilter === "RUNNING"
-                    ? "No Active Running Distress Calls"
+                    ? t.emptyRunning
                     : triageFilter === "COMPLETED"
-                      ? "No Completed / Solved Reports Yet"
+                      ? t.emptyCompleted
                       : "No Distress Reports In Stream"}
                 </div>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
                   {triageFilter === "RUNNING"
-                    ? "All distress calls have been addressed and solved. Use the slide-down filter bar to view Completed reports."
-                    : "Switch filter to 'All Reports' or simulate a new distress call to test."}
+                    ? t.emptyRunningSub
+                    : triageFilter === "COMPLETED"
+                      ? t.emptyCompletedSub
+                      : "Switch filter to 'All Reports' or simulate a new distress call to test."}
                 </p>
                 <button
                   type="button"
                   onClick={() => setTriageFilter("ALL")}
                   className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-mono font-bold transition-all"
                 >
-                  View All Reports ({(sosList || []).length})
+                  {t.viewAllBtn} ({(sosList || []).length})
                 </button>
               </div>
             ) : (
@@ -1532,7 +1548,7 @@ export default function AdminCommandCenterPage() {
                     title="Re-open distress signal as pending"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Re-Open Report</span>
+                    <span>{t.reopenBtn}</span>
                   </button>
                 ) : (
                   <button
@@ -1543,7 +1559,7 @@ export default function AdminCommandCenterPage() {
                     title="Mark this distress call as fully solved and delivered"
                   >
                     <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                    <span>Solve Report (Delivered)</span>
+                    <span>{t.solveBtn}</span>
                   </button>
                 )}
 
@@ -1552,7 +1568,7 @@ export default function AdminCommandCenterPage() {
                   onClick={() => setSelectedSOS(null)}
                   className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
                 >
-                  Close Report Details
+                  {t.closeDetailsBtn}
                 </button>
               </div>
             </div>

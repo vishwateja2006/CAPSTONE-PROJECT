@@ -2,70 +2,16 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Languages, ChevronDown, Check, Globe } from "lucide-react";
+import {
+  AppLanguage,
+  getStoredLanguage,
+  setStoredLanguage,
+  subscribeToLanguage,
+  languages
+} from "../lib/i18n";
 
-export type AppLanguage = "EN" | "TA" | "HI";
-
-const STORAGE_KEY = "resqlink_language";
-
-export function getStoredLanguage(): AppLanguage {
-  if (typeof window === "undefined") return "EN";
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY) as AppLanguage | null;
-    if (stored === "EN" || stored === "TA" || stored === "HI") {
-      return stored;
-    }
-    return "EN";
-  } catch {
-    return "EN";
-  }
-}
-
-export function setStoredLanguage(lang: AppLanguage): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, lang);
-    window.dispatchEvent(new CustomEvent("resqlink_language_changed", { detail: lang }));
-  } catch (e) {
-    console.error("Failed to persist language", e);
-  }
-}
-
-export function subscribeToLanguage(callback: (lang: AppLanguage) => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  const handler = (e: any) => {
-    callback(e.detail || getStoredLanguage());
-  };
-  window.addEventListener("resqlink_language_changed", handler);
-  window.addEventListener("storage", handler);
-  return () => {
-    window.removeEventListener("resqlink_language_changed", handler);
-    window.removeEventListener("storage", handler);
-  };
-}
-
-const languages = [
-  {
-    code: "EN" as const,
-    label: "English",
-    nativeLabel: "English",
-    subtitle: "Default / International",
-    badge: "EN"
-  },
-  {
-    code: "TA" as const,
-    label: "Tamil",
-    nativeLabel: "தமிழ்",
-    subtitle: "சென்னை வட்டார மொழி",
-    badge: "TA"
-  },
-  {
-    code: "HI" as const,
-    label: "Hindi",
-    nativeLabel: "हिंदी",
-    subtitle: "राष्ट्रीय आपदा भाषा",
-    badge: "HI"
-  }
-];
+export type { AppLanguage };
+export { getStoredLanguage, setStoredLanguage, subscribeToLanguage, languages };
 
 export default function LanguageDropdown() {
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
@@ -110,7 +56,7 @@ export default function LanguageDropdown() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 transition-all hover:scale-[1.02] shadow-sm"
-        title="Select Regional Language (English / தமிழ் / हिंदी)"
+        title="Select Regional Language (English / తెలుగు / हिंदी / தமிழ்)"
         aria-label="Language selection dropdown"
         aria-expanded={isOpen}
       >
@@ -127,13 +73,13 @@ export default function LanguageDropdown() {
 
       {/* Down Slider Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900/98 border border-slate-700/90 shadow-2xl backdrop-blur-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-slate-900/98 border border-slate-700/90 shadow-2xl backdrop-blur-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
           <div className="px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             <span className="flex items-center space-x-1">
               <Globe className="w-3 h-3 text-cyan-400" />
               <span>Regional Language</span>
             </span>
-            <span className="font-mono text-cyan-400">{selectedLanguage}</span>
+            <span className="font-mono text-cyan-400 font-bold">{selectedLanguage}</span>
           </div>
 
           <div className="space-y-1 pt-1.5">

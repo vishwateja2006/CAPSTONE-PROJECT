@@ -13,7 +13,6 @@ import {
   Activity,
   Layers,
   MapPin,
-  LogIn,
   ShieldCheck,
   ClipboardList,
   Sparkles,
@@ -22,75 +21,19 @@ import {
   Lock
 } from "lucide-react";
 import { getAuthSession, subscribeToAuth, AuthSession } from "../lib/auth";
-import { getStoredLanguage, subscribeToLanguage, AppLanguage } from "../components/LanguageDropdown";
-
-const homeTranslations: Record<AppLanguage, {
-  tagTitle: string;
-  tagSub: string;
-  heroHeading1: string;
-  heroHeading2: string;
-  heroDesc: string;
-  portalHeader: string;
-  portalSub: string;
-  userTitle: string;
-  userDesc: string;
-  userBtn: string;
-  adminTitle: string;
-  adminDesc: string;
-  adminBtn: string;
-}> = {
-  EN: {
-    tagTitle: "Next-Gen Response Engine",
-    tagSub: "Autonomous Disaster Coordination",
-    heroHeading1: "Intelligent Disaster Relief,",
-    heroHeading2: "Zero Confusion.",
-    heroDesc: "ResQLink unites rapid emergency response with automated fairness. Powered by 5 specialized AI models for demand forecasting, flood hazard segmentation, distress triage, vehicle routing, and equitable resource allocation.",
-    portalHeader: "Select Your Portal",
-    portalSub: "Sign in to unlock your dedicated citizen or admin operational console.",
-    userTitle: "Citizen / User Portal",
-    userDesc: "Fast, intuitive emergency hub for citizens. Submit high-priority relief requests, track incoming supplies, and discover safe shelter camps.",
-    userBtn: "Login as User",
-    adminTitle: "Admin Command Center",
-    adminDesc: "Unified command interface for disaster coordinators. Inspect real-time triage queues, execute all 5 AI models, manage warehouse supplies, and seal audit ledgers.",
-    adminBtn: "Login as Administrator"
-  },
-  TA: {
-    tagTitle: "அடுத்த தலைமுறை மீட்பு இயந்திரம்",
-    tagSub: "தன்னாட்சி பேரிடர் ஒருங்கிணைப்பு",
-    heroHeading1: "அறிவார்ந்த பேரிடர் நிவாரணம்,",
-    heroHeading2: "துல்லியமான ஒருங்கிணைப்பு.",
-    heroDesc: "ரெஸ்க்யூ-லிங்க் உடனடி அவசர மீட்பையும் கணித நீதியையும் ஒருங்கிணைக்கிறது. தேவை முன்கணிப்பு, செயற்கைக்கோள் வெள்ள பகுப்பாய்வு, அவசர தரம் பிரித்தல், வாகன வழித்தடம் மற்றும் சமபங்கு விநியோகத்திற்கான 5 AI மாதிரிகள்.",
-    portalHeader: "உங்கள் போர்ட்டலைத் தேர்வுசெய்க",
-    portalSub: "உங்கள் பிரத்யேக குடிமக்கள் அல்லது நிர்வாகக் கட்டுப்பாட்டுத் தளத்திற்குள் நுழையவும்.",
-    userTitle: "குடிமக்கள் / பயனர் உதவித் தளம்",
-    userDesc: "பாதிக்கப்பட்ட மக்களுக்கான விரைவான அவசர உதவி தளம். நிவாரணக் கோரிக்கைகளை சமர்ப்பிக்கவும், வாகனங்களை நேரடியாகக் கண்காணிக்கவும், நிவாரண முகாம்களைக் கண்டறியவும்.",
-    userBtn: "பயனாளராக உள்நுழைக",
-    adminTitle: "நிர்வாக கட்டளை மையம்",
-    adminDesc: "பேரிடர் ஒருங்கிணைப்பாளர்களுக்கான ஒருங்கிணைந்த கட்டளை தளம். 5 AI மாதிரிகளை இயக்கவும், வாகனங்களை அனுப்பவும், குறியாக்க தணிக்கைப் பதிவேட்டைப் பாதுகாக்கவும்.",
-    adminBtn: "நிர்வாகியாக உள்நுழைக"
-  },
-  HI: {
-    tagTitle: "नेक्स्ट-जेन आपदा मोचन इंजन",
-    tagSub: "स्वायत्त आपदा समन्वय",
-    heroHeading1: "बुद्धिमान आपदा राहत,",
-    heroHeading2: "बिना किसी भ्रम के।",
-    heroDesc: "ResQLink त्वरित आपातकालीन प्रतिक्रिया और स्वचालित निष्पक्षता को जोड़ता है। मांग पूर्वानुमान, उपग्रह बाढ़ विश्लेषण, संकट वर्गीकरण, वाहन रूटिंग और समान राहत आवंटन के लिए 5 AI मॉडल।",
-    portalHeader: "अपना पोर्टल चुनें",
-    portalSub: "अपने समर्पित नागरिक या प्रशासनिक कंसोल में प्रवेश करने के लिए लॉगिन करें।",
-    userTitle: "नागरिक / उपयोगकर्ता सहायता पोर्टल",
-    userDesc: "नागरिकों के लिए तेज़, सहज आपातकालीन हब। उच्च प्राथमिकता वाली राहत का अनुरोध करें, वाहनों को ट्रैक करें और सुरक्षित शिविर खोजें।",
-    userBtn: "उपयोगकर्ता के रूप में लॉगिन करें",
-    adminTitle: "प्रशासनिक कमांड सेंटर",
-    adminDesc: "आपदा समन्वयकों के लिए एकीकृत कमांड इंटरफ़ेस। रीयल-टाइम AI मॉडल चलाएं, वाहनों को डिस्पैच करें और क्रिप्टोग्राफ़िक ऑडिट सील करें।",
-    adminBtn: "प्रशासक के रूप में लॉगिन करें"
-  }
-};
+import {
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations,
+  AppLanguage
+} from "../lib/i18n";
 
 export default function LandingPage() {
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
-  const t = homeTranslations[selectedLanguage];
+
+  const t = translations[selectedLanguage]?.home || translations.EN.home;
 
   useEffect(() => {
     setIsMounted(true);
@@ -149,10 +92,10 @@ export default function LandingPage() {
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                 <div className="flex items-center space-x-2">
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">AI Operational Core</span>
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">{t.coreTitle}</span>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/80">
-                  ONLINE 100%
+                  {t.coreOnline}
                 </span>
               </div>
 
@@ -160,33 +103,33 @@ export default function LandingPage() {
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
                   <span className="text-slate-300 flex items-center space-x-2">
                     <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>5 Autonomous AI Models</span>
+                    <span>{t.coreModel1}</span>
                   </span>
-                  <span className="text-cyan-400 font-mono font-bold">Active</span>
+                  <span className="text-cyan-400 font-mono font-bold">{t.coreModel1Status}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
                   <span className="text-slate-300 flex items-center space-x-2">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Resource Allocation Equity</span>
+                    <span>{t.coreModel2}</span>
                   </span>
-                  <span className="text-emerald-400 font-mono font-bold">Gini = 0.019</span>
+                  <span className="text-emerald-400 font-mono font-bold">{t.coreModel2Status}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
                   <span className="text-slate-300 flex items-center space-x-2">
                     <Compass className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Hazard-Bypass Fleet Routing</span>
+                    <span>{t.coreModel3}</span>
                   </span>
-                  <span className="text-amber-400 font-mono font-bold">OR-Tools VRP</span>
+                  <span className="text-amber-400 font-mono font-bold">{t.coreModel3Status}</span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
                   <span className="text-slate-300 flex items-center space-x-2">
                     <Lock className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Cryptographic Audit Proof</span>
+                    <span>{t.coreModel4}</span>
                   </span>
-                  <span className="text-purple-400 font-mono font-bold">SHA-256</span>
+                  <span className="text-purple-400 font-mono font-bold">{t.coreModel4Status}</span>
                 </div>
               </div>
             </div>
@@ -200,29 +143,29 @@ export default function LandingPage() {
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition-all flex items-center space-x-3 shadow-lg">
           <Activity className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div>
-            <div className="text-slate-400 text-[11px]">ACTIVE SURVEILLANCE</div>
-            <div className="text-white font-bold text-sm">Real-Time Hazards</div>
+            <div className="text-slate-400 text-[11px]">{t.tickerSurveillanceTitle}</div>
+            <div className="text-white font-bold text-sm">{t.tickerSurveillanceDesc}</div>
           </div>
         </div>
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition-all flex items-center space-x-3 shadow-lg">
           <Layers className="w-5 h-5 text-amber-500 flex-shrink-0" />
           <div>
-            <div className="text-slate-400 text-[11px]">ACCESS CONTROL</div>
-            <div className="text-white font-bold text-sm">Protected Roles</div>
+            <div className="text-slate-400 text-[11px]">{t.tickerAccessTitle}</div>
+            <div className="text-white font-bold text-sm">{t.tickerAccessDesc}</div>
           </div>
         </div>
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition-all flex items-center space-x-3 shadow-lg">
           <Cpu className="w-5 h-5 text-cyan-400 flex-shrink-0" />
           <div>
-            <div className="text-slate-400 text-[11px]">DECISION PIPELINES</div>
-            <div className="text-white font-bold text-sm">5 Neural Models</div>
+            <div className="text-slate-400 text-[11px]">{t.tickerModelsTitle}</div>
+            <div className="text-white font-bold text-sm">{t.tickerModelsDesc}</div>
           </div>
         </div>
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition-all flex items-center space-x-3 shadow-lg">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
           <div>
-            <div className="text-slate-400 text-[11px]">FAIRNESS METRIC</div>
-            <div className="text-white font-bold text-sm">Gini = 0.019 (Equity)</div>
+            <div className="text-slate-400 text-[11px]">{t.tickerFairnessTitle}</div>
+            <div className="text-white font-bold text-sm">{t.tickerFairnessDesc}</div>
           </div>
         </div>
       </div>
@@ -244,7 +187,7 @@ export default function LandingPage() {
                   <Users className="w-7 h-7" />
                 </div>
                 <span className="px-3 py-1 rounded-full bg-blue-950/80 border border-blue-700/80 text-blue-300 font-mono text-xs font-bold">
-                  CITIZEN & USER
+                  {t.userTag}
                 </span>
               </div>
 
@@ -260,15 +203,15 @@ export default function LandingPage() {
               <div className="space-y-3 pt-2">
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <ClipboardList className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>Assistance Intake:</strong> Relief request form with automatic vulnerability tagging (infants, elderly, medical urgency).</span>
+                  <span><strong>{t.userBullet1Title}</strong> {t.userBullet1Desc}</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <Truck className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>Live Relief Tracking:</strong> Track assigned vehicles, delivery status (Dispatched, En Route, Delivered), and ETAs.</span>
+                  <span><strong>{t.userBullet2Title}</strong> {t.userBullet2Desc}</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>Nearby Safe Shelters:</strong> Locate verified relief camps with real-time capacity and contact hotlines.</span>
+                  <span><strong>{t.userBullet3Title}</strong> {t.userBullet3Desc}</span>
                 </div>
               </div>
             </div>
@@ -292,7 +235,7 @@ export default function LandingPage() {
                   <ShieldAlert className="w-7 h-7" />
                 </div>
                 <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-700/80 text-amber-300 font-mono text-xs font-bold">
-                  AUTHORITY & LOGISTICS
+                  {t.adminTag}
                 </span>
               </div>
 
@@ -308,15 +251,15 @@ export default function LandingPage() {
               <div className="space-y-3 pt-2">
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <Cpu className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>5 AI Models & UDAP:</strong> LSTM demand forecasts, NDWI flood segmentation, NLP triage, CVRP routing, and Max-Min fair allocation.</span>
+                  <span><strong>{t.adminBullet1Title}</strong> {t.adminBullet1Desc}</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <Package className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>Warehouse Inventory:</strong> Monitor Water, Food, Medicine, and Shelters with automated low-stock warnings.</span>
+                  <span><strong>{t.adminBullet2Title}</strong> {t.adminBullet2Desc}</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-300">
                   <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span><strong>SHA-256 Audit Ledger:</strong> Tamper-evident cryptographic blocks and verifiable Proof-of-Delivery tokens.</span>
+                  <span><strong>{t.adminBullet3Title}</strong> {t.adminBullet3Desc}</span>
                 </div>
               </div>
             </div>

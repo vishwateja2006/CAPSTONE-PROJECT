@@ -15,6 +15,12 @@ import {
   getAQICategory
 } from "../../lib/environmentalTelemetry";
 import { getAuthSession, AuthSession } from "../../lib/auth";
+import {
+  getStoredLanguage,
+  subscribeToLanguage,
+  translations,
+  AppLanguage
+} from "../../lib/i18n";
 import { SOSRequest, ReliefCenter, ReliefVehicle, RoutePlan } from "../../types";
 import {
   Map,
@@ -41,6 +47,8 @@ export default function MapPage() {
   const router = useRouter();
   const [auth, setAuth] = useState<AuthSession | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
+  const t = translations[selectedLanguage]?.map || translations.EN.map;
 
   const [reliefCenters, setReliefCenters] = useState<ReliefCenter[]>([]);
   const [vehicles, setVehicles] = useState<ReliefVehicle[]>([]);
@@ -79,6 +87,11 @@ export default function MapPage() {
     setAuth(session);
     setIsCheckingAuth(false);
 
+    setSelectedLanguage(getStoredLanguage());
+    const unsubLang = subscribeToLanguage((newLang) => {
+      setSelectedLanguage(newLang);
+    });
+
     async function initReliefData() {
       const [c, v, s] = await Promise.all([
         fetchReliefCenters(),
@@ -90,6 +103,10 @@ export default function MapPage() {
       setSosRequests(s || []);
     }
     initReliefData();
+
+    return () => {
+      unsubLang();
+    };
   }, [router]);
 
   // Request Real-Time Browser Geolocation
@@ -225,10 +242,10 @@ export default function MapPage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white">
-            Live Geospatial Map & Environmental Radar
+            {t.title}
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Real-time GPS positioning, Air Quality Index (AQI) tracking, cyclone atmospheric vortex telemetry, ocean wave & tidal surge detection, and automated CVRP fleet navigation.
+            {t.subtitle}
           </p>
         </div>
 
@@ -240,7 +257,7 @@ export default function MapPage() {
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-cyan-600/30"
           >
             <Crosshair className={`w-4 h-4 ${isLocating ? "animate-spin" : ""}`} />
-            <span>{isLocating ? "Acquiring GPS..." : "Detect Live Location"}</span>
+            <span>{isLocating ? t.acquiringGPS : t.detectGPS}</span>
           </button>
 
           <button
@@ -249,7 +266,7 @@ export default function MapPage() {
             className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/30"
           >
             <Navigation className={`w-4 h-4 ${isGeneratingRoutes ? "animate-spin" : ""}`} />
-            <span>{isGeneratingRoutes ? "Routing Vehicles..." : "Draw CVRP Routes"}</span>
+            <span>{isGeneratingRoutes ? t.routingVehicles : t.drawCVRP}</span>
           </button>
         </div>
       </div>
