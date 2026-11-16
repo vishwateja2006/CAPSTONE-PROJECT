@@ -43,6 +43,8 @@ import {
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
 import MiniRadarMap from "../../../components/MiniRadarMap";
+import AudioMuteToggle from "../../../components/AudioMuteToggle";
+import { playBeaconChirp, playSonarPing, playGpsLockChime } from "../../../lib/audioTelemetry";
 import {
   getStoredLanguage,
   subscribeToLanguage,
@@ -512,6 +514,7 @@ export default function UserPortalPage() {
   // One-Tap GPS Detection Handler using Browser Geolocation API
   const handleDetectGPS = () => {
     setIsDetectingGPS(true);
+    playSonarPing();
     if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -526,6 +529,7 @@ export default function UserPortalPage() {
           });
           setAddress(`GPS Sat-Fix: ${lat}° N, ${lon}° E (±${acc}m accuracy) • Musi River Chaderghat Lowlands, Hyderabad`);
           setIsDetectingGPS(false);
+          playGpsLockChime();
         },
         () => {
           // Graceful fallback for mock/sandboxed environments without hardware sensors
@@ -539,6 +543,7 @@ export default function UserPortalPage() {
           });
           setAddress(`GPS Sat-Fix: ${mockLat}° N, ${mockLon}° E (±5m accuracy) • Musi River Sector 4 Lowlands, Hyderabad`);
           setIsDetectingGPS(false);
+          playGpsLockChime();
         },
         { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
       );
@@ -562,6 +567,7 @@ export default function UserPortalPage() {
   const handleSubmitSOS = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    playBeaconChirp();
 
     const signalPayload = {
       victim_name: name || "Anonymous Citizen",
@@ -729,6 +735,7 @@ export default function UserPortalPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <AudioMuteToggle className="px-3.5 py-2.5" />
           <button
             type="button"
             onClick={() => setIsSimulatedOffline((prev) => !prev)}

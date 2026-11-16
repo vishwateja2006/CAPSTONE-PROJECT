@@ -22,6 +22,7 @@ import {
 } from "../lib/i18n";
 import ThemeDropdown from "./ThemeDropdown";
 import LanguageDropdown from "./LanguageDropdown";
+import AudioMuteToggle from "./AudioMuteToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -167,7 +168,8 @@ export default function Navbar() {
                 </span>
               </div>
 
-              {/* Regional Language & Appearance Controls (Directly beside to the left of Dark/Light mode) */}
+              {/* Regional Language, Sound FX & Appearance Controls */}
+              <AudioMuteToggle compact={true} />
               <LanguageDropdown />
               <ThemeDropdown />
 
@@ -184,6 +186,7 @@ export default function Navbar() {
           ) : (
             /* Unauthenticated: Regional Language + Appearance (just left of Login) + Clean Login Button on Far Right */
             <div className="flex items-center space-x-2">
+              <AudioMuteToggle compact={true} />
               <LanguageDropdown />
               <ThemeDropdown />
               <Link

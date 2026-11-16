@@ -22,6 +22,8 @@ import {
   AppLanguage
 } from "../../lib/i18n";
 import { SOSRequest, ReliefCenter, ReliefVehicle, RoutePlan } from "../../types";
+import AudioMuteToggle from "../../components/AudioMuteToggle";
+import { playSonarPing, playGpsLockChime } from "../../lib/audioTelemetry";
 import {
   Map,
   Layers,
@@ -111,6 +113,7 @@ export default function MapPage() {
 
   // Request Real-Time Browser Geolocation
   const requestLiveGPS = useCallback(() => {
+    playSonarPing();
     if (!navigator.geolocation) {
       setGpsError("Geolocation is not supported by your browser hardware.");
       return;
@@ -130,6 +133,7 @@ export default function MapPage() {
           locationName: "My Live GPS Location"
         });
         setIsLocating(false);
+        playGpsLockChime();
       },
       (error) => {
         setIsLocating(false);
@@ -251,6 +255,7 @@ export default function MapPage() {
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
+          <AudioMuteToggle className="px-3.5 py-2.5" />
           <button
             onClick={requestLiveGPS}
             disabled={isLocating}

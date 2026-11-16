@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { submitSOS, enqueueOfflineSOS } from "../../lib/api";
+import { playBeaconChirp } from "../../lib/audioTelemetry";
 import { Radio, ShieldAlert, CheckCircle, MapPin, Send, AlertTriangle, WifiOff } from "lucide-react";
 
 export default function SOSPage() {
@@ -52,6 +53,7 @@ export default function SOSPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    playBeaconChirp();
 
     const payload = {
       victim_name: victimName || "Citizen In Need",
