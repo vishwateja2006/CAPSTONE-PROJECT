@@ -42,6 +42,7 @@ import {
   QueuedSOSBeacon
 } from "../../../lib/api";
 import { getAuthSession, AuthSession } from "../../../lib/auth";
+import MiniRadarMap from "../../../components/MiniRadarMap";
 import {
   getStoredLanguage,
   subscribeToLanguage,
@@ -1361,6 +1362,22 @@ export default function UserPortalPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Embedded Animated Mini Radar Map */}
+                      <MiniRadarMap
+                        citizenLat={gpsLocked?.lat || 17.3780}
+                        citizenLon={gpsLocked?.lon || 78.4910}
+                        citizenAddress={req.address || "Musi River Link, Chaderghat Lowlands"}
+                        vehicleCode={req.assigned_vehicle || "BOAT-AMPHIBIAN-02"}
+                        vehicleType={req.assigned_vehicle?.includes("TRUCK") ? "TRUCK" : "BOAT"}
+                        vehiclePilot={req.telemetry?.pilot || "Capt. Murugan"}
+                        vehicleSpeed={req.telemetry?.speed || "18 km/h amphibious"}
+                        vehicleHeading={req.telemetry?.heading || "Musi River Link / Chaderghat Expressway"}
+                        nearestShelterName="Moosarambagh Community Shelter"
+                        nearestShelterDist="1.1 km away"
+                        status={req.status}
+                        t={t}
+                      />
                     </div>
                   )}
 
