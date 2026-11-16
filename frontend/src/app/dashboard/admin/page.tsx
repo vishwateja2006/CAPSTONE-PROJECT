@@ -1106,38 +1106,18 @@ export default function AdminCommandCenterPage() {
                       </div>
                     </div>
 
-                    {/* Quick Solve / Status Action Button on Card */}
-                    <div className="flex items-center gap-2">
+                    {/* Status & Inspection Indicator on Card */}
+                    <div className="flex items-center gap-2 text-xs font-mono">
                       {sos.status === "DELIVERED" || sos.status === "RESOLVED" ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Report Solved
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateStatus(sos.id, "PENDING");
-                            }}
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono border border-slate-700 transition-colors"
-                            title="Re-open distress signal"
-                          >
-                            Re-Open
-                          </button>
-                        </div>
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Report Solved
+                        </span>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateStatus(sos.id, "DELIVERED");
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md flex items-center space-x-1.5"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                          <span>Solve Report (Delivered)</span>
-                        </button>
+                        <span className="text-cyan-400 group-hover:text-cyan-300 flex items-center space-x-1 text-[11px] font-bold">
+                          <span>Inspect Report Details</span>
+                          <span>→</span>
+                        </span>
                       )}
                     </div>
                   </div>
@@ -1408,13 +1388,40 @@ export default function AdminCommandCenterPage() {
                 <span>Inspect Geo-Location on Hazard Map →</span>
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setSelectedSOS(null)}
-                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
-              >
-                Close Report Details
-              </button>
+              {/* Action Buttons: Solve Report placed to the left of Close Report Details */}
+              <div className="flex items-center space-x-3">
+                {selectedSOS.status === "DELIVERED" || selectedSOS.status === "RESOLVED" ? (
+                  <button
+                    type="button"
+                    disabled={isUpdatingStatus}
+                    onClick={() => handleUpdateStatus(selectedSOS.id, "PENDING")}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-900/40 text-xs font-bold transition-all flex items-center space-x-1.5"
+                    title="Re-open distress signal as pending"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Re-Open Report</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isUpdatingStatus}
+                    onClick={() => handleUpdateStatus(selectedSOS.id, "DELIVERED")}
+                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/30 flex items-center space-x-2"
+                    title="Mark this distress call as fully solved and delivered"
+                  >
+                    <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                    <span>Solve Report (Delivered)</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedSOS(null)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all"
+                >
+                  Close Report Details
+                </button>
+              </div>
             </div>
 
           </div>
