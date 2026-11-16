@@ -163,6 +163,7 @@ export default function AdminCommandCenterPage() {
   // Fleet Filter State
   const [fleetTypeFilter, setFleetTypeFilter] = useState<string>("ALL");
   const [fleetStatusFilter, setFleetStatusFilter] = useState<string>("ALL");
+  const [fleetSearchTerm, setFleetSearchTerm] = useState<string>("");
 
   const effectiveCenters = (centers && centers.length > 0) ? centers : MOCK_RELIEF_CENTERS;
   const effectiveVehicles = (vehicles && vehicles.length > 0) ? vehicles : MOCK_VEHICLES;
@@ -2319,66 +2320,162 @@ export default function AdminCommandCenterPage() {
           </div>
 
           {/* Category Filters and Search Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
-                <Filter className="w-3.5 h-3.5" />
-                <span>Stock Filter:</span>
-              </span>
+          <div className="space-y-3 pt-1">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>Category:</span>
+                </span>
+                {[
+                  { key: "ALL", label: "All Items" },
+                  { key: "WATER", label: "Water", icon: Droplet, color: "text-cyan-400" },
+                  { key: "FOOD", label: "Food", icon: Flame, color: "text-amber-400" },
+                  { key: "MEDICAL", label: "Medical", icon: HeartPulse, color: "text-rose-400" },
+                  { key: "SHELTER", label: "Shelter", icon: Shield, color: "text-emerald-400" },
+                  { key: "HYGIENE", label: "Hygiene", icon: Sparkles, color: "text-purple-400" }
+                ].map((cat) => {
+                  const isSelected = inventoryCategoryFilter === cat.key;
+                  const IconComponent = cat.icon;
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setInventoryCategoryFilter(cat.key)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
+                        ? "bg-slate-200 text-slate-950 font-black shadow"
+                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                    >
+                      {IconComponent && <IconComponent className={`w-3 h-3 ${cat.color || ""}`} />}
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Instant Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-amber-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={inventorySearchTerm}
+                  onChange={(e) => setInventorySearchTerm(e.target.value)}
+                  placeholder='Quick search: "Water", "Insulin", "Tents", "Begumpet", "RC-01"...'
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition-all shadow-inner"
+                />
+                {inventorySearchTerm && (
+                  <button
+                    onClick={() => setInventorySearchTerm("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded-md hover:bg-slate-800 transition-all"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Preset Item Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs pt-0.5">
+              <span className="text-[11px] font-mono text-slate-500 font-semibold mr-1">Quick Presets:</span>
               {[
-                { key: "ALL", label: "All Items" },
-                { key: "WATER", label: "Water", icon: Droplet, color: "text-cyan-400" },
-                { key: "FOOD", label: "Food", icon: Flame, color: "text-amber-400" },
-                { key: "MEDICAL", label: "Medical", icon: HeartPulse, color: "text-rose-400" },
-                { key: "SHELTER", label: "Shelter", icon: Shield, color: "text-emerald-400" },
-                { key: "HYGIENE", label: "Hygiene", icon: Sparkles, color: "text-purple-400" }
-              ].map((cat) => {
-                const isSelected = inventoryCategoryFilter === cat.key;
-                const IconComponent = cat.icon;
+                { label: "💧 Drinking Water", term: "Water" },
+                { label: "💉 Insulin & Cold-Chain", term: "Insulin" },
+                { label: "🩹 Trauma Kits & O2", term: "Trauma" },
+                { label: "🍼 Infant Milk Formula", term: "Infant" },
+                { label: "⛺ Family Tents & Tarps", term: "Tent" },
+                { label: "⚡ High-Calorie Rations", term: "Ration" },
+                { label: "🔋 Solar & Powerbanks", term: "Solar" }
+              ].map((preset) => {
+                const isActive = inventorySearchTerm.toLowerCase() === preset.term.toLowerCase();
                 return (
                   <button
-                    key={cat.key}
-                    onClick={() => setInventoryCategoryFilter(cat.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
-                      ? "bg-slate-200 text-slate-950 font-black shadow"
-                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                      }`}
+                    key={preset.term}
+                    onClick={() => setInventorySearchTerm(isActive ? "" : preset.term)}
+                    className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
+                      isActive
+                        ? "bg-amber-500 text-slate-950 font-black shadow-sm"
+                        : "bg-slate-950/80 border border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white"
+                    }`}
                   >
-                    {IconComponent && <IconComponent className={`w-3 h-3 ${cat.color || ""}`} />}
-                    <span>{cat.label}</span>
+                    {preset.label}
                   </button>
                 );
               })}
-            </div>
-
-            <div className="relative min-w-[220px]">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={inventorySearchTerm}
-                onChange={(e) => setInventorySearchTerm(e.target.value)}
-                placeholder="Search storage items..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-              />
+              {inventorySearchTerm && (
+                <button
+                  onClick={() => setInventorySearchTerm("")}
+                  className="text-xs text-amber-400 hover:text-amber-300 font-mono underline ml-1.5 flex items-center space-x-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* Segregated Warehouses List: Warehouse Name & Location + Beneath: Storage of the things */}
           <div className="space-y-6 pt-2">
             {(() => {
-              const warehousesToDisplay = selectedWarehouseFilter === "ALL_SEGREGATED"
+              const baseWarehouses = selectedWarehouseFilter === "ALL_SEGREGATED"
                 ? effectiveCenters
                 : effectiveCenters.filter((c) => c.id === selectedWarehouseFilter);
 
+              const term = inventorySearchTerm.trim().toLowerCase();
+
+              // Filter warehouses that either match warehouse info or contain matching items
+              const warehousesToDisplay = baseWarehouses.filter((warehouse) => {
+                if (!term) return true;
+                const matchesWarehouse =
+                  warehouse.name.toLowerCase().includes(term) ||
+                  warehouse.id.toLowerCase().includes(term) ||
+                  (warehouse.location_name || "").toLowerCase().includes(term) ||
+                  (warehouse.contact_person || "").toLowerCase().includes(term);
+
+                if (matchesWarehouse) return true;
+
+                // Check if any inventory item matches
+                return (warehouse.inventory_items || []).some((item: any) => {
+                  const matchesCategory = inventoryCategoryFilter === "ALL" ||
+                    (inventoryCategoryFilter === "HYGIENE"
+                      ? (item.item_category === "HYGIENE" || item.item_category === "SANITATION")
+                      : item.item_category === inventoryCategoryFilter);
+                  if (!matchesCategory) return false;
+                  return item.item_name.toLowerCase().includes(term) || item.item_category.toLowerCase().includes(term);
+                });
+              });
+
               if (warehousesToDisplay.length === 0) {
                 return (
-                  <div className="p-8 text-center text-slate-500 text-xs bg-slate-950 rounded-2xl border border-slate-800">
-                    No warehouse records found matching selection.
+                  <div className="p-8 text-center text-slate-400 text-xs bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <Package className="w-8 h-8 text-amber-400 mx-auto opacity-70" />
+                    <div className="font-bold text-white text-sm">No Warehouses or Stock Items Found</div>
+                    <p className="text-slate-500 max-w-md mx-auto">
+                      No storage items or depot facilities matched your search: &ldquo;<span className="text-amber-400 font-mono">{inventorySearchTerm}</span>&rdquo;.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setInventorySearchTerm("");
+                        setInventoryCategoryFilter("ALL");
+                        setSelectedWarehouseFilter("ALL_SEGREGATED");
+                      }}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs inline-flex items-center space-x-1.5 transition-all shadow-md"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Reset Filters & Show All Stocks</span>
+                    </button>
                   </div>
                 );
               }
 
               return warehousesToDisplay.map((warehouse) => {
+                const warehouseMatchesName = term && (
+                  warehouse.name.toLowerCase().includes(term) ||
+                  warehouse.id.toLowerCase().includes(term) ||
+                  (warehouse.location_name || "").toLowerCase().includes(term) ||
+                  (warehouse.contact_person || "").toLowerCase().includes(term)
+                );
+
                 // Filter this specific warehouse's inventory items
                 const warehouseItems = (warehouse.inventory_items || []).filter((item: any) => {
                   if (inventoryCategoryFilter !== "ALL") {
@@ -2388,8 +2485,7 @@ export default function AdminCommandCenterPage() {
                       return false;
                     }
                   }
-                  if (inventorySearchTerm.trim()) {
-                    const term = inventorySearchTerm.toLowerCase();
+                  if (term && !warehouseMatchesName) {
                     return (
                       item.item_name.toLowerCase().includes(term) ||
                       item.item_category.toLowerCase().includes(term)
@@ -2502,9 +2598,16 @@ export default function AdminCommandCenterPage() {
                                       <CategoryIcon className="w-2.5 h-2.5 inline" />
                                       <span>{item.item_category}</span>
                                     </span>
-                                    <span className="text-[10px] font-mono text-slate-500">
-                                      {item.id || `SKU-${idx + 1}`}
-                                    </span>
+                                    <div className="flex items-center space-x-1.5">
+                                      {term && item.item_name.toLowerCase().includes(term) && (
+                                        <span className="px-1 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                          MATCH
+                                        </span>
+                                      )}
+                                      <span className="text-[10px] font-mono text-slate-500">
+                                        {item.id || `SKU-${idx + 1}`}
+                                      </span>
+                                    </div>
                                   </div>
 
                                   <h5 className="text-xs font-bold text-white leading-snug">
@@ -2569,122 +2672,267 @@ export default function AdminCommandCenterPage() {
             </div>
           </div>
 
-          {/* Quick Vehicle Type and Status Filter Pills */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
-                <Filter className="w-3.5 h-3.5" />
-                <span>Chassis:</span>
-              </span>
-              {[
-                { key: "ALL", label: "All Fleet", icon: Truck },
-                { key: "TRUCK", label: "Trucks", icon: Truck },
-                { key: "BOAT", label: "Rescue Boats", icon: Anchor },
-                { key: "4X4", label: "4x4 & ICU Ambulances", icon: Shield },
-                { key: "DRONE", label: "Aerial Drones", icon: Radio }
-              ].map((f) => {
-                const isSelected = fleetTypeFilter === f.key;
-                const IconComp = f.icon;
-                return (
+          {/* Quick-Search & Filter across Fleet Units & Depots */}
+          <div className="space-y-3 pt-1 border-t border-slate-800/80">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              {/* Chassis & Status Filter Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs text-slate-500 flex items-center space-x-1 mr-1">
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>Chassis:</span>
+                  </span>
+                  {[
+                    { key: "ALL", label: "All Fleet", icon: Truck },
+                    { key: "TRUCK", label: "Trucks", icon: Truck },
+                    { key: "BOAT", label: "Rescue Boats", icon: Anchor },
+                    { key: "4X4", label: "4x4 & Ambulances", icon: Shield },
+                    { key: "DRONE", label: "Aerial Drones", icon: Radio }
+                  ].map((f) => {
+                    const isSelected = fleetTypeFilter === f.key;
+                    const IconComp = f.icon;
+                    return (
+                      <button
+                        key={f.key}
+                        onClick={() => setFleetTypeFilter(f.key)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
+                          ? "bg-emerald-500 text-slate-950 font-black shadow"
+                          : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                      >
+                        <IconComp className="w-3.5 h-3.5" />
+                        <span>{f.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center space-x-1.5 ml-0 sm:ml-2">
+                  <span className="text-xs text-slate-500">Status:</span>
+                  {["ALL", "IDLE", "EN_ROUTE"].map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setFleetStatusFilter(st)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${fleetStatusFilter === st
+                        ? "bg-slate-200 text-slate-950"
+                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                    >
+                      {st === "ALL" ? "ALL" : st === "IDLE" ? "IDLE (Ready)" : "EN ROUTE"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Instant Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={fleetSearchTerm}
+                  onChange={(e) => setFleetSearchTerm(e.target.value)}
+                  placeholder='Quick search: "Boat", "Drone", "Ambulance", "Murugan", "ALPHA"...'
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none transition-all shadow-inner"
+                />
+                {fleetSearchTerm && (
                   <button
-                    key={f.key}
-                    onClick={() => setFleetTypeFilter(f.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${isSelected
-                      ? "bg-emerald-500 text-slate-950 font-black shadow"
-                      : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                      }`}
+                    onClick={() => setFleetSearchTerm("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded-md hover:bg-slate-800 transition-all"
+                    title="Clear search"
                   >
-                    <IconComp className="w-3.5 h-3.5" />
-                    <span>{f.label}</span>
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-500">Status:</span>
-              {["ALL", "IDLE", "EN_ROUTE"].map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setFleetStatusFilter(st)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${fleetStatusFilter === st
-                    ? "bg-slate-200 text-slate-950"
-                    : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
-                    }`}
-                >
-                  {st}
-                </button>
-              ))}
+            {/* Quick Fleet Presets */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-0.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-mono text-slate-500 font-semibold mr-1">Quick Presets:</span>
+                {[
+                  { label: "🚤 Rescue Boats", term: "Boat" },
+                  { label: "🛸 Aerial Drones", term: "Drone" },
+                  { label: "🚑 ICU Mobile Ambulances", term: "Ambulance" },
+                  { label: "🚛 4x4 Heavy Trucks", term: "Truck" },
+                  { label: "🌊 Amphibious Crafts", term: "Amphibian" },
+                  { label: "⚓ Maritime Base", term: "Maritime" },
+                  { label: "🚁 Helipad Base", term: "Helipad" }
+                ].map((preset) => {
+                  const isActive = fleetSearchTerm.toLowerCase() === preset.term.toLowerCase();
+                  return (
+                    <button
+                      key={preset.term}
+                      onClick={() => setFleetSearchTerm(isActive ? "" : preset.term)}
+                      className={`px-2.5 py-1 rounded-lg text-xs transition-all ${
+                        isActive
+                          ? "bg-emerald-500 text-slate-950 font-black shadow-sm"
+                          : "bg-slate-950/80 border border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+                {fleetSearchTerm && (
+                  <button
+                    onClick={() => setFleetSearchTerm("")}
+                    className="text-xs text-emerald-400 hover:text-emerald-300 font-mono underline ml-1.5 flex items-center space-x-1"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Fleet Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {effectiveVehicles
-              .filter((v) => {
-                if (fleetTypeFilter !== "ALL" && v.vehicle_type !== fleetTypeFilter) return false;
-                if (fleetStatusFilter !== "ALL" && v.status !== fleetStatusFilter) return false;
-                return true;
-              })
-              .map((v) => {
-                const isDrone = v.vehicle_type === "DRONE";
-                const isBoat = v.vehicle_type === "BOAT";
-                const isAmbulance = v.vehicle_code.includes("AMBULANCE");
-                return (
-                  <div key={v.id} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start gap-2">
+          {(() => {
+            const term = fleetSearchTerm.trim().toLowerCase();
+            const filteredVehicles = effectiveVehicles.filter((v) => {
+              if (fleetTypeFilter !== "ALL") {
+                if (fleetTypeFilter === "4X4") {
+                  if (v.vehicle_type !== "4X4" && !v.vehicle_code.includes("AMBULANCE") && !v.vehicle_code.includes("4x4")) return false;
+                } else if (fleetTypeFilter === "AMBULANCE") {
+                  if (!v.vehicle_code.includes("AMBULANCE")) return false;
+                } else if (v.vehicle_type !== fleetTypeFilter) {
+                  return false;
+                }
+              }
+              if (fleetStatusFilter !== "ALL" && v.status !== fleetStatusFilter) return false;
+
+              if (term) {
+                const matchesCode = v.vehicle_code.toLowerCase().includes(term);
+                const matchesType = v.vehicle_type.toLowerCase().includes(term);
+                const matchesDriver = (v.assigned_driver || "").toLowerCase().includes(term);
+                const matchesDepot = ((v as any).home_depot || "").toLowerCase().includes(term);
+                const matchesStatus = v.status.toLowerCase().includes(term);
+
+                const isBoat = (term.includes("boat") || term.includes("water") || term.includes("maritime")) &&
+                  (v.vehicle_type === "BOAT" || v.vehicle_code.toLowerCase().includes("boat"));
+                const isDrone = (term.includes("drone") || term.includes("aerial") || term.includes("air") || term.includes("recon")) &&
+                  (v.vehicle_type === "DRONE" || v.vehicle_code.toLowerCase().includes("drone"));
+                const isAmbulance = (term.includes("ambulance") || term.includes("icu") || term.includes("medic")) &&
+                  v.vehicle_code.toLowerCase().includes("ambulance");
+                const isTruck = (term.includes("truck") || term.includes("4x4") || term.includes("heavy") || term.includes("alpha") || term.includes("beta")) &&
+                  (v.vehicle_type === "TRUCK" || v.vehicle_type === "4X4" || v.vehicle_code.toLowerCase().includes("truck") || v.vehicle_code.toLowerCase().includes("4x4"));
+                const isAmphibian = term.includes("amphib") && v.vehicle_code.toLowerCase().includes("amphibian");
+
+                return matchesCode || matchesType || matchesDriver || matchesDepot || matchesStatus || isBoat || isDrone || isAmbulance || isTruck || isAmphibian;
+              }
+
+              return true;
+            });
+
+            if (filteredVehicles.length === 0) {
+              return (
+                <div className="p-8 text-center text-slate-400 text-xs bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                  <Truck className="w-8 h-8 text-emerald-400 mx-auto opacity-70" />
+                  <div className="font-bold text-white text-sm">No Relief Vehicles Found</div>
+                  <p className="text-slate-500 max-w-md mx-auto">
+                    No fleet units matched your current filter or search term: &ldquo;<span className="text-emerald-400 font-mono">{fleetSearchTerm}</span>&rdquo;.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFleetSearchTerm("");
+                      setFleetTypeFilter("ALL");
+                      setFleetStatusFilter("ALL");
+                    }}
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center space-x-1.5 transition-all shadow-md"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Filters & Show All Fleet</span>
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                  <span>Showing <b className="text-emerald-400">{filteredVehicles.length}</b> of {effectiveVehicles.length} Fleet Units</span>
+                  {term && (
+                    <span className="text-slate-500">
+                      Filtering by query: &ldquo;{term}&rdquo;
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {filteredVehicles.map((v) => {
+                    const isDrone = v.vehicle_type === "DRONE";
+                    const isBoat = v.vehicle_type === "BOAT";
+                    const isAmbulance = v.vehicle_code.includes("AMBULANCE");
+                    return (
+                      <div key={v.id} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-all space-y-3.5 flex flex-col justify-between">
                         <div>
-                          <span className="font-bold text-white text-base block font-mono">{v.vehicle_code}</span>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wide">
-                            {isDrone ? "Autonomous Aerial Drone" : isBoat ? "Maritime Rescue Craft" : isAmbulance ? "Mobile ICU Ambulance" : `${v.vehicle_type} Relief Transport`}
-                          </span>
-                        </div>
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${v.status === "IDLE"
-                          ? "bg-slate-800 text-slate-300"
-                          : "bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse"
-                          }`}>
-                          {v.status}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 text-xs text-slate-400 mt-3 pt-3 border-t border-slate-900">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Chassis Type:</span>
-                          <span className="text-white font-semibold flex items-center space-x-1">
-                            {isBoat ? <Anchor className="w-3 h-3 text-cyan-400 inline" /> : isDrone ? <Radio className="w-3 h-3 text-amber-400 inline" /> : <Truck className="w-3 h-3 text-emerald-400 inline" />}
-                            <span>{v.vehicle_type}</span>
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Max Payload:</span>
-                          <span className="text-cyan-400 font-mono font-bold">{v.capacity_kg} kg</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Cruise Speed:</span>
-                          <span className="text-slate-200 font-mono font-medium">{v.speed_kmh || 35} km/h</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Driver / Operator:</span>
-                          <span className="text-slate-200 truncate max-w-[140px] text-right font-medium">{v.assigned_driver || "Assigned Driver"}</span>
-                        </div>
-                        {(v as any).home_depot && (
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Home Depot:</span>
-                            <span className="text-amber-400 truncate max-w-[140px] text-right text-[11px]">{(v as any).home_depot}</span>
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <div className="flex items-center space-x-1.5">
+                                <span className="font-bold text-white text-base block font-mono">{v.vehicle_code}</span>
+                                {term && (
+                                  (v.vehicle_code.toLowerCase().includes(term) ||
+                                    v.vehicle_type.toLowerCase().includes(term) ||
+                                    (v.assigned_driver || "").toLowerCase().includes(term) ||
+                                    ((v as any).home_depot || "").toLowerCase().includes(term))
+                                ) && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                    MATCH
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-500 uppercase tracking-wide">
+                                {isDrone ? "Autonomous Aerial Drone" : isBoat ? "Maritime Rescue Craft" : isAmbulance ? "Mobile ICU Ambulance" : `${v.vehicle_type} Relief Transport`}
+                              </span>
+                            </div>
+                            <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${v.status === "IDLE"
+                              ? "bg-slate-800 text-slate-300"
+                              : "bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse"
+                              }`}>
+                              {v.status}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </div>
 
-                    <div className="pt-2 border-t border-slate-900/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
-                      <span>GPS: {v.current_lat?.toFixed(3)}, {v.current_lon?.toFixed(3)}</span>
-                      <span className="text-emerald-400 font-bold">READY</span>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+                          <div className="space-y-1.5 text-xs text-slate-400 mt-3 pt-3 border-t border-slate-900">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Chassis Type:</span>
+                              <span className="text-white font-semibold flex items-center space-x-1">
+                                {isBoat ? <Anchor className="w-3 h-3 text-cyan-400 inline" /> : isDrone ? <Radio className="w-3 h-3 text-amber-400 inline" /> : <Truck className="w-3 h-3 text-emerald-400 inline" />}
+                                <span>{v.vehicle_type}</span>
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Max Payload:</span>
+                              <span className="text-cyan-400 font-mono font-bold">{v.capacity_kg} kg</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Cruise Speed:</span>
+                              <span className="text-slate-200 font-mono font-medium">{v.speed_kmh || 35} km/h</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Driver / Operator:</span>
+                              <span className="text-slate-200 truncate max-w-[140px] text-right font-medium">{v.assigned_driver || "Assigned Driver"}</span>
+                            </div>
+                            {(v as any).home_depot && (
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Home Depot:</span>
+                                <span className="text-amber-400 truncate max-w-[140px] text-right text-[11px]">{(v as any).home_depot}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-900/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                          <span>GPS: {v.current_lat?.toFixed(3)}, {v.current_lon?.toFixed(3)}</span>
+                          <span className="text-emerald-400 font-bold">READY</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
