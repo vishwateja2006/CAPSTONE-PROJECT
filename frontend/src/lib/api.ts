@@ -60,6 +60,37 @@ export async function loginUser(credentials: {
   return data;
 }
 
+export async function registerUser(payload: {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string;
+  username?: string;
+  role?: string;
+}): Promise<LoginResponse> {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errorMsg =
+      data.error ||
+      data.detail ||
+      (res.status === 409
+        ? "An account with this email already exists."
+        : "Failed to create account. Please check your details.");
+    const err = new Error(errorMsg);
+    (err as any).status = res.status;
+    throw err;
+  }
+  return data;
+}
+
 export async function verifyAuthToken(token: string): Promise<{ valid: boolean; user?: any; error?: string }> {
   if (!token) return { valid: false, error: "No token provided" };
   try {

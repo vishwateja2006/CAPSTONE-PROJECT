@@ -460,6 +460,95 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._json({"error": "Authentication processing error", "details": str(e)}, status=500)
 
+        # 0.1 User Registration - Create New Account & Save to Database
+        if path == "/api/v1/auth/register":
+            email = (data.get("email") or "").strip().lower()
+            raw_password = (data.get("password") or "").strip()
+            full_name = (data.get("full_name") or data.get("name") or "").strip()
+            phone = (data.get("phone") or data.get("phone_number") or "").strip()
+            username = (data.get("username") or "").strip().lower()
+            role = (data.get("role") or "CITIZEN").strip().upper()
+
+            # 1. Validation checks
+            if not email or "@" not in email:
+                return self._json({"error": "Please provide a valid email address."}, status=400)
+            if not raw_password or len(raw_password) < 6:
+                return self._json({"error": "Password must be at least 6 characters long."}, status=400)
+            if not full_name:
+                return self._json({"error": "Full name is required to register."}, status=400)
+
+            if not username:
+                username = email.split("@")[0].replace(".", "_")
+
+            try:
+                conn = sqlite3.connect(DB_FILE)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+
+                # Check if email already registered
+                c.execute("SELECT id, email, username FROM profiles WHERE LOWER(email) = LOWER(?)", (email,))
+                existing_email = c.fetchone()
+                if existing_email:
+                    conn.close()
+                    return self._json({
+                        "error": f"An account with email '{email}' already exists. Please sign in instead."
+                    }, status=409)
+
+                # Check if username already registered
+                c.execute("SELECT id FROM profiles WHERE LOWER(username) = LOWER(?)", (username,))
+                if c.fetchone():
+                    username = f"{username}_{str(uuid.uuid4())[:4].lower()}"
+
+                new_id = f"USR-{str(uuid.uuid4())[:8].upper()}"
+                hashed_pw = hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
+                now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+                # Insert into profiles
+                c.execute("""
+                    INSERT INTO profiles (id, username, email, hashed_password, full_name, role, phone_number, is_active, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+                """, (new_id, username, email, hashed_pw, full_name, role, phone, now_str))
+
+                # Insert into users
+                c.execute("""
+                    INSERT INTO users (id, username, email, hashed_password, full_name, role, phone, is_active, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+                """, (new_id, username, email, hashed_pw, full_name, role, phone, now_str))
+
+                conn.commit()
+                conn.close()
+
+                # Generate signed JWT token
+                effective_role = "ADMIN" if role in ("ADMIN", "DISASTER_AUTHORITY") else "USER"
+                payload = {
+                    "sub": email,
+                    "id": new_id,
+                    "username": username,
+                    "email": email,
+                    "role": effective_role,
+                    "db_role": role,
+                    "name": full_name,
+                    "exp": int(time.time()) + 86400
+                }
+                token = create_jwt_token(payload)
+
+                return self._json({
+                    "access_token": token,
+                    "token_type": "bearer",
+                    "user": {
+                        "id": new_id,
+                        "username": username,
+                        "email": email,
+                        "full_name": full_name,
+                        "role": effective_role,
+                        "db_role": role
+                    },
+                    "message": f"Account successfully created for {full_name} ({email})! Record saved in database."
+                }, status=201)
+
+            except Exception as e:
+                return self._json({"error": "Failed to create account", "details": str(e)}, status=500)
+
         # 1. SOS Submission - Real-Time Insertion into Database
         if path == "/api/v1/sos":
             try:

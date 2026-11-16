@@ -35,12 +35,14 @@ class ProfileCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+    username: Optional[str] = None
     role: str = ROLE_BENEFICIARY
     phone: Optional[str] = None
     organization: Optional[str] = None
 
 class ProfileOut(BaseModel):
     id: str
+    username: Optional[str] = None
     email: str
     full_name: str
     role: str
@@ -97,7 +99,9 @@ def register(profile_in: ProfileCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="An account with this email already exists.")
     
     hashed_pwd = get_password_hash(profile_in.password)
+    uname = profile_in.username or profile_in.email.split("@")[0]
     profile = Profile(
+        username=uname,
         email=profile_in.email,
         hashed_password=hashed_pwd,
         full_name=profile_in.full_name,
