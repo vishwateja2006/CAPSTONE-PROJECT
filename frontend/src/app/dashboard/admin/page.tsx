@@ -49,6 +49,7 @@ import {
   Search,
   Building2,
   Filter,
+  ChevronDown,
   Shield,
   Anchor,
   LifeBuoy,
@@ -88,6 +89,9 @@ export default function AdminCommandCenterPage() {
   const [centers, setCenters] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Triage Queue Status Filter State ("ALL" | "RUNNING" | "COMPLETED")
+  const [triageFilter, setTriageFilter] = useState<"ALL" | "RUNNING" | "COMPLETED">("ALL");
 
   // Citizen Distress Alerts & Notification State
   const [unreadReports, setUnreadReports] = useState<any[]>([]);
@@ -481,6 +485,10 @@ export default function AdminCommandCenterPage() {
             const acknowledged: string[] = JSON.parse(localStorage.getItem("resqlink_admin_acknowledged_sos") || "[]");
             const existingIds = new Set(prev.map((item) => item.id));
             const brandNew = latestSOS.filter((item: any) => !existingIds.has(item.id));
+            const isStatusChanged = latestSOS.some((item: any) => {
+              const current = prev.find((p) => p.id === item.id);
+              return current && current.status !== item.status;
+            });
 
             if (brandNew.length > 0) {
               setUnreadReports((prevUnread) => {
@@ -492,6 +500,10 @@ export default function AdminCommandCenterPage() {
               setNewReportToast(brandNew[0]);
               playAlertChime();
               setTimeout(() => setNewReportToast(null), 8000);
+              return latestSOS;
+            }
+
+            if (isStatusChanged) {
               return latestSOS;
             }
             return prev;
@@ -612,6 +624,14 @@ export default function AdminCommandCenterPage() {
   const activeVictims = activeSOS.reduce((acc, s) => acc + (s.people_count || 0), 0);
   const solvedVictims = solvedSOS.reduce((acc, s) => acc + (s.people_count || 0), 0);
   const totalVictims = (sosList || []).reduce((acc, s) => acc + (s.people_count || 0), 0);
+
+  // Filtered Triage Queue List
+  const filteredSosList = (sosList || []).filter((sos) => {
+    const isCompleted = sos.status === "DELIVERED" || sos.status === "RESOLVED";
+    if (triageFilter === "RUNNING") return !isCompleted;
+    if (triageFilter === "COMPLETED") return isCompleted;
+    return true; // "ALL"
+  });
 
   if (isCheckingAuth) {
     return (
@@ -996,7 +1016,7 @@ export default function AdminCommandCenterPage() {
       {/* TAB 1: OVERVIEW & LIVE TRIAGE QUEUE */}
       {activeTab === "OVERVIEW" && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 animate-in fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div>
               <h2 className="text-xl font-black text-white flex items-center space-x-2">
                 <Radio className="w-5 h-5 text-red-500" />
@@ -1006,124 +1026,237 @@ export default function AdminCommandCenterPage() {
                 Incoming citizen SOS signals prioritized automatically by the DistilBERT Natural Language Processing model.
               </p>
             </div>
+
+            {/* Slide Down Filter Selector Bar to the Right of Live Stream */}
+            <div className="flex flex-wrap items-center gap-2.5 self-start md:self-center">
+              <span className="text-xs font-mono text-slate-400 font-bold uppercase flex items-center space-x-1.5">
+                <Filter className="w-3.5 h-3.5 text-amber-400" />
+                <span>Filter Queue:</span>
+              </span>
+
+              {/* Native Dropdown / Slide-Down Select Bar */}
+              <div className="relative">
+                <select
+                  value={triageFilter}
+                  onChange={(e) => setTriageFilter(e.target.value as "ALL" | "RUNNING" | "COMPLETED")}
+                  className="appearance-none bg-slate-950 border border-slate-700 hover:border-amber-500 text-white text-xs font-bold font-mono py-2 pl-3.5 pr-8 rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500/40 cursor-pointer transition-all"
+                  aria-label="Filter distress queue status"
+                >
+                  <option value="ALL">⚡ All Reports ({(sosList || []).length})</option>
+                  <option value="RUNNING">🚨 Running / Active ({activeSOS.length})</option>
+                  <option value="COMPLETED">✅ Completed / Solved ({solvedSOS.length})</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* One-Tap Quick Switcher Pills */}
+              <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+                <button
+                  type="button"
+                  onClick={() => setTriageFilter("ALL")}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${triageFilter === "ALL"
+                    ? "bg-slate-800 text-white font-bold shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                    }`}
+                >
+                  All ({(sosList || []).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTriageFilter("RUNNING")}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 ${triageFilter === "RUNNING"
+                    ? "bg-amber-500 text-slate-950 font-black shadow-sm"
+                    : "text-amber-400 hover:text-amber-300"
+                    }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${triageFilter === "RUNNING" ? "bg-slate-950" : "bg-amber-400 animate-ping"}`}></span>
+                  <span>Running ({activeSOS.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTriageFilter("COMPLETED")}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 ${triageFilter === "COMPLETED"
+                    ? "bg-emerald-600 text-white font-black shadow-sm"
+                    : "text-emerald-400 hover:text-emerald-300"
+                    }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Completed ({solvedSOS.length})</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">
-            {(sosList || []).map((sos) => {
-              const isCrit = sos.urgency_level === "CRITICAL";
-              const isHigh = sos.urgency_level === "HIGH";
-              const isUnread = unreadReports.some((u) => u.id === sos.id);
-              const stageIdx = getStageIndex(sos.status);
-
-              return (
-                <div
-                  key={sos.id}
-                  onClick={() => setSelectedSOS(sos)}
-                  className={`p-5 rounded-2xl border transition-all cursor-pointer hover:border-amber-500/70 hover:shadow-xl ${isUnread
-                    ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
-                    : isCrit
-                      ? "bg-red-950/25 border-red-900/80"
-                      : isHigh
-                        ? "bg-amber-950/20 border-amber-900/60"
-                        : "bg-slate-950 border-slate-800"
-                    }`}
+            {filteredSosList.length === 0 ? (
+              <div className="text-center py-12 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3 animate-in fade-in">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto opacity-70" />
+                <div className="text-sm font-bold text-white">
+                  {triageFilter === "RUNNING"
+                    ? "No Active Running Distress Calls"
+                    : triageFilter === "COMPLETED"
+                      ? "No Completed / Solved Reports Yet"
+                      : "No Distress Reports In Stream"}
+                </div>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  {triageFilter === "RUNNING"
+                    ? "All distress calls have been addressed and solved. Use the slide-down filter bar to view Completed reports."
+                    : "Switch filter to 'All Reports' or simulate a new distress call to test."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setTriageFilter("ALL")}
+                  className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-mono font-bold transition-all"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-white text-base">{sos.victim_name}</span>
+                  View All Reports ({(sosList || []).length})
+                </button>
+              </div>
+            ) : (
+              filteredSosList.map((sos) => {
+                const isCrit = sos.urgency_level === "CRITICAL";
+                const isHigh = sos.urgency_level === "HIGH";
+                const isUnread = unreadReports.some((u) => u.id === sos.id);
+                const isSolved = sos.status === "DELIVERED" || sos.status === "RESOLVED";
+                const stageIdx = getStageIndex(sos.status);
+
+                return (
+                  <div
+                    key={sos.id}
+                    onClick={() => setSelectedSOS(sos)}
+                    className={`p-5 rounded-2xl border transition-all cursor-pointer hover:border-amber-500/70 hover:shadow-xl ${isUnread
+                      ? "bg-red-950/40 border-red-500 ring-2 ring-red-500/30 shadow-lg shadow-red-500/10"
+                      : isSolved
+                        ? "bg-emerald-950/15 border-emerald-900/50 hover:border-emerald-500/60"
+                        : isCrit
+                          ? "bg-red-950/25 border-red-900/80"
+                          : isHigh
+                            ? "bg-amber-950/20 border-amber-900/60"
+                            : "bg-slate-950 border-slate-800"
+                      }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-white text-base">{sos.victim_name}</span>
+                          {isUnread && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center space-x-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                              <span>NEW CITIZEN REPORT</span>
+                            </span>
+                          )}
+                          {isSolved && (
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono text-[10px] font-bold flex items-center space-x-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>RESOLVED</span>
+                            </span>
+                          )}
+                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-xs font-mono">
+                            {sos.people_count} People
+                          </span>
+                          <span className="text-xs text-slate-400">{sos.address || "Sector"}</span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-1 italic">
+                          "{sos.description}"
+                        </p>
+                        {sos.contact_phone && (
+                          <div className="text-[11px] text-slate-400 mt-1 flex items-center space-x-1">
+                            <Phone className="w-3 h-3 text-cyan-400 inline" />
+                            <span>Phone: <strong className="text-white font-mono">{sos.contact_phone}</strong></span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-right flex-shrink-0 space-y-1">
+                        {isSolved ? (
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-xl text-xs font-black font-mono bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>REPORT SOLVED</span>
+                            </span>
+                            <div className="text-[10px] text-emerald-400 font-mono">
+                              Delivered {sos.resolved_at ? `(${sos.resolved_at})` : "✓"}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <span className={`inline-block px-3 py-1 rounded-xl text-xs font-black font-mono ${isCrit ? "bg-red-600 text-white shadow-md shadow-red-600/30" : "bg-amber-500 text-slate-950 font-bold"
+                              }`}>
+                              AI SCORE: {sos.urgency_score}/100 ({sos.urgency_level})
+                            </span>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              Live Status: <strong className="text-amber-400 uppercase font-bold">{sos.status || "PENDING"}</strong>
+                            </div>
+                          </div>
+                        )}
                         {isUnread && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-wider animate-pulse flex items-center space-x-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                            <span>NEW CITIZEN REPORT</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAcknowledgeSingle(sos.id);
+                            }}
+                            className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold block ml-auto"
+                          >
+                            Mark Reviewed
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Real-Time Status Progress Bar & Quick Action */}
+                    <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
+                          Real-Time Tracker:
+                        </span>
+                        <div className="flex items-center space-x-1.5 font-mono text-[11px]">
+                          <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 1 ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-slate-900 text-slate-500"
+                            }`}>
+                            1. Intake ✓
+                          </span>
+                          <span className="text-slate-600">→</span>
+                          <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 2 ? "bg-blue-950 text-blue-400 border border-blue-800" : "bg-slate-900 text-slate-500"
+                            }`}>
+                            2. Assigned
+                          </span>
+                          <span className="text-slate-600">→</span>
+                          <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 3 ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse" : "bg-slate-900 text-slate-500"
+                            }`}>
+                            3. Dispatched
+                          </span>
+                          <span className="text-slate-600">→</span>
+                          <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 4 ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold" : "bg-slate-900 text-slate-500"
+                            }`}>
+                            4. Delivered
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status & Inspection Indicator on Card */}
+                      <div className="flex items-center gap-2 text-xs font-mono">
+                        {isSolved ? (
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Delivered</span>
+                          </span>
+                        ) : (
+                          <span className="text-amber-400 flex items-center space-x-1 text-[11px] font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                            <span>Running Dispatches</span>
                           </span>
                         )}
-                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-xs font-mono">
-                          {sos.people_count} People
-                        </span>
-                        <span className="text-xs text-slate-400">{sos.address || "Sector"}</span>
-                      </div>
-                      <p className="text-xs text-slate-300 mt-1 italic">
-                        "{sos.description}"
-                      </p>
-                      {sos.contact_phone && (
-                        <div className="text-[11px] text-slate-400 mt-1 flex items-center space-x-1">
-                          <Phone className="w-3 h-3 text-cyan-400 inline" />
-                          <span>Phone: <strong className="text-white font-mono">{sos.contact_phone}</strong></span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="text-right flex-shrink-0 space-y-1">
-                      <span className={`inline-block px-3 py-1 rounded-xl text-xs font-black font-mono ${isCrit ? "bg-red-600 text-white shadow-md shadow-red-600/30" : "bg-amber-500 text-slate-950 font-bold"
-                        }`}>
-                        AI SCORE: {sos.urgency_score}/100 ({sos.urgency_level})
-                      </span>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        Live Status: <strong className="text-white uppercase">{sos.status || "PENDING"}</strong>
-                      </div>
-                      {isUnread && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAcknowledgeSingle(sos.id);
-                          }}
-                          className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold block ml-auto"
-                        >
-                          Mark Reviewed
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Real-Time Status Progress Bar & Quick Action */}
-                  <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">
-                        Real-Time Tracker:
-                      </span>
-                      <div className="flex items-center space-x-1.5 font-mono text-[11px]">
-                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 1 ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-slate-900 text-slate-500"
-                          }`}>
-                          1. Intake ✓
-                        </span>
-                        <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 2 ? "bg-blue-950 text-blue-400 border border-blue-800" : "bg-slate-900 text-slate-500"
-                          }`}>
-                          2. Assigned
-                        </span>
-                        <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 3 ? "bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse" : "bg-slate-900 text-slate-500"
-                          }`}>
-                          3. Dispatched
-                        </span>
-                        <span className="text-slate-600">→</span>
-                        <span className={`px-2 py-0.5 rounded-full ${stageIdx >= 4 ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold" : "bg-slate-900 text-slate-500"
-                          }`}>
-                          4. Delivered
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Status & Inspection Indicator on Card */}
-                    <div className="flex items-center gap-2 text-xs font-mono">
-                      {sos.status === "DELIVERED" || sos.status === "RESOLVED" ? (
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Report Solved
-                        </span>
-                      ) : (
                         <span className="text-cyan-400 group-hover:text-cyan-300 flex items-center space-x-1 text-[11px] font-bold">
-                          <span>Inspect Report Details</span>
+                          <span>Inspect Report</span>
                           <span>→</span>
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}
