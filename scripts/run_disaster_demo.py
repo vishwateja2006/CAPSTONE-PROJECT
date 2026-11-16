@@ -13,21 +13,14 @@ import time
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
-if BACKEND_DIR not in sys.path:
-    sys.path.insert(0, BACKEND_DIR)
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+for path in [BACKEND_DIR, PROJECT_ROOT]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
-try:
-    from app.ml.model_registry import ModelRegistry
-    from app.services.decision_engine import UnifiedDecisionEngine
-    from app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
-    from app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
-except ImportError:
-    from backend.app.ml.model_registry import ModelRegistry
-    from backend.app.services.decision_engine import UnifiedDecisionEngine
-    from backend.app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
-    from backend.app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
+from app.ml.model_registry import ModelRegistry
+from app.services.decision_engine import UnifiedDecisionEngine
+from app.services.tracking_and_analytics_service import TrackingAndAnalyticsService, CryptographicAuditLedger
+from app.services.evaluation_engine import HistoricalBacktestingEngine, ShadowModeValidationEngine
 
 def print_header(title: str):
     print("\n" + "=" * 78)
@@ -40,29 +33,29 @@ def main():
     time.sleep(0.5)
 
     # -------------------------------------------------------------------------
-    # SCENARIO SETUP
+    # SCENARIO SETUP (Hyderabad Urban Sector)
     # -------------------------------------------------------------------------
     disaster = {
-        "id": "DIS-CHENNAI-FLOOD-2026",
-        "name": "Cyclone Michaung Relict Inundation (Category 4 Surge)",
+        "id": "DIS-HYD-FLOOD-2026",
+        "name": "Hyderabad Urban Flash Floods & Musi River Basin Surge",
         "disaster_type": "FLOOD",
         "severity": "CRITICAL",
-        "epicenter_lat": 13.0600,
-        "epicenter_lon": 80.2500
+        "epicenter_lat": 17.3850,
+        "epicenter_lon": 78.4867
     }
 
     warehouse = {
-        "id": "WH-CHENNAI-CENTRAL",
-        "name": "Chennai Central Humanitarian Relief Hub",
-        "latitude": 13.0827,
-        "longitude": 80.2707
+        "id": "RC-01",
+        "name": "Secunderabad Central Humanitarian Relief Base Alpha",
+        "latitude": 17.4399,
+        "longitude": 78.4983
     }
 
     inventory = {
-        "WATER": 1200,
-        "FOOD": 850,
-        "MEDICINE": 120,
-        "BLANKETS": 400
+        "WATER": 1400,
+        "FOOD": 950,
+        "MEDICINE": 150,
+        "BLANKETS": 500
     }
 
     fleet = [
@@ -72,28 +65,28 @@ def main():
 
     distress_messages = [
         {
-            "id": "REQ-VILLAGE-1",
-            "victim_name": "Velachery Ward 178 (Community Shelter)",
+            "id": "REQ-HYD-01",
+            "victim_name": "Moosarambagh Ward 45 (Community Shelter)",
             "people_count": 45,
-            "latitude": 13.0450,
-            "longitude": 80.2400,
+            "latitude": 17.3810,
+            "longitude": 78.5120,
             "description": "Water reached 5 feet. Pregnant mother and infant need baby milk. Grandmother is diabetic needing insulin urgently!"
         },
         {
-            "id": "REQ-VILLAGE-2",
-            "victim_name": "Senior Care Care Home (Madipakkam)",
+            "id": "REQ-HYD-02",
+            "victim_name": "Senior Care Home (Malakpet Sector)",
             "people_count": 60,
-            "latitude": 13.0550,
-            "longitude": 80.2550,
-            "description": "Ground floor flooded. 12 elderly residents stranded without drinking water. Generator failed."
+            "latitude": 17.3750,
+            "longitude": 78.4980,
+            "description": "Ground floor flooded by Musi overflow. 12 elderly residents stranded without drinking water. Generator failed."
         },
         {
-            "id": "REQ-VILLAGE-3",
-            "victim_name": "Fishermen Colony (Kasimedu Coast)",
+            "id": "REQ-HYD-03",
+            "victim_name": "Amberpet Low-Lying Settlement",
             "people_count": 30,
-            "latitude": 13.0700,
-            "longitude": 80.2600,
-            "description": "Roof damaged by gale winds. We urgently require tarpaulins and clean drinking water."
+            "latitude": 17.3910,
+            "longitude": 78.5210,
+            "description": "Roof damaged by heavy squall. We urgently require tarpaulins and clean drinking water."
         }
     ]
 
@@ -124,9 +117,9 @@ def main():
     # -------------------------------------------------------------------------
     print_header("STEP 2: MODEL 2 - SATELLITE DAMAGE DETECTION (SPECTRAL NDWI & UNET)")
     damage = ModelRegistry.damage_detector.analyze_satellite_frame({
-        "tile_id": "SENTINEL-2B-CHENNAI-T14",
-        "center_lat": 13.0600,
-        "center_lon": 80.2500,
+        "tile_id": "SENTINEL-2B-HYDERABAD-T14",
+        "center_lat": 17.3850,
+        "center_lon": 78.4867,
         "spectral_water_index_mean": 0.48
     })
     print(f"  Model: {damage['model_name']}")
@@ -176,7 +169,7 @@ def main():
             {"id": r["id"], "victim_name": r["victim_name"], "latitude": r["latitude"], "longitude": r["longitude"], "people_count": r["people_count"], "demand_kg": r["people_count"] * 15, "urgency_score": r["urgency_score"]}
             for r in distress_messages
         ],
-        hazard_polygons=[[(13.05, 80.245), (13.065, 80.245), (13.065, 80.255), (13.05, 80.255)]]
+        hazard_polygons=[[(17.360, 78.470), (17.395, 78.470), (17.395, 78.530), (17.360, 78.530)]]
     )
     print(f"  Vehicles Utilized: {routes['vehicles_utilized']} of {len(fleet)}")
     print(f"  Total Fleet Travel Distance: {routes['total_distance_km']} km")
@@ -213,10 +206,10 @@ def main():
     # Generate Proof-of-Delivery token for Stop 1
     pod = TrackingAndAnalyticsService.generate_proof_of_delivery(
         delivery_id="DEL-MISSION-01",
-        waypoint_id="WP-VELACHERY-178",
-        beneficiary_id="BEN-VELACHERY-SHELTER",
+        waypoint_id="WP-MOOSARAMBAGH-45",
+        beneficiary_id="BEN-MOOSARAMBAGH-SHELTER",
         delivered_items={"FOOD": 45, "WATER": 90, "MEDICINE": 1},
-        agent_id="OFFICER-VIKRAM",
+        agent_id="OFFICER-RAJESH-SHARMA",
         confirmation_code="OTP-9281"
     )
     print(f"  ✓ Proof-of-Delivery Token Generated: {pod['receipt_id']}")

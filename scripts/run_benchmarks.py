@@ -12,23 +12,15 @@ import json
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
-if BACKEND_DIR not in sys.path:
-    sys.path.insert(0, BACKEND_DIR)
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+for path in [BACKEND_DIR, PROJECT_ROOT]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
-try:
-    from app.services.evaluation_engine import (
-        HistoricalBacktestingEngine,
-        DiscreteEventSimulationEngine,
-        ShadowModeValidationEngine
-    )
-except ImportError:
-    from backend.app.services.evaluation_engine import (
-        HistoricalBacktestingEngine,
-        DiscreteEventSimulationEngine,
-        ShadowModeValidationEngine
-    )
+from app.services.evaluation_engine import (
+    HistoricalBacktestingEngine,
+    DiscreteEventSimulationEngine,
+    ShadowModeValidationEngine
+)
 
 def format_latex_table(headers, rows, caption="Evaluation Metrics", label="tab:metrics"):
     col_spec = "|" + " c |" * len(headers)

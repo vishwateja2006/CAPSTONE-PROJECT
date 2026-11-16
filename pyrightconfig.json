@@ -1,0 +1,11 @@
+{
+  "include": [
+    "backend",
+    "scripts",
+    "app"
+  ],
+  "extraPaths": [
+    "backend",
+    "."
+  ]
+}
