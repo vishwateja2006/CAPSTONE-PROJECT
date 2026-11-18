@@ -9,7 +9,7 @@
 
 html.dark {
   --foreground-rgb: 248, 250, 252;
-  --background-rgb: 9, 13, 22;
+  --background-rgb: 7, 11, 18;
 }
 
 body {
@@ -48,19 +48,100 @@ html:not(.dark) .bg-slate-900\/70,
 html:not(.dark) .bg-slate-900\/50,
 html:not(.dark) .bg-slate-900\/40,
 html:not(.dark) .bg-slate-950\/90,
-html:not(.dark) .bg-slate-950\/80 {
-  background-color: #f8fafc !important;
+html:not(.dark) .bg-slate-950\/80,
+html:not(.dark) .grid.grid-cols-3.bg-slate-900,
+html:not(.dark) .grid.grid-cols-2.bg-slate-900,
+html:not(.dark) .grid.sm\:grid-cols-5.bg-slate-900,
+html:not(.dark) .grid.grid-cols-2.bg-slate-950 {
+  background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
+}
+
+/* ==============================================================================
+   PORTAL GRADIENT BANNERS & CARDS IN LIGHT MODE
+   Replaces dark gradients with clean, luminous, high-contrast light gradients
+   ============================================================================== */
+
+/* 1. Citizen Portal & GIS Map Header Banners */
+html:not(.dark) .bg-gradient-to-r.from-slate-900.via-slate-900\/90.to-blue-950\/40,
+html:not(.dark) .bg-gradient-to-r.from-slate-900.via-slate-900\/95.to-blue-950\/40 {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #e0f2fe 100%) !important;
+  background-color: #ffffff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 2. Admin Command Header Banner */
+html:not(.dark) .bg-gradient-to-r.from-slate-900.via-slate-900\/90.to-amber-950\/40 {
+  background-image: linear-gradient(135deg, #ffffff 0%, #fffbeb 50%, #fef3c7 100%) !important;
+  background-color: #ffffff !important;
+  border-color: #fde68a !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 3. Live Incident Broadcast Bar (red-950 -> blue-950) */
+html:not(.dark) .bg-gradient-to-r.from-red-950\/90.via-slate-950.to-blue-950\/90 {
+  background-image: linear-gradient(135deg, #fef2f2 0%, #ffffff 50%, #eff6ff 100%) !important;
+  background-color: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+}
+
+/* 4. Trigger Emergency Protocol Console in Admin */
+html:not(.dark) .bg-gradient-to-r.from-red-950\/95.via-slate-900\/95.to-amber-950\/90 {
+  background-image: linear-gradient(135deg, #fef2f2 0%, #ffffff 50%, #fffbeb 100%) !important;
+  background-color: #fef2f2 !important;
+  border-color: #f87171 !important;
+}
+
+/* 5. Offline Signal Resilience Banner in Citizen Portal */
+html:not(.dark) .bg-gradient-to-r.from-amber-950\/90.via-slate-900.to-amber-950\/70 {
+  background-image: linear-gradient(135deg, #fffbeb 0%, #ffffff 50%, #fef3c7 100%) !important;
+  background-color: #fffbeb !important;
+  border-color: #f59e0b !important;
+}
+
+/* 6. Live Aid Vehicle Telemetry Card in Citizen Portal */
+html:not(.dark) .bg-gradient-to-r.from-cyan-950\/60.via-slate-900\/90.to-blue-950\/60 {
+  background-image: linear-gradient(135deg, #ecfeff 0%, #ffffff 50%, #eff6ff 100%) !important;
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+}
+
+/* General Dark Gradient Containers in Light Mode (EXCEPT radar screens and buttons) */
+html:not(.dark) div[class*="from-slate-900"]:not(.radar-screen):not([data-radar="true"]),
+html:not(.dark) div[class*="from-slate-950"]:not(.radar-screen):not([data-radar="true"]) {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Tactical Mini-Radar Screen: Always preserved as a dark GIS tactical display in both modes */
+html:not(.dark) .bg-gradient-to-b.from-slate-950.via-slate-900.to-slate-950 {
+  background-image: linear-gradient(to bottom, #020617, #0f172a, #020617) !important;
+  background-color: #020617 !important;
+  border-color: #06b6d4 !important;
 }
 
 /* Secondary Buttons, Chips, and Inset Controls */
-html:not(.dark) .bg-slate-800,
-html:not(.dark) [class*="bg-slate-800/"] {
+html:not(.dark) button.bg-slate-800,
+html:not(.dark) a.bg-slate-800,
+html:not(.dark) button[class*="bg-slate-800/"],
+html:not(.dark) a[class*="bg-slate-800/"] {
   background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
+  font-weight: 700 !important;
 }
 
+html:not(.dark) button.bg-slate-800 *,
+html:not(.dark) a.bg-slate-800 *,
+html:not(.dark) button[class*="bg-slate-800/"] *,
+html:not(.dark) a[class*="bg-slate-800/"] * {
+  color: #0f172a !important;
+}
+
+html:not(.dark) button.bg-slate-800:hover,
+html:not(.dark) a.bg-slate-800:hover,
 html:not(.dark) .hover\:bg-slate-800:hover,
 html:not(.dark) .hover\:bg-slate-700:hover {
   background-color: #e2e8f0 !important;
@@ -68,13 +149,16 @@ html:not(.dark) .hover\:bg-slate-700:hover {
 }
 
 /* 2. Universal Borders & Dividers */
+html:not(.dark) .border-slate-800,
+html:not(.dark) .border-slate-700,
+html:not(.dark) .border-slate-900,
 html:not(.dark) [class*="border-slate-800"],
 html:not(.dark) [class*="border-slate-700"],
 html:not(.dark) [class*="border-slate-900"] {
   border-color: #cbd5e1 !important;
 }
 
-/* 3. High-Contrast Typography (WCAG AAA Compliant - No blurry or washed out words) */
+/* 3. High-Contrast Typography (WCAG AAA Compliant - No blurry, washed-out or faint words) */
 html:not(.dark) .text-white {
   color: #0f172a !important;
 }
@@ -88,169 +172,279 @@ html:not(.dark) .text-slate-300 {
   color: #1e293b !important;
 }
 
-/* In light mode, slate-400 and slate-500 are strengthened to dark slate so words are never faint */
 html:not(.dark) .text-slate-400 {
   color: #334155 !important;
-  font-weight: 500;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .text-slate-500,
 html:not(.dark) .text-slate-600 {
   color: #475569 !important;
+  font-weight: 500 !important;
 }
 
-/* 4. Solid Button Color Protections */
-/* Blue Buttons: Always pure white text */
+/* 4. Solid & Gradient Action Buttons: Maximum High-Contrast Readability */
+
+/* Blue Buttons: Pure crisp white text on royal blue background */
+html:not(.dark) button.bg-blue-600,
+html:not(.dark) a.bg-blue-600,
 html:not(.dark) .bg-blue-600,
-html:not(.dark) .bg-blue-600 *,
-html:not(.dark) .bg-blue-500,
-html:not(.dark) .bg-blue-500 * {
+html:not(.dark) button.bg-blue-500,
+html:not(.dark) a.bg-blue-500,
+html:not(.dark) .bg-blue-500 {
   color: #ffffff !important;
   background-color: #2563eb !important;
-}
-
-/* Red Buttons: Always pure white text */
-html:not(.dark) .bg-red-600,
-html:not(.dark) .bg-red-600 *,
-html:not(.dark) .bg-red-500,
-html:not(.dark) .bg-red-500 * {
-  color: #ffffff !important;
-  background-color: #dc2626 !important;
-}
-
-/* Emerald Buttons: Always pure white text */
-html:not(.dark) .bg-emerald-600,
-html:not(.dark) .bg-emerald-600 *,
-html:not(.dark) .bg-emerald-500,
-html:not(.dark) .bg-emerald-500 * {
-  color: #ffffff !important;
-  background-color: #16a34a !important;
-}
-
-/* Amber Buttons: Always deep black/slate text on vibrant gold background */
-html:not(.dark) .bg-amber-500,
-html:not(.dark) .bg-amber-500 *,
-html:not(.dark) .bg-amber-400,
-html:not(.dark) .bg-amber-400 * {
-  color: #0f172a !important;
-  background-color: #f59e0b !important;
   font-weight: 800 !important;
 }
 
-/* 5. Colored Accent Text: High-Contrast Rich Dark Tones in Light Mode */
-/* Blue Accents: Deep Royal Blue */
-html:not(.dark) [class*="text-blue-100"],
-html:not(.dark) [class*="text-blue-200"],
-html:not(.dark) [class*="text-blue-300"],
-html:not(.dark) [class*="text-blue-400"],
-html:not(.dark) [class*="text-blue-500"] {
+html:not(.dark) button.bg-blue-600 *,
+html:not(.dark) a.bg-blue-600 *,
+html:not(.dark) .bg-blue-600 *,
+html:not(.dark) button.bg-blue-500 *,
+html:not(.dark) a.bg-blue-500 *,
+html:not(.dark) .bg-blue-500 * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) button.bg-blue-600:hover,
+html:not(.dark) a.bg-blue-600:hover,
+html:not(.dark) .hover\:bg-blue-500:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Red Buttons: Pure crisp white text on ruby crimson background */
+html:not(.dark) button.bg-red-600,
+html:not(.dark) a.bg-red-600,
+html:not(.dark) .bg-red-600,
+html:not(.dark) button.bg-red-500,
+html:not(.dark) a.bg-red-500,
+html:not(.dark) .bg-red-500 {
+  color: #ffffff !important;
+  background-color: #dc2626 !important;
+  font-weight: 800 !important;
+}
+
+html:not(.dark) button.bg-red-600 *,
+html:not(.dark) a.bg-red-600 *,
+html:not(.dark) .bg-red-600 *,
+html:not(.dark) button.bg-red-500 *,
+html:not(.dark) a.bg-red-500 *,
+html:not(.dark) .bg-red-500 * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) button.bg-red-600:hover,
+html:not(.dark) a.bg-red-600:hover,
+html:not(.dark) .hover\:bg-red-500:hover {
+  background-color: #b91c1c !important;
+}
+
+/* Emerald Buttons: Pure crisp white text on emerald green background */
+html:not(.dark) button.bg-emerald-600,
+html:not(.dark) a.bg-emerald-600,
+html:not(.dark) .bg-emerald-600,
+html:not(.dark) button.bg-emerald-500,
+html:not(.dark) a.bg-emerald-500,
+html:not(.dark) .bg-emerald-500 {
+  color: #ffffff !important;
+  background-color: #16a34a !important;
+  font-weight: 800 !important;
+}
+
+html:not(.dark) button.bg-emerald-600 *,
+html:not(.dark) a.bg-emerald-600 *,
+html:not(.dark) .bg-emerald-600 *,
+html:not(.dark) button.bg-emerald-500 *,
+html:not(.dark) a.bg-emerald-500 *,
+html:not(.dark) .bg-emerald-500 * {
+  color: #ffffff !important;
+}
+
+/* Amber Buttons: Deep black/slate text on vibrant rich gold background */
+html:not(.dark) button.bg-amber-500,
+html:not(.dark) a.bg-amber-500,
+html:not(.dark) .bg-amber-500,
+html:not(.dark) button.bg-amber-400,
+html:not(.dark) a.bg-amber-400,
+html:not(.dark) .bg-amber-400 {
+  color: #0f172a !important;
+  background-color: #f59e0b !important;
+  font-weight: 900 !important;
+}
+
+html:not(.dark) button.bg-amber-500 *,
+html:not(.dark) a.bg-amber-500 *,
+html:not(.dark) .bg-amber-500 *,
+html:not(.dark) button.bg-amber-400 *,
+html:not(.dark) a.bg-amber-400 *,
+html:not(.dark) .bg-amber-400 * {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+}
+
+html:not(.dark) button.bg-amber-500:hover,
+html:not(.dark) a.bg-amber-500:hover,
+html:not(.dark) .hover\:bg-amber-400:hover {
+  background-color: #d97706 !important;
+}
+
+/* Gradient Action Buttons: Preserve rich vibrant gradients and pure white text */
+html:not(.dark) button.bg-gradient-to-r,
+html:not(.dark) a.bg-gradient-to-r,
+html:not(.dark) .bg-gradient-to-r.from-red-600.to-amber-600,
+html:not(.dark) .bg-gradient-to-r.from-blue-600.to-indigo-600 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+html:not(.dark) button.bg-gradient-to-r *,
+html:not(.dark) a.bg-gradient-to-r *,
+html:not(.dark) .bg-gradient-to-r.from-red-600.to-amber-600 *,
+html:not(.dark) .bg-gradient-to-r.from-blue-600.to-indigo-600 * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .bg-gradient-to-r.from-red-600.to-amber-600 {
+  background-image: linear-gradient(to right, #dc2626, #d97706) !important;
+}
+
+html:not(.dark) .bg-gradient-to-r.from-blue-600.to-indigo-600 {
+  background-image: linear-gradient(to right, #2563eb, #4f46e5) !important;
+}
+
+/* Active tab button for Admin overview */
+html:not(.dark) button.bg-slate-800.text-white,
+html:not(.dark) button.bg-slate-800.text-white * {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* 5. Colored Accent Text: High-Contrast Rich Dark Tones in Light Mode (Never washed out) */
+
+/* Blue Accents: Deep Royal Navy */
+html:not(.dark) .text-blue-400,
+html:not(.dark) .text-blue-300,
+html:not(.dark) .text-blue-200,
+html:not(.dark) .text-blue-100,
+html:not(.dark) .text-blue-500,
+html:not(.dark) .text-blue-600 {
   color: #1e40af !important;
+  font-weight: 600;
 }
 
 /* Amber Accents: Deep Dark Amber / Warm Saddle Brown */
-html:not(.dark) [class*="text-amber-100"],
-html:not(.dark) [class*="text-amber-200"],
-html:not(.dark) [class*="text-amber-300"],
-html:not(.dark) [class*="text-amber-400"],
-html:not(.dark) [class*="text-amber-500"],
-html:not(.dark) [class*="text-yellow-300"],
-html:not(.dark) [class*="text-yellow-400"],
-html:not(.dark) [class*="text-yellow-500"] {
+html:not(.dark) .text-amber-400,
+html:not(.dark) .text-amber-300,
+html:not(.dark) .text-amber-200,
+html:not(.dark) .text-amber-100,
+html:not(.dark) .text-amber-500,
+html:not(.dark) .text-amber-600,
+html:not(.dark) .text-yellow-400,
+html:not(.dark) .text-yellow-300,
+html:not(.dark) .text-yellow-500 {
   color: #92400e !important;
+  font-weight: 600;
 }
 
 /* Red Accents: Deep Ruby Crimson */
-html:not(.dark) [class*="text-red-100"],
-html:not(.dark) [class*="text-red-200"],
-html:not(.dark) [class*="text-red-300"],
-html:not(.dark) [class*="text-red-400"],
-html:not(.dark) [class*="text-red-500"] {
+html:not(.dark) .text-red-400,
+html:not(.dark) .text-red-300,
+html:not(.dark) .text-red-200,
+html:not(.dark) .text-red-100,
+html:not(.dark) .text-red-500,
+html:not(.dark) .text-red-600,
+html:not(.dark) .text-rose-400,
+html:not(.dark) .text-rose-300,
+html:not(.dark) .text-rose-200 {
   color: #991b1b !important;
+  font-weight: 600;
 }
 
 /* Emerald Accents: Deep Forest Green */
-html:not(.dark) [class*="text-emerald-100"],
-html:not(.dark) [class*="text-emerald-200"],
-html:not(.dark) [class*="text-emerald-300"],
-html:not(.dark) [class*="text-emerald-400"],
-html:not(.dark) [class*="text-emerald-500"],
-html:not(.dark) [class*="text-green-300"],
-html:not(.dark) [class*="text-green-400"] {
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-300,
+html:not(.dark) .text-emerald-200,
+html:not(.dark) .text-emerald-100,
+html:not(.dark) .text-emerald-500,
+html:not(.dark) .text-emerald-600,
+html:not(.dark) .text-green-400,
+html:not(.dark) .text-green-300,
+html:not(.dark) .text-green-500 {
   color: #166534 !important;
+  font-weight: 600;
 }
 
-/* Cyan Accents: Deep Teal Cyan */
-html:not(.dark) [class*="text-cyan-100"],
-html:not(.dark) [class*="text-cyan-200"],
-html:not(.dark) [class*="text-cyan-300"],
-html:not(.dark) [class*="text-cyan-400"],
-html:not(.dark) [class*="text-cyan-500"],
-html:not(.dark) [class*="text-sky-300"],
-html:not(.dark) [class*="text-sky-400"] {
+/* Cyan Accents: Deep Ocean Teal */
+html:not(.dark) .text-cyan-400,
+html:not(.dark) .text-cyan-300,
+html:not(.dark) .text-cyan-200,
+html:not(.dark) .text-cyan-100,
+html:not(.dark) .text-cyan-500,
+html:not(.dark) .text-cyan-600,
+html:not(.dark) .text-sky-400,
+html:not(.dark) .text-sky-300 {
   color: #0e7490 !important;
+  font-weight: 600;
 }
 
 /* Purple Accents: Deep Royal Purple */
-html:not(.dark) [class*="text-purple-100"],
-html:not(.dark) [class*="text-purple-200"],
-html:not(.dark) [class*="text-purple-300"],
-html:not(.dark) [class*="text-purple-400"] {
+html:not(.dark) .text-purple-400,
+html:not(.dark) .text-purple-300,
+html:not(.dark) .text-purple-200,
+html:not(.dark) .text-purple-100,
+html:not(.dark) .text-purple-500 {
   color: #6b21a8 !important;
+  font-weight: 600;
 }
 
 /* 6. Colored Container Surfaces & Badges in Light Mode */
 /* Blue Containers */
-html:not(.dark) [class*="bg-blue-950"],
-html:not(.dark) .bg-blue-950\/30,
-html:not(.dark) .bg-blue-950\/40,
-html:not(.dark) .bg-blue-950\/60,
-html:not(.dark) .bg-blue-950\/70,
-html:not(.dark) .bg-blue-950\/80 {
+html:not(.dark) .bg-blue-950,
+html:not(.dark) [class*="bg-blue-950/"] {
   background-color: #eff6ff !important;
   border-color: #bfdbfe !important;
 }
 
 /* Amber Containers */
-html:not(.dark) [class*="bg-amber-950"],
-html:not(.dark) .bg-amber-950\/20,
-html:not(.dark) .bg-amber-950\/30,
-html:not(.dark) .bg-amber-950\/40,
-html:not(.dark) .bg-amber-950\/60,
-html:not(.dark) .bg-amber-950\/70,
-html:not(.dark) .bg-amber-950\/80 {
+html:not(.dark) .bg-amber-950,
+html:not(.dark) [class*="bg-amber-950/"] {
   background-color: #fffbeb !important;
   border-color: #fde68a !important;
 }
 
 /* Red Containers */
-html:not(.dark) [class*="bg-red-950"],
-html:not(.dark) .bg-red-950\/25,
-html:not(.dark) .bg-red-950\/40,
-html:not(.dark) .bg-red-950\/60,
-html:not(.dark) .bg-red-950\/80,
-html:not(.dark) .bg-red-950\/90 {
+html:not(.dark) .bg-red-950,
+html:not(.dark) [class*="bg-red-950/"] {
   background-color: #fef2f2 !important;
-  border-color: #fecaca !important;
+  border-color: #fca5a5 !important;
 }
 
 /* Emerald Containers */
-html:not(.dark) [class*="bg-emerald-950"],
-html:not(.dark) .bg-emerald-950\/20,
-html:not(.dark) .bg-emerald-950\/30,
-html:not(.dark) .bg-emerald-950\/40,
-html:not(.dark) .bg-emerald-950\/60,
-html:not(.dark) .bg-emerald-950\/80 {
+html:not(.dark) .bg-emerald-950,
+html:not(.dark) [class*="bg-emerald-950/"] {
   background-color: #f0fdf4 !important;
   border-color: #bbf7d0 !important;
 }
 
 /* Cyan Containers */
-html:not(.dark) [class*="bg-cyan-950"],
-html:not(.dark) .bg-cyan-950\/20,
-html:not(.dark) .bg-cyan-950\/40,
-html:not(.dark) .bg-cyan-950\/80 {
+html:not(.dark) .bg-cyan-950,
+html:not(.dark) [class*="bg-cyan-950/"] {
   background-color: #ecfeff !important;
   border-color: #a5f3fc !important;
+}
+
+/* Purple Containers */
+html:not(.dark) .bg-purple-950,
+html:not(.dark) [class*="bg-purple-950/"] {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+
+/* Rose Containers */
+html:not(.dark) .bg-rose-950,
+html:not(.dark) [class*="bg-rose-950/"] {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
 }
 
 /* 7. Hero Section Gradient & Headline Adaptation */
@@ -268,13 +462,13 @@ html:not(.dark) .bg-clip-text.text-transparent {
 }
 
 html:not(.dark) .blur-3xl {
-  opacity: 0.35;
+  opacity: 0.25;
 }
 
 /* 8. Top Navigation Bar & Footer in Light Mode */
 html:not(.dark) header {
   background-color: rgba(255, 255, 255, 0.98) !important;
-  border-bottom-color: #cbd5e1 !important;
+  border-bottom-color: #e2e8f0 !important;
   box-shadow: 0 1px 4px 0 rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -300,13 +494,13 @@ html:not(.dark) textarea,
 html:not(.dark) select {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  border-color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
   font-weight: 500 !important;
 }
 
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-  color: #64748b !important;
+  color: #94a3b8 !important;
   font-weight: 400 !important;
 }
 
@@ -318,12 +512,18 @@ html:not(.dark) select:focus {
   box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2) !important;
 }
 
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 html:not(.dark) .relative > svg.text-slate-500,
 html:not(.dark) .relative > svg.text-slate-400 {
   color: #475569 !important;
 }
 
 /* 10. Theme & Language Dropdown Menus in Light Mode */
+html:not(.dark) .bg-slate-950\/98,
 html:not(.dark) .bg-slate-900\/98 {
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
@@ -424,13 +624,16 @@ html.dark .text-red-200 {
   color: #fecaca !important;
 }
 
-html:not(.dark) table tbody tr {
-  border-bottom-color: #f1f5f9 !important;
+html.dark .text-rose-400 {
+  color: #fb7185 !important;
+}
+html.dark .text-rose-300 {
+  color: #fda4af !important;
 }
 
-html:not(.dark) pre,
-html:not(.dark) code {
-  color: #0f172a !important;
+html.dark select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
 }
 
 /* Custom Scrollbars */
