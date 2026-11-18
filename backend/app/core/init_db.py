@@ -3,10 +3,12 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.core.database import Base, engine, SessionLocal
 from app.core.security import get_password_hash
+import app.models  # Ensures all canonical models (Profile, Location, Warehouse, etc.) are registered
 from app.models.user import User, UserRole
 from app.models.disaster import Disaster, HazardZone
 from app.models.resource import ReliefCenter, InventoryItem, ReliefVehicle
 from app.models.sos import SOSRequest
+from app.models.supabase_models import Profile
 
 def init_db():
     # Create all tables
@@ -14,6 +16,27 @@ def init_db():
     
     db: Session = SessionLocal()
     try:
+        # Seed Admin & Volunteer profiles for RBAC / Auth endpoints
+        if not db.query(Profile).filter(Profile.email == "admin@resqai.org").first():
+            admin_profile = Profile(
+                email="admin@resqai.org",
+                username="admin",
+                hashed_password=get_password_hash("Admin@1234"),
+                full_name="National Disaster Coordinator",
+                role="ADMIN",
+                phone="+91-9876543210"
+            )
+            volunteer_profile = Profile(
+                email="volunteer@resqai.org",
+                username="volunteer",
+                hashed_password=get_password_hash("Volunteer@1234"),
+                full_name="Rapid Response Team Alpha",
+                role="VOLUNTEER",
+                phone="+91-9876543211"
+            )
+            db.add_all([admin_profile, volunteer_profile])
+            db.commit()
+
         # Check if database already has users/data
         if db.query(User).first():
             return
@@ -72,6 +95,30 @@ def init_db():
             road_blockages_json=json.dumps(["Bridges 3 and 4 submerged", "NH-45 South lane blocked"])
         )
         db.add(hazard)
+
+        # 3b. Canonical Location for DisasterOut serialization
+        from app.models.supabase_models import Location as SupabaseLocation
+        loc = SupabaseLocation(
+            disaster_id=disaster.id,
+            name="Zone A - Flooded Musi River Causeway Sector",
+            district="Hyderabad",
+            state="Telangana",
+            risk_level="RED",
+            boundary_geojson=json.dumps({
+                "type": "Polygon",
+                "coordinates": [[
+                    [78.470, 17.360],
+                    [78.530, 17.360],
+                    [78.530, 17.395],
+                    [78.470, 17.395],
+                    [78.470, 17.360]
+                ]]
+            }),
+            is_accessible=False,
+            road_blockage_notes="Bridges 3 and 4 submerged, NH-45 South lane blocked"
+        )
+        db.add(loc)
+        db.commit()
 
         # 4. Central Relief Center / Depot
         depot = ReliefCenter(
