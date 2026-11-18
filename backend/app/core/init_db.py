@@ -292,9 +292,9 @@ def init_db():
 
         if not db.query(SVehicle).first():
             canonical_vehicles = [
-                SVehicle(vehicle_code="RESCUE-TRUCK-01", vehicle_type="TRUCK", capacity_kg=1500.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", speed_kmh=35.0, driver_id=admin_profile.id),
-                SVehicle(vehicle_code="BOAT-RESCUE-02", vehicle_type="BOAT", capacity_kg=600.0, current_lat=13.0720, current_lon=80.2600, status="IDLE", speed_kmh=20.0, driver_id=volunteer_profile.id),
-                SVehicle(vehicle_code="RAPID-4X4-03", vehicle_type="4X4", capacity_kg=800.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", speed_kmh=45.0, driver_id=volunteer_profile.id)
+                SVehicle(vehicle_code="RESCUE-TRUCK-01", vehicle_type="TRUCK", capacity_kg=1500.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", average_speed_kmh=35.0, assigned_driver_id=admin_profile.id),
+                SVehicle(vehicle_code="BOAT-RESCUE-02", vehicle_type="BOAT", capacity_kg=600.0, current_lat=13.0720, current_lon=80.2600, status="IDLE", average_speed_kmh=20.0, assigned_driver_id=volunteer_profile.id),
+                SVehicle(vehicle_code="RAPID-4X4-03", vehicle_type="4X4", capacity_kg=800.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", average_speed_kmh=45.0, assigned_driver_id=volunteer_profile.id)
             ]
             db.add_all(canonical_vehicles)
             db.commit()
@@ -307,8 +307,8 @@ def init_db():
                 address="12 Musi Causeway Road, Hyderabad",
                 latitude=17.3780,
                 longitude=78.4910,
-                people_count=4,
-                special_needs=["infant", "insulin-dependent"]
+                household_size=4,
+                medical_conditions=json.dumps(["infant", "insulin-dependent"])
             )
             db.add(ben)
             db.commit()
@@ -320,7 +320,7 @@ def init_db():
                 beneficiary_id=ben.id,
                 urgency_level="CRITICAL",
                 urgency_score=92.0,
-                category_needs=["FOOD", "WATER", "MEDICAL"],
+                requested_categories=json.dumps(["FOOD", "WATER", "MEDICAL"]),
                 description="Water reached first floor, infant formula and insulin required.",
                 status="PENDING"
             )
