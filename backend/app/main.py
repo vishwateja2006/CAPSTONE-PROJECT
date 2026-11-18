@@ -25,7 +25,12 @@ app.add_middleware(
 # Seed database on startup
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Warning: Database initialization exception during startup: {e}")
 
 # Include API Router
 app.include_router(api_router, prefix=settings.API_V1_STR)
