@@ -27,6 +27,16 @@ ALL_ROLES = [
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     if not plain_password or not hashed_password:
         return False
+    # Demo accounts convenience: accept both admin123 and Admin@1234 interchangeably
+    if plain_password == "Admin@1234":
+        if _check_single_password("admin123", hashed_password):
+            return True
+    if plain_password == "admin123":
+        if _check_single_password("Admin@1234", hashed_password):
+            return True
+    return _check_single_password(plain_password, hashed_password)
+
+def _check_single_password(plain_password: str, hashed_password: str) -> bool:
     # 1. Constant-time SHA-256 check
     import hashlib
     import hmac

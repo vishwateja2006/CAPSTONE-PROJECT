@@ -49,6 +49,7 @@ class ProfileOut(BaseModel):
     email: str
     full_name: str
     role: str
+    db_role: Optional[str] = None
     phone: Optional[str] = None
     organization: Optional[str] = None
     created_at: datetime
@@ -180,7 +181,17 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "user": user
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": effective_role,
+            "db_role": user.role,
+            "phone": user.phone,
+            "organization": user.organization,
+            "created_at": user.created_at
+        }
     }
 
 @router.post("/token", response_model=TokenResponse)

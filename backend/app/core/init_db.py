@@ -16,45 +16,86 @@ def init_db():
     
     db: Session = SessionLocal()
     try:
-        # Seed Admin & Volunteer profiles for RBAC / Auth endpoints
-        if not db.query(Profile).filter(Profile.email == "admin@resqai.org").first():
-            admin_profile = Profile(
-                email="admin@resqai.org",
-                username="admin",
-                hashed_password=get_password_hash("Admin@1234"),
-                full_name="National Disaster Coordinator",
-                role="ADMIN",
-                phone="+91-9876543210"
+        from sqlalchemy import or_
+
+        # 0a. Ensure Citizen Demo Profile exists & has citizen123
+        citizen_profile = db.query(Profile).filter(
+            or_(Profile.username == "citizen", Profile.email == "citizen@resqlink.org")
+        ).first()
+        if not citizen_profile:
+            citizen_profile = Profile(
+                email="citizen@resqlink.org",
+                username="citizen",
+                hashed_password=get_password_hash("citizen123"),
+                full_name="Citizen / Community User",
+                role="CITIZEN",
+                phone="+91-9840066666"
             )
+            db.add(citizen_profile)
+        else:
+            citizen_profile.username = "citizen"
+            citizen_profile.hashed_password = get_password_hash("citizen123")
+            citizen_profile.role = "CITIZEN"
+
+        # 0b. Ensure Admin Demo Profile exists & has admin123
+        admin_profile = db.query(Profile).filter(
+            or_(Profile.username == "admin", Profile.email.in_(["admin@resqlink.org", "admin@resqai.org"]))
+        ).first()
+        if not admin_profile:
+            admin_profile = Profile(
+                email="admin@resqlink.org",
+                username="admin",
+                hashed_password=get_password_hash("admin123"),
+                full_name="Root Administrator",
+                role="ADMIN",
+                phone="+91-9840011111"
+            )
+            db.add(admin_profile)
+        else:
+            admin_profile.username = "admin"
+            admin_profile.hashed_password = get_password_hash("admin123")
+            admin_profile.role = "ADMIN"
+
+        # 0c. Ensure Volunteer Demo Profile
+        volunteer_profile = db.query(Profile).filter(
+            or_(Profile.username == "volunteer", Profile.email.in_(["volunteer@resqlink.org", "volunteer@resqai.org"]))
+        ).first()
+        if not volunteer_profile:
             volunteer_profile = Profile(
-                email="volunteer@resqai.org",
+                email="volunteer@resqlink.org",
                 username="volunteer",
-                hashed_password=get_password_hash("Volunteer@1234"),
+                hashed_password=get_password_hash("volunteer123"),
                 full_name="Rapid Response Team Alpha",
                 role="VOLUNTEER",
-                phone="+91-9876543211"
+                phone="+91-9840055555"
             )
-            db.add_all([admin_profile, volunteer_profile])
-            db.commit()
+            db.add(volunteer_profile)
+        else:
+            volunteer_profile.username = "volunteer"
+            volunteer_profile.hashed_password = get_password_hash("volunteer123")
 
-        # 1. Admin & Coordinator Legacy Users
-        if not db.query(User).first():
-            admin_user = User(
-                email="admin@resqai.org",
-                hashed_password=get_password_hash("Admin@1234"),
-                full_name="National Disaster Coordinator",
+        db.commit()
+
+        # 1. Admin & Citizen Legacy Users
+        if not db.query(User).filter(User.username == "citizen").first():
+            db.add(User(
+                email="citizen@resqlink.org",
+                username="citizen",
+                hashed_password=get_password_hash("citizen123"),
+                full_name="Citizen / Community User",
+                role=UserRole.BENEFICIARY.value,
+                phone="+91-9840066666"
+            ))
+        if not db.query(User).filter(User.username == "admin").first():
+            db.add(User(
+                email="admin@resqlink.org",
+                username="admin",
+                hashed_password=get_password_hash("admin123"),
+                full_name="Root Administrator",
                 role=UserRole.ADMIN.value,
-                phone="+91-9876543210"
-            )
-            responder_user = User(
-                email="volunteer@resqai.org",
-                hashed_password=get_password_hash("Volunteer@1234"),
-                full_name="Rapid Response Team Alpha",
-                role=UserRole.RESPONDER.value,
-                phone="+91-9876543211"
-            )
-            db.add_all([admin_user, responder_user])
-            db.commit()
+                phone="+91-9840011111"
+            ))
+        db.commit()
 
         # 2. Active Disaster: Coastal Super-Cyclone & Urban Flood
         disaster = db.query(Disaster).first()
