@@ -478,7 +478,9 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 return self._json({"error": "Full name is required to register."}, status=400)
 
             if not username:
-                username = email.split("@")[0].replace(".", "_")
+                return self._json({"error": "Validation error: Username is required for signing into your account."}, status=400)
+            if len(username) < 3:
+                return self._json({"error": "Validation error: Username must be at least 3 characters long."}, status=400)
 
             try:
                 conn = sqlite3.connect(DB_FILE)
@@ -497,7 +499,10 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
                 # Check if username already registered
                 c.execute("SELECT id FROM profiles WHERE LOWER(username) = LOWER(?)", (username,))
                 if c.fetchone():
-                    username = f"{username}_{str(uuid.uuid4())[:4].lower()}"
+                    conn.close()
+                    return self._json({
+                        "error": f"Username '{username}' is already taken. Please choose another username for sign-in."
+                    }, status=409)
 
                 new_id = f"USR-{str(uuid.uuid4())[:8].upper()}"
                 hashed_pw = hashlib.sha256(raw_password.encode("utf-8")).hexdigest()

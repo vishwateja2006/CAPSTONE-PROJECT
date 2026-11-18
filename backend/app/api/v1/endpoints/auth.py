@@ -35,7 +35,7 @@ class ProfileCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    username: Optional[str] = None
+    username: str
     role: str = ROLE_BENEFICIARY
     phone: Optional[str] = None
     organization: Optional[str] = None
@@ -94,12 +94,25 @@ require_ngo = require_role([ROLE_ADMIN, ROLE_NGO_DONOR])
 
 @router.post("/register", response_model=ProfileOut, status_code=status.HTTP_201_CREATED)
 def register(profile_in: ProfileCreate, db: Session = Depends(get_db)):
+    uname = (profile_in.username or "").strip()
+    if not uname:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Validation error: Username is required for signing into your account."
+        )
+
     existing = db.query(Profile).filter(Profile.email == profile_in.email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="An account with this email already exists.")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists.")
+
+    existing_user = db.query(Profile).filter(Profile.username == uname).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Username '{uname}' is already taken. Please choose another username for sign-in."
+        )
     
     hashed_pwd = get_password_hash(profile_in.password)
-    uname = profile_in.username or profile_in.email.split("@")[0]
     profile = Profile(
         username=uname,
         email=profile_in.email,

@@ -64,8 +64,8 @@ export async function registerUser(payload: {
   email: string;
   password: string;
   full_name: string;
+  username: string;
   phone?: string;
-  username?: string;
   role?: string;
 }): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/register`, {
@@ -82,7 +82,7 @@ export async function registerUser(payload: {
       data.error ||
       data.detail ||
       (res.status === 409
-        ? "An account with this email already exists."
+        ? "An account with this email or username already exists."
         : "Failed to create account. Please check your details.");
     const err = new Error(errorMsg);
     (err as any).status = res.status;

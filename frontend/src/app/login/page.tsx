@@ -194,7 +194,7 @@ export default function LoginPage() {
       // ----------------- REGISTRATION VALIDATION & SAVE TO DB -----------------
       const trimmedName = regFullName.trim();
       const trimmedEmail = regEmail.trim().toLowerCase();
-      const trimmedUsername = regUsername.trim().toLowerCase() || trimmedEmail.split("@")[0].replace(/[^a-z0-9_]/g, "_");
+      const trimmedUsername = regUsername.trim().toLowerCase();
       const trimmedPhone = regPhone.trim();
       const trimmedPassword = regPassword.trim();
       const trimmedConfirm = regConfirmPassword.trim();
@@ -205,6 +205,14 @@ export default function LoginPage() {
       }
       if (!trimmedEmail || !trimmedEmail.includes("@")) {
         setErrorMessage("Validation error: Please provide a valid email address.");
+        return;
+      }
+      if (!trimmedUsername) {
+        setErrorMessage("Validation error: Username is required for signing into your account.");
+        return;
+      }
+      if (trimmedUsername.length < 3) {
+        setErrorMessage("Validation error: Username must be at least 3 characters long.");
         return;
       }
       if (!trimmedPassword || trimmedPassword.length < 6) {
@@ -425,13 +433,15 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Username <span className="text-slate-500 text-[10px] font-normal">(Optional)</span>
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-semibold text-slate-300">Username *</label>
+                    <span className="text-[10px] text-amber-400 font-mono font-medium">Used for Sign In</span>
+                  </div>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                     <input
                       type="text"
+                      required
                       disabled={isSubmitting}
                       placeholder="e.g. priya_sharma"
                       value={regUsername}
@@ -628,7 +638,7 @@ export default function LoginPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{isLogin ? t.submittingBtn : "Registering Account & Saving Data..."}</span>
+                <span>{isLogin ? t.submittingBtn : "Creating Account..."}</span>
               </>
             ) : (
               <>
@@ -640,7 +650,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    <span>Create Account & Save to Database</span>
+                    <span>Create Account</span>
                   </>
                 )}
                 <ArrowRight className="w-4 h-4" />
