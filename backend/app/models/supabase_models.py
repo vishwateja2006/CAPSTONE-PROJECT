@@ -52,6 +52,8 @@ class Disaster(Base):
     deliveries = relationship("Delivery", back_populates="disaster")
     predictions = relationship("Prediction", back_populates="disaster", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="disaster", cascade="all, delete-orphan")
+    hazard_zones = relationship("HazardZone", back_populates="disaster", cascade="all, delete-orphan")
+    relief_centers = relationship("ReliefCenter", back_populates="disaster", cascade="all, delete-orphan")
 
 
 class Location(Base):

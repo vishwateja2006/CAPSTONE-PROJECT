@@ -246,6 +246,71 @@ def init_db():
         ]
         db.add_all(sos_list)
         db.commit()
+
+        # 8. Canonical Warehouse, Resources, Fleet & Requests
+        from app.models.supabase_models import (
+            Warehouse as SWarehouse,
+            Resource as SResource,
+            Vehicle as SVehicle,
+            Beneficiary as SBeneficiary,
+            Request as SRequest
+        )
+        canonical_wh = SWarehouse(
+            disaster_id=disaster.id,
+            name="Central Emergency Relief Base Alpha",
+            location_name="Jawaharlal Nehru Stadium Complex",
+            latitude=13.0837,
+            longitude=80.2785,
+            manager_id=admin_profile.id,
+            contact_phone="+91-9444012345",
+            capacity_sqft=25000.0,
+            is_active=True
+        )
+        db.add(canonical_wh)
+        db.commit()
+        db.refresh(canonical_wh)
+
+        wh_resources = [
+            SResource(warehouse_id=canonical_wh.id, item_category="FOOD", item_name="Emergency Dry Ration Packs", quantity_available=850, unit="packets"),
+            SResource(warehouse_id=canonical_wh.id, item_category="WATER", item_name="Purified Water Cans (5L)", quantity_available=1200, unit="cans"),
+            SResource(warehouse_id=canonical_wh.id, item_category="MEDICAL", item_name="Trauma & First Aid Field Kits", quantity_available=150, unit="kits"),
+            SResource(warehouse_id=canonical_wh.id, item_category="SHELTER", item_name="Thermal Blankets & Tents", quantity_available=300, unit="units"),
+            SResource(warehouse_id=canonical_wh.id, item_category="SANITATION", item_name="Chlorine Tablets & Hygiene Kits", quantity_available=400, unit="kits")
+        ]
+        db.add_all(wh_resources)
+
+        canonical_vehicles = [
+            SVehicle(vehicle_code="RESCUE-TRUCK-01", vehicle_type="TRUCK", capacity_kg=1500.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", speed_kmh=35.0, driver_id=admin_profile.id),
+            SVehicle(vehicle_code="BOAT-RESCUE-02", vehicle_type="BOAT", capacity_kg=600.0, current_lat=13.0720, current_lon=80.2600, status="IDLE", speed_kmh=20.0, driver_id=volunteer_profile.id),
+            SVehicle(vehicle_code="RAPID-4X4-03", vehicle_type="4X4", capacity_kg=800.0, current_lat=13.0837, current_lon=80.2785, status="IDLE", speed_kmh=45.0, driver_id=volunteer_profile.id)
+        ]
+        db.add_all(canonical_vehicles)
+
+        ben = SBeneficiary(
+            head_of_household="Kavitha Sundaram",
+            contact_phone="+91-9840112233",
+            address="12 Musi Causeway Road, Hyderabad",
+            latitude=17.3780,
+            longitude=78.4910,
+            people_count=4,
+            special_needs=["infant", "insulin-dependent"]
+        )
+        db.add(ben)
+        db.commit()
+        db.refresh(ben)
+
+        req = SRequest(
+            disaster_id=disaster.id,
+            beneficiary_id=ben.id,
+            urgency_level="CRITICAL",
+            urgency_score=92.0,
+            category_needs=["FOOD", "WATER", "MEDICAL"],
+            description="Water reached first floor, infant formula and insulin required.",
+            status="PENDING"
+        )
+        db.add(req)
+        db.commit()
+
         print("Initial demonstration disaster data successfully seeded!")
     finally:
         db.close()

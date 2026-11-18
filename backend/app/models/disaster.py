@@ -3,26 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Float, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-
-class Disaster(Base):
-    __tablename__ = "disasters"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, nullable=False, index=True)
-    disaster_type = Column(String, nullable=False)  # FLOOD, EARTHQUAKE, CYCLONE, WILDFIRE, LANDSLIDE
-    status = Column(String, default="ACTIVE", nullable=False)  # ALERT, ACTIVE, RECOVERY, RESOLVED
-    severity = Column(String, default="HIGH", nullable=False)  # CRITICAL, HIGH, MODERATE, LOW
-    epicenter_lat = Column(Float, nullable=False)
-    epicenter_lon = Column(Float, nullable=False)
-    radius_km = Column(Float, default=25.0)
-    description = Column(Text, nullable=True)
-    declared_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    hazard_zones = relationship("HazardZone", back_populates="disaster", cascade="all, delete-orphan")
-    relief_centers = relationship("ReliefCenter", back_populates="disaster", cascade="all, delete-orphan")
-
+from app.models.supabase_models import Disaster
 
 class HazardZone(Base):
     __tablename__ = "hazard_zones"
