@@ -30,6 +30,8 @@ import {
   AppLanguage
 } from "../../lib/i18n";
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export default function LoginPage() {
   const router = useRouter();
   const [selectedLanguage, setSelectedLanguage] = useState<AppLanguage>("EN");
@@ -203,8 +205,12 @@ export default function LoginPage() {
         setErrorMessage("Validation error: Full name is required.");
         return;
       }
-      if (!trimmedEmail || !trimmedEmail.includes("@")) {
-        setErrorMessage("Validation error: Please provide a valid email address.");
+      if (!trimmedEmail) {
+        setErrorMessage("Validation error: Email address is required.");
+        return;
+      }
+      if (!EMAIL_REGEX.test(trimmedEmail)) {
+        setErrorMessage("Validation error: Invalid email format. Please enter a complete email address ending with a valid domain (e.g. yourname@gmail.com).");
         return;
       }
       if (!trimmedUsername) {
@@ -414,12 +420,51 @@ export default function LoginPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Email Address *</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-semibold text-slate-300">Email Address *</label>
+                    {regEmail.trim() ? (
+                      EMAIL_REGEX.test(regEmail.trim()) ? (
+                        <span className="text-[10px] text-emerald-400 font-mono font-medium flex items-center space-x-1">
+                          <CheckCircle2 className="w-3 h-3 inline" />
+                          <span>Valid email</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400 font-mono font-medium flex items-center space-x-1">
+                          <span>Need domain</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const base = regEmail.trim().split("@")[0] || "user";
+                              setRegEmail(`${base}@gmail.com`);
+                              if (errorMessage) setErrorMessage(null);
+                            }}
+                            className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded text-[9px] underline font-sans ml-1"
+                          >
+                            + @gmail.com
+                          </button>
+                        </span>
+                      )
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const base = regUsername.trim() || regFullName.trim().toLowerCase().replace(/\s+/g, ".") || "user";
+                          setRegEmail(`${base}@gmail.com`);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        className="text-[10px] text-cyan-400 hover:text-cyan-300 font-mono"
+                      >
+                        + @gmail.com
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                     <input
                       type="email"
                       required
+                      pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                      title="Please enter a complete and valid email address ending with a domain (e.g. yourname@gmail.com)"
                       disabled={isSubmitting}
                       placeholder="e.g. priya@gmail.com"
                       value={regEmail}

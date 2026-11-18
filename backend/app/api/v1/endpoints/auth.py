@@ -20,6 +20,9 @@ from app.core.security import (
 from app.models.supabase_models import Profile
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+import re
+
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
@@ -94,6 +97,13 @@ require_ngo = require_role([ROLE_ADMIN, ROLE_NGO_DONOR])
 
 @router.post("/register", response_model=ProfileOut, status_code=status.HTTP_201_CREATED)
 def register(profile_in: ProfileCreate, db: Session = Depends(get_db)):
+    email_val = (profile_in.email or "").strip().lower()
+    if not EMAIL_REGEX.match(email_val):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Validation error: Please provide a complete and valid email address ending with a valid domain (e.g. yourname@gmail.com)."
+        )
+
     uname = (profile_in.username or "").strip()
     if not uname:
         raise HTTPException(

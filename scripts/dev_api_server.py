@@ -16,6 +16,7 @@ import hmac
 import base64
 import time
 import uuid
+import re
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
@@ -25,6 +26,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 DB_FILE = os.path.join(PROJECT_ROOT, "backend", "disaster_platform.db")
 JWT_SECRET = b"super_secret_jwt_key_disaster_relief_capstone_2026"
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 def b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode('utf-8').rstrip('=')
@@ -470,8 +472,10 @@ class ResQLinkAPIHandler(BaseHTTPRequestHandler):
             role = (data.get("role") or "CITIZEN").strip().upper()
 
             # 1. Validation checks
-            if not email or "@" not in email:
-                return self._json({"error": "Please provide a valid email address."}, status=400)
+            if not email or not EMAIL_REGEX.match(email):
+                return self._json({
+                    "error": "Validation error: Please provide a complete and valid email address ending with a valid domain (e.g. yourname@gmail.com)."
+                }, status=400)
             if not raw_password or len(raw_password) < 6:
                 return self._json({"error": "Password must be at least 6 characters long."}, status=400)
             if not full_name:
