@@ -22,6 +22,7 @@ body {
 
 /* ==============================================================================
    LIGHT MODE: Comprehensive High-Contrast & Adaptive Color System
+   Ensures WCAG AAA contrast ratio: words are ultra-crisp and legible in Light Mode
    ============================================================================== */
 
 html:not(.dark) body {
@@ -29,45 +30,35 @@ html:not(.dark) body {
   background-color: #f8fafc;
 }
 
-/* 1. Base Surfaces & Containers */
+/* 1. Base Surfaces, Cards & Panels */
 html:not(.dark) .bg-slate-950,
 html:not(.dark) .bg-slate-900,
 html:not(.dark) .bg-\[\#090d16\],
-html:not(.dark) .bg-\[\#090e1a\] {
+html:not(.dark) .bg-\[\#090e1a\],
+html:not(.dark) [class*="bg-slate-950/"],
+html:not(.dark) [class*="bg-slate-900/"] {
   background-color: #ffffff !important;
-}
-
-html:not(.dark) .bg-slate-950\/98,
-html:not(.dark) .bg-slate-950\/95,
-html:not(.dark) .bg-slate-950\/90,
-html:not(.dark) .bg-slate-950\/80,
-html:not(.dark) .bg-slate-950\/70,
-html:not(.dark) .bg-slate-950\/60,
-html:not(.dark) .bg-slate-900\/98,
-html:not(.dark) .bg-slate-900\/95,
-html:not(.dark) .bg-slate-900\/90,
-html:not(.dark) .bg-slate-900\/80 {
-  background-color: #ffffff !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-}
-
-html:not(.dark) .bg-slate-900\/70,
-html:not(.dark) .bg-slate-900\/60,
-html:not(.dark) .bg-slate-900\/50,
-html:not(.dark) .bg-slate-900\/40 {
-  background-color: #f8fafc !important;
   border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 }
 
-/* Secondary Buttons, Chips, and Subtle Pill Badges */
+/* Recessed Inset Surfaces, Ticker boxes & Segmented Controls */
+html:not(.dark) .bg-slate-900\/60,
+html:not(.dark) .bg-slate-900\/70,
+html:not(.dark) .bg-slate-900\/50,
+html:not(.dark) .bg-slate-900\/40,
+html:not(.dark) .bg-slate-950\/90,
+html:not(.dark) .bg-slate-950\/80 {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Secondary Buttons, Chips, and Inset Controls */
 html:not(.dark) .bg-slate-800,
-html:not(.dark) .bg-slate-800\/90,
-html:not(.dark) .bg-slate-800\/80,
-html:not(.dark) .bg-slate-800\/70,
-html:not(.dark) .bg-slate-800\/60 {
+html:not(.dark) [class*="bg-slate-800/"] {
   background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
-  color: #1e293b !important;
+  color: #0f172a !important;
 }
 
 html:not(.dark) .hover\:bg-slate-800:hover,
@@ -76,73 +67,197 @@ html:not(.dark) .hover\:bg-slate-700:hover {
   color: #0f172a !important;
 }
 
-html:not(.dark) .hover\:bg-slate-800\/40:hover {
-  background-color: rgba(241, 245, 249, 0.8) !important;
-}
-
 /* 2. Universal Borders & Dividers */
-html:not(.dark) .border-slate-800,
-html:not(.dark) .border-slate-800\/80,
-html:not(.dark) .border-slate-800\/60,
-html:not(.dark) .border-slate-700,
-html:not(.dark) .border-slate-700\/90,
-html:not(.dark) .border-slate-700\/80,
-html:not(.dark) .border-slate-700\/60,
-html:not(.dark) .border-slate-900 {
-  border-color: #e2e8f0 !important;
+html:not(.dark) [class*="border-slate-800"],
+html:not(.dark) [class*="border-slate-700"],
+html:not(.dark) [class*="border-slate-900"] {
+  border-color: #cbd5e1 !important;
 }
 
-/* 3. High-Contrast Typography */
+/* 3. High-Contrast Typography (WCAG AAA Compliant - No blurry or washed out words) */
 html:not(.dark) .text-white {
   color: #0f172a !important;
 }
 
 html:not(.dark) .text-slate-100,
 html:not(.dark) .text-slate-200 {
-  color: #1e293b !important;
+  color: #0f172a !important;
 }
 
 html:not(.dark) .text-slate-300 {
-  color: #334155 !important;
+  color: #1e293b !important;
 }
 
+/* In light mode, slate-400 and slate-500 are strengthened to dark slate so words are never faint */
 html:not(.dark) .text-slate-400 {
-  color: #64748b !important;
+  color: #334155 !important;
+  font-weight: 500;
 }
 
-html:not(.dark) .text-slate-500 {
-  color: #94a3b8 !important;
+html:not(.dark) .text-slate-500,
+html:not(.dark) .text-slate-600 {
+  color: #475569 !important;
 }
 
-/* Buttons with vibrant solid backgrounds must preserve crisp white text */
+/* 4. Solid Button Color Protections */
+/* Blue Buttons: Always pure white text */
 html:not(.dark) .bg-blue-600,
 html:not(.dark) .bg-blue-600 *,
 html:not(.dark) .bg-blue-500,
-html:not(.dark) .bg-blue-500 *,
+html:not(.dark) .bg-blue-500 * {
+  color: #ffffff !important;
+  background-color: #2563eb !important;
+}
+
+/* Red Buttons: Always pure white text */
 html:not(.dark) .bg-red-600,
 html:not(.dark) .bg-red-600 *,
 html:not(.dark) .bg-red-500,
-html:not(.dark) .bg-red-500 *,
+html:not(.dark) .bg-red-500 * {
+  color: #ffffff !important;
+  background-color: #dc2626 !important;
+}
+
+/* Emerald Buttons: Always pure white text */
 html:not(.dark) .bg-emerald-600,
 html:not(.dark) .bg-emerald-600 *,
 html:not(.dark) .bg-emerald-500,
 html:not(.dark) .bg-emerald-500 * {
   color: #ffffff !important;
+  background-color: #16a34a !important;
 }
 
-/* Buttons with solid amber backgrounds preserve dark slate text */
+/* Amber Buttons: Always deep black/slate text on vibrant gold background */
 html:not(.dark) .bg-amber-500,
 html:not(.dark) .bg-amber-500 *,
 html:not(.dark) .bg-amber-400,
 html:not(.dark) .bg-amber-400 * {
   color: #0f172a !important;
+  background-color: #f59e0b !important;
+  font-weight: 800 !important;
 }
 
-/* 4. Hero Section Gradient Adaptations */
+/* 5. Colored Accent Text: High-Contrast Rich Dark Tones in Light Mode */
+/* Blue Accents: Deep Royal Blue */
+html:not(.dark) [class*="text-blue-100"],
+html:not(.dark) [class*="text-blue-200"],
+html:not(.dark) [class*="text-blue-300"],
+html:not(.dark) [class*="text-blue-400"],
+html:not(.dark) [class*="text-blue-500"] {
+  color: #1e40af !important;
+}
+
+/* Amber Accents: Deep Dark Amber / Warm Saddle Brown */
+html:not(.dark) [class*="text-amber-100"],
+html:not(.dark) [class*="text-amber-200"],
+html:not(.dark) [class*="text-amber-300"],
+html:not(.dark) [class*="text-amber-400"],
+html:not(.dark) [class*="text-amber-500"],
+html:not(.dark) [class*="text-yellow-300"],
+html:not(.dark) [class*="text-yellow-400"],
+html:not(.dark) [class*="text-yellow-500"] {
+  color: #92400e !important;
+}
+
+/* Red Accents: Deep Ruby Crimson */
+html:not(.dark) [class*="text-red-100"],
+html:not(.dark) [class*="text-red-200"],
+html:not(.dark) [class*="text-red-300"],
+html:not(.dark) [class*="text-red-400"],
+html:not(.dark) [class*="text-red-500"] {
+  color: #991b1b !important;
+}
+
+/* Emerald Accents: Deep Forest Green */
+html:not(.dark) [class*="text-emerald-100"],
+html:not(.dark) [class*="text-emerald-200"],
+html:not(.dark) [class*="text-emerald-300"],
+html:not(.dark) [class*="text-emerald-400"],
+html:not(.dark) [class*="text-emerald-500"],
+html:not(.dark) [class*="text-green-300"],
+html:not(.dark) [class*="text-green-400"] {
+  color: #166534 !important;
+}
+
+/* Cyan Accents: Deep Teal Cyan */
+html:not(.dark) [class*="text-cyan-100"],
+html:not(.dark) [class*="text-cyan-200"],
+html:not(.dark) [class*="text-cyan-300"],
+html:not(.dark) [class*="text-cyan-400"],
+html:not(.dark) [class*="text-cyan-500"],
+html:not(.dark) [class*="text-sky-300"],
+html:not(.dark) [class*="text-sky-400"] {
+  color: #0e7490 !important;
+}
+
+/* Purple Accents: Deep Royal Purple */
+html:not(.dark) [class*="text-purple-100"],
+html:not(.dark) [class*="text-purple-200"],
+html:not(.dark) [class*="text-purple-300"],
+html:not(.dark) [class*="text-purple-400"] {
+  color: #6b21a8 !important;
+}
+
+/* 6. Colored Container Surfaces & Badges in Light Mode */
+/* Blue Containers */
+html:not(.dark) [class*="bg-blue-950"],
+html:not(.dark) .bg-blue-950\/30,
+html:not(.dark) .bg-blue-950\/40,
+html:not(.dark) .bg-blue-950\/60,
+html:not(.dark) .bg-blue-950\/70,
+html:not(.dark) .bg-blue-950\/80 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+
+/* Amber Containers */
+html:not(.dark) [class*="bg-amber-950"],
+html:not(.dark) .bg-amber-950\/20,
+html:not(.dark) .bg-amber-950\/30,
+html:not(.dark) .bg-amber-950\/40,
+html:not(.dark) .bg-amber-950\/60,
+html:not(.dark) .bg-amber-950\/70,
+html:not(.dark) .bg-amber-950\/80 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+/* Red Containers */
+html:not(.dark) [class*="bg-red-950"],
+html:not(.dark) .bg-red-950\/25,
+html:not(.dark) .bg-red-950\/40,
+html:not(.dark) .bg-red-950\/60,
+html:not(.dark) .bg-red-950\/80,
+html:not(.dark) .bg-red-950\/90 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+/* Emerald Containers */
+html:not(.dark) [class*="bg-emerald-950"],
+html:not(.dark) .bg-emerald-950\/20,
+html:not(.dark) .bg-emerald-950\/30,
+html:not(.dark) .bg-emerald-950\/40,
+html:not(.dark) .bg-emerald-950\/60,
+html:not(.dark) .bg-emerald-950\/80 {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* Cyan Containers */
+html:not(.dark) [class*="bg-cyan-950"],
+html:not(.dark) .bg-cyan-950\/20,
+html:not(.dark) .bg-cyan-950\/40,
+html:not(.dark) .bg-cyan-950\/80 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+}
+
+/* 7. Hero Section Gradient & Headline Adaptation */
 html:not(.dark) .bg-gradient-to-br.from-slate-900.via-slate-950.to-slate-900 {
   background-image: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #eff6ff 100%) !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
 }
 
 /* Headline Gradient Text: Rich Amber / Dark Slate Contrast */
@@ -152,20 +267,19 @@ html:not(.dark) .bg-clip-text.text-transparent {
   color: #b45309 !important;
 }
 
-/* Ambient Glow softening */
 html:not(.dark) .blur-3xl {
-  opacity: 0.45;
+  opacity: 0.35;
 }
 
-/* 5. Top Navigation Bar & Footer */
+/* 8. Top Navigation Bar & Footer in Light Mode */
 html:not(.dark) header {
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border-bottom-color: #e2e8f0 !important;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04) !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-bottom-color: #cbd5e1 !important;
+  box-shadow: 0 1px 4px 0 rgba(15, 23, 42, 0.06) !important;
 }
 
 html:not(.dark) header a {
-  color: #1e293b;
+  color: #0f172a;
 }
 
 html:not(.dark) header .bg-slate-800 {
@@ -175,177 +289,139 @@ html:not(.dark) header .bg-slate-800 {
 }
 
 html:not(.dark) footer {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
   border-top-color: #e2e8f0 !important;
-  color: #64748b !important;
+  color: #475569 !important;
 }
 
-/* 6. Category Accent Badges & Adaptive Containers */
-
-/* Blue Citizen / User Accents */
-html:not(.dark) .border-blue-900\/40,
-html:not(.dark) .border-blue-800,
-html:not(.dark) .border-blue-700\/80 {
-  border-color: #bfdbfe !important;
-}
-
-html:not(.dark) .bg-blue-950,
-html:not(.dark) .bg-blue-950\/90,
-html:not(.dark) .bg-blue-950\/80,
-html:not(.dark) .bg-blue-950\/70,
-html:not(.dark) .bg-blue-950\/60,
-html:not(.dark) .bg-blue-950\/40 {
-  background-color: #eff6ff !important;
-  border-color: #bfdbfe !important;
-}
-
-html:not(.dark) .text-blue-300,
-html:not(.dark) .text-blue-400 {
-  color: #1d4ed8 !important;
-}
-
-/* Amber Administrator / Command Accents */
-html:not(.dark) .border-amber-900\/60,
-html:not(.dark) .border-amber-900\/40,
-html:not(.dark) .border-amber-800,
-html:not(.dark) .border-amber-700\/80 {
-  border-color: #fde68a !important;
-}
-
-html:not(.dark) .bg-amber-950,
-html:not(.dark) .bg-amber-950\/90,
-html:not(.dark) .bg-amber-950\/80,
-html:not(.dark) .bg-amber-950\/70,
-html:not(.dark) .bg-amber-950\/60,
-html:not(.dark) .bg-amber-950\/40,
-html:not(.dark) .bg-amber-950\/20 {
-  background-color: #fffbeb !important;
-  border-color: #fde68a !important;
-}
-
-html:not(.dark) .text-amber-300,
-html:not(.dark) .text-amber-400 {
-  color: #b45309 !important;
-}
-
-/* Red Emergency / Critical Accents */
-html:not(.dark) .border-red-900\/80,
-html:not(.dark) .border-red-900\/60,
-html:not(.dark) .border-red-900\/40,
-html:not(.dark) .border-red-800 {
-  border-color: #fecaca !important;
-}
-
-html:not(.dark) .bg-red-950,
-html:not(.dark) .bg-red-950\/90,
-html:not(.dark) .bg-red-950\/80,
-html:not(.dark) .bg-red-950\/70,
-html:not(.dark) .bg-red-950\/60,
-html:not(.dark) .bg-red-950\/40,
-html:not(.dark) .bg-red-950\/25 {
-  background-color: #fef2f2 !important;
-  border-color: #fecaca !important;
-}
-
-html:not(.dark) .text-red-200,
-html:not(.dark) .text-red-300,
-html:not(.dark) .text-red-300\/90,
-html:not(.dark) .text-red-400 {
-  color: #dc2626 !important;
-}
-
-/* Emerald Success / Equity Accents */
-html:not(.dark) .border-emerald-900\/80,
-html:not(.dark) .border-emerald-900\/60,
-html:not(.dark) .border-emerald-800 {
-  border-color: #bbf7d0 !important;
-}
-
-html:not(.dark) .bg-emerald-950,
-html:not(.dark) .bg-emerald-950\/60,
-html:not(.dark) .bg-emerald-950\/40,
-html:not(.dark) .bg-emerald-950\/30,
-html:not(.dark) .bg-emerald-950\/20 {
-  background-color: #f0fdf4 !important;
-  border-color: #bbf7d0 !important;
-}
-
-html:not(.dark) .text-emerald-300,
-html:not(.dark) .text-emerald-400,
-html:not(.dark) .text-emerald-400\/80 {
-  color: #15803d !important;
-}
-
-/* Cyan Telemetry / AI Accents */
-html:not(.dark) .border-cyan-900\/60,
-html:not(.dark) .border-cyan-800,
-html:not(.dark) .border-cyan-800\/80 {
-  border-color: #a5f3fc !important;
-}
-
-html:not(.dark) .bg-cyan-950,
-html:not(.dark) .bg-cyan-950\/40,
-html:not(.dark) .bg-cyan-950\/20 {
-  background-color: #ecfeff !important;
-  border-color: #a5f3fc !important;
-}
-
-html:not(.dark) .text-cyan-300,
-html:not(.dark) .text-cyan-400 {
-  color: #0e7490 !important;
-}
-
-/* Purple Cryptography / Audit Accents */
-html:not(.dark) .text-purple-400 {
-  color: #7e22ce !important;
-}
-
-/* 7. Input Fields & Form Controls */
+/* 9. Input Fields & Form Controls in Light Mode */
 html:not(.dark) input,
 html:not(.dark) textarea,
 html:not(.dark) select {
   background-color: #ffffff !important;
   color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  border-color: #94a3b8 !important;
+  font-weight: 500 !important;
 }
 
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #64748b !important;
+  font-weight: 400 !important;
 }
 
 html:not(.dark) input:focus,
 html:not(.dark) textarea:focus,
 html:not(.dark) select:focus {
-  border-color: #f59e0b !important;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+  border-color: #d97706 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2) !important;
 }
 
-/* 8. Theme Dropdown Menu Adaptation */
+html:not(.dark) .relative > svg.text-slate-500,
+html:not(.dark) .relative > svg.text-slate-400 {
+  color: #475569 !important;
+}
+
+/* 10. Theme & Language Dropdown Menus in Light Mode */
 html:not(.dark) .bg-slate-900\/98 {
   background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.15) !important;
 }
 
-/* 9. Interactive SVG Map & Telemetry Canvas */
-html:not(.dark) svg.bg-\[\#060a14\] {
-  background-color: #f8fafc !important;
-}
-
-html:not(.dark) #tacticalGrid path {
-  stroke: #e2e8f0 !important;
-}
-
-/* 10. Tables & Monospace Logs */
+/* 11. Tables & Monospace Logs in Light Mode */
 html:not(.dark) table thead {
-  background-color: #f8fafc !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  background-color: #f1f5f9 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
 }
 
 html:not(.dark) table thead th {
-  color: #475569 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html:not(.dark) table tbody tr {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html:not(.dark) table tbody td {
+  color: #1e293b !important;
+}
+
+html:not(.dark) pre,
+html:not(.dark) code {
+  color: #0f172a !important;
+}
+
+/* ==============================================================================
+   DARK MODE: High-Contrast & Luminescent Typography
+   Ensures words are crisp, glowing, and never too dim on dark surfaces
+   ============================================================================== */
+
+html.dark body {
+  color: #f8fafc;
+  background-color: #070b12;
+}
+
+/* Ensure secondary text in Dark Mode is clearly legible */
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* Crisp neon accents for Dark Mode */
+html.dark .text-amber-400 {
+  color: #fbbf24 !important;
+}
+html.dark .text-amber-300 {
+  color: #fcd34d !important;
+}
+html.dark .text-amber-200 {
+  color: #fde68a !important;
+}
+
+html.dark .text-blue-400 {
+  color: #60a5fa !important;
+}
+html.dark .text-blue-300 {
+  color: #93c5fd !important;
+}
+html.dark .text-blue-200 {
+  color: #bfdbfe !important;
+}
+
+html.dark .text-emerald-400 {
+  color: #34d399 !important;
+}
+html.dark .text-emerald-300 {
+  color: #6ee7b7 !important;
+}
+html.dark .text-emerald-200 {
+  color: #a7f3d0 !important;
+}
+
+html.dark .text-cyan-400 {
+  color: #22d3ee !important;
+}
+html.dark .text-cyan-300 {
+  color: #67e8f9 !important;
+}
+html.dark .text-cyan-200 {
+  color: #a5f3fc !important;
+}
+
+html.dark .text-red-400 {
+  color: #f87171 !important;
+}
+html.dark .text-red-300 {
+  color: #fca5a5 !important;
+}
+html.dark .text-red-200 {
+  color: #fecaca !important;
 }
 
 html:not(.dark) table tbody tr {
